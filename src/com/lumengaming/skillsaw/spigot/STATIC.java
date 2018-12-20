@@ -51,7 +51,7 @@ public class STATIC {
      * EVERYTHING. GOD. SIX GOD DAMN HOURS ON THIS. WASTED. GOD FUCKING DAMMIT 
      * AAAAAAAAAAAAAAAAAAAAAARRRRRRRRRRRRRRRRRRRRRRRRRRRRRCCGHGHGHGHGHGHGHHGHGHGHHGHGHGHGHGHHGHGHGH!!!!!!!!!!!!!!!!!!!
      * 
-     * (Finding this later. Did I ever get it to work?)
+     * (Me finding this later: "Ahhhhhh. The screams of learning. *sips coffee*")
      * @param fileName
      * @return 
      */

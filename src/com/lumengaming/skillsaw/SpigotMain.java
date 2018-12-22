@@ -5,7 +5,7 @@
  */
 package com.lumengaming.skillsaw;
 
-import com.lumengaming.skillsaw.common.Constants;
+import com.lumengaming.skillsaw.bungee.utility.Constants;
 import com.lumengaming.skillsaw.listeners.SpigotCommandListener;
 import com.lumengaming.skillsaw.listeners.SpigotJoinListener;
 import com.lumengaming.skillsaw.bridge.SpigotMessageListener;
@@ -27,6 +27,8 @@ public class SpigotMain extends JavaPlugin implements ISkillsaw{
         if (!Bukkit.getServer().getPluginManager().getPlugin(this.getName()).getDataFolder().exists()){
             Bukkit.getServer().getPluginManager().getPlugin(this.getName()).getDataFolder().mkdir();
         }
+        Options.Load();
+        Options.Save();
         
         getServer().getPluginManager().registerEvents(new SpigotCommandListener(this), this);
         getServer().getPluginManager().registerEvents(new SpigotJoinListener(this), this);
@@ -34,7 +36,7 @@ public class SpigotMain extends JavaPlugin implements ISkillsaw{
         
         this.getServer().getMessenger().registerOutgoingPluginChannel(this, Constants.CH_RootChannel);
         this.getServer().getMessenger().registerIncomingPluginChannel(this, Constants.CH_RootChannel, new SpigotMessageListener(this));
-
+        
     }
     
     @Override

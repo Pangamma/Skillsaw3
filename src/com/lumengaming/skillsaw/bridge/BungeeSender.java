@@ -13,7 +13,7 @@ import com.lumengaming.skillsaw.common.AsyncEmptyCallback;
 import com.lumengaming.skillsaw.common.AsyncCallback;
 import com.lumengaming.skillsaw.bungee.utility.BagMap;
 import com.lumengaming.skillsaw.bungee.utility.CText;
-import com.lumengaming.skillsaw.common.Constants;
+import com.lumengaming.skillsaw.bungee.utility.Constants;
 import com.lumengaming.skillsaw.models.XLocation;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;

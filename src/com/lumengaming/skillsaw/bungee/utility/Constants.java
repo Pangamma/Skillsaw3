@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.lumengaming.skillsaw.common;
+package com.lumengaming.skillsaw.bungee.utility;
 
 import net.md_5.bungee.api.ChatColor;
 
@@ -20,6 +20,7 @@ public class Constants {
     public static final String CH_PlaySoundForPlayer = "Skillsaw_PlaySoundForPlayer";
     public static final String CHANNEL_CONSOLE_COMMAND = "Skillsaw_ConsoleCommand";
     public static final String SND_VILLAGER_HMMM = "ENTITY_VILLAGER_AMBIENT";
+    
     
     //<editor-fold defaultstate="collapsed" desc="colors & formatting">
     /**

@@ -1,7 +1,7 @@
 package com.lumengaming.skillsaw.listeners;
 
 import com.lumengaming.skillsaw.SpigotMain;
-import com.lumengaming.skillsaw.common.Constants;
+import com.lumengaming.skillsaw.bungee.utility.Constants;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Firework;
 import org.bukkit.event.EventHandler;

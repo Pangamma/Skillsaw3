@@ -7,7 +7,7 @@ package com.lumengaming.skillsaw.bridge;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import com.lumengaming.skillsaw.common.Constants;
+import com.lumengaming.skillsaw.bungee.utility.Constants;
 import com.lumengaming.skillsaw.models.XLocation;
 import java.io.DataInputStream;
 import java.io.IOException;

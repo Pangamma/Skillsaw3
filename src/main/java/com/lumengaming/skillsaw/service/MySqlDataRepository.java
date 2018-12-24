@@ -658,7 +658,7 @@ public class MySqlDataRepository implements IDataRepository {
     }
 
     @Override
-    public void logChatMessage(User user, String serverName, String message, boolean isCommand) {
+    public void logMessage(UUID uuid, String p_username, String serverName, String message, boolean isCommand) {
         
         if (connect() && !isReadOnly){
 			try{
@@ -666,8 +666,8 @@ public class MySqlDataRepository implements IDataRepository {
 				PreparedStatement ps = connection.prepareStatement(q);
 				int i = 1;
 				ps.setString(i++, serverName);
-				ps.setString(i++, user.getName());
-				ps.setString(i++, user.getUniqueId().toString());
+				ps.setString(i++, p_username);
+				ps.setString(i++, uuid.toString());
 				ps.setString(i++, message);
 				ps.setInt(i++, isCommand ? 1 : 0);
 				ps.execute();
@@ -704,7 +704,7 @@ public class MySqlDataRepository implements IDataRepository {
         }
     }
 
-    HashMap<UUID, Integer> getUpdatedActivityScores(Set<UUID> set) {
+    public HashMap<UUID, Integer> getUpdatedActivityScores(Set<UUID> set) {
         HashMap<UUID, Integer> map = new HashMap<>();
         if (set == null || set.isEmpty()) return new HashMap<>();
         List<String> qMarks = set.stream().map(x-> "?").collect(Collectors.toList());
@@ -762,7 +762,7 @@ public class MySqlDataRepository implements IDataRepository {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    public void updateActivityScores(){
+    public void refreshActivityScoresCache(){
         String q = "UPDATE " +
         "`skillsaw_users` `u` LEFT JOIN " +
         "(SELECT user_id, (round(SUM(`minutes`)/12,0)) as `c_active` FROM activity_log `a` " +
@@ -780,6 +780,25 @@ public class MySqlDataRepository implements IDataRepository {
         } else {
             System.out.println("Failed to connect to the DB. Could not update activity scores rep.");
         }
+    }
+
+    @Override
+    public void purgeOldMessages(int numToKeep) {
+		if (connect() && !this.isReadOnly){
+			try{
+				String q = "SELECT MAX(`id`) as `id` FROM `messages`;";
+				PreparedStatement ps = connection.prepareStatement(q);
+				ResultSet rs = ps.executeQuery();
+				if (rs.next()){
+					int maxId = rs.getInt("id");
+					ps = connection.prepareStatement("DELETE FROM `messages` WHERE `id` < ("+(maxId-500000)+")");
+					ps.execute();
+				}
+			}
+			catch (SQLException ex){
+				Logger.getLogger(MySqlDataRepository.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		}
     }
     
     /**

@@ -580,9 +580,9 @@ public class User {
         {
             int score = usr.getActivityScore();
             String scoreStr = "";
-            if (score > 350) scoreStr = "§a350+";
-            else if (score > 100) scoreStr = "§a"+score;
-            else if (score > 70) scoreStr = "§2"+score;
+            if (score > 350) scoreStr = "§2350+";
+            else if (score > 100) scoreStr = "§2"+score;
+            else if (score > 70) scoreStr = "§a"+score;
             else if (score >= 0 && (usr.isStaff || usr.isInstructor)) scoreStr = "§c"+score;
             else scoreStr = "§e"+score;
             

@@ -245,19 +245,6 @@ public class DataService {
 		}
 	}
 
-	/**
-	 * asynchronously log a chat message *
-	 */
-	public void logChat(UUID p_uuid, String p_displayName, String p_channel, String p_message) {
-
-	}
-
-	/**
-	 * Asynchronously log a command *
-	 */
-	public void logCommand(UUID p_uuid, String p_command) {
-
-	}
 	//</editor-fold>
 
 	//<editor-fold defaultstate="collapsed" desc="Login">
@@ -538,6 +525,12 @@ public class DataService {
 	//</editor-fold>
     
 	//<editor-fold defaultstate="collapsed" desc="Logging">
+    public void logMessage(String username, UUID uuid, String server, String message, boolean command) {
+        this.plugin.runTaskAsynchronously(() -> { 
+            repo.logMessage(uuid, username, server, message, command);
+        });
+    }
+    
     public void logActivity(UUID playerUUID, String serverName, boolean afk) {
         plugin.runTaskAsynchronously(() -> {
             repo.logActivity(playerUUID, serverName, afk);
@@ -551,7 +544,7 @@ public class DataService {
     public void updateActivityLevels(AsyncEmptyCallback callback){
         final Set<UUID> keySet = this.onlineUsers.keySet();
         plugin.runTaskAsynchronously(() -> {
-            repo.updateActivityScores();
+            repo.refreshActivityScoresCache();
             final HashMap<UUID, Integer> vals = repo.getUpdatedActivityScores(keySet);
             
             plugin.runTask(() -> { 
@@ -666,5 +659,12 @@ public class DataService {
 
 	}
 	//</editor-fold>
+
+    public void purgeOldMessages(int numToKeep) {
+        plugin.runTaskAsynchronously(() -> { 
+            this.repo.purgeOldMessages(numToKeep);
+        });
+        
+    }
 
 }

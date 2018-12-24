@@ -5,6 +5,8 @@ import com.lumengaming.skillsaw.models.SkillType;
 import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.models.XLocation;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -46,8 +48,8 @@ public interface IDataRepository {
     public void getActivityScore(UUID uuid, boolean excludeAfk);
     
     public void logActivity(UUID uuid, String serverName,boolean isAfk);
-    
-	public void logChatMessage(User user, String serverName, String message, boolean isCommand);
+    public void purgeOldMessages(int numToKeep);
+	public void logMessage(UUID uuid, String username, String serverName, String message, boolean isCommand);
     
 	public void logRep(User issuer, User target, double amount, RepType repType, String reason);
 	
@@ -63,5 +65,9 @@ public interface IDataRepository {
 
     
 //</editor-fold>
+
+    public HashMap<UUID, Integer> getUpdatedActivityScores(Set<UUID> keySet);
+
+    public void refreshActivityScoresCache();
 
 }

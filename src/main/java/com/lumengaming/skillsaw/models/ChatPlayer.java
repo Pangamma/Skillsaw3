@@ -1,4 +1,4 @@
-package com.lumengaming.skillsaw.bungee.models;
+package com.lumengaming.skillsaw.models;
 
 import java.util.ArrayList;
 import java.util.HashSet;

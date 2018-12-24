@@ -5,11 +5,12 @@
  */
 package com.lumengaming.skillsaw;
 
-import com.lumengaming.skillsaw.bungee.utility.Constants;
+import com.lumengaming.skillsaw.utility.Constants;
 import com.lumengaming.skillsaw.listeners.SpigotCommandListener;
 import com.lumengaming.skillsaw.listeners.SpigotJoinListener;
 import com.lumengaming.skillsaw.bridge.SpigotMessageListener;
 import com.lumengaming.skillsaw.listeners.SpigotPlayerListener;
+import com.lumengaming.skillsaw.wrappers.IPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -61,6 +62,21 @@ public class SpigotMain extends JavaPlugin implements ISkillsaw{
     @Override
     public void runTask(Runnable runnable) {
         Bukkit.getScheduler().runTask(this, runnable);
+    }
+
+    @Override
+    public void playVillagerSound(IPlayer p) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void playLevelUpEffect(IPlayer p, String reputation_Level_Increased, String aCongratulations_Your_total2_Reputation_L) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void playLevelDownEffect(IPlayer p, String cYour_total_4Reputation_Levelc_has_decrea) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
 }

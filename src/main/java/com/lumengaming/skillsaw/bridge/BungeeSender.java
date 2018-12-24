@@ -11,9 +11,9 @@ import com.google.gson.Gson;
 import com.lumengaming.skillsaw.BungeeMain;
 import com.lumengaming.skillsaw.common.AsyncEmptyCallback;
 import com.lumengaming.skillsaw.common.AsyncCallback;
-import com.lumengaming.skillsaw.bungee.utility.BagMap;
-import com.lumengaming.skillsaw.bungee.utility.CText;
-import com.lumengaming.skillsaw.bungee.utility.Constants;
+import com.lumengaming.skillsaw.utility.BagMap;
+import com.lumengaming.skillsaw.utility.CText;
+import com.lumengaming.skillsaw.utility.Constants;
 import com.lumengaming.skillsaw.models.XLocation;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.md_5.bungee.BungeeTitle;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -158,10 +157,18 @@ public class BungeeSender implements Listener {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="CompositeEffect">
+    public void doTitle(ProxiedPlayer p,String titleText, String subTitle, String sendInChat) {
+        net.md_5.bungee.api.Title title = ProxyServer.getInstance().createTitle();
+        title.title(CText.legacy(titleText))
+            .subTitle(CText.legacy(subTitle))
+            .send(p);
+        if (sendInChat != null) p.sendMessage(CText.legacy(sendInChat));
+    }
+    
     public void doLevelUpEffect(ProxiedPlayer p,String subTitle, String sendInChat, AsyncCallback<Boolean> callback) {
         this.doCompositeEffect(p, CompositeEffectType.LevelUp, callback);
-        new BungeeTitle()
-            .title(new ComponentBuilder("Level-Up!").color(ChatColor.DARK_GREEN).create())
+        net.md_5.bungee.api.Title title = ProxyServer.getInstance().createTitle();
+        title.title(new ComponentBuilder("Level-Up!").color(ChatColor.DARK_GREEN).create())
             .subTitle(new ComponentBuilder(subTitle).color(ChatColor.GRAY).create())
             .send(p);
         if (sendInChat != null) p.sendMessage(CText.legacy(sendInChat));
@@ -169,13 +176,15 @@ public class BungeeSender implements Listener {
 
     public void doLevelDownEffect(ProxiedPlayer p, String subTitle, String sendInChat, AsyncCallback<Boolean> callback) {
         this.doCompositeEffect(p, CompositeEffectType.LevelDown, callback);
-        new BungeeTitle().title(CText.legacy("§4Level-Down")).subTitle(CText.legacy("§7"+subTitle)).send(p);
+        net.md_5.bungee.api.Title title = ProxyServer.getInstance().createTitle();
+        title.title(CText.legacy("§4Level-Down")).subTitle(CText.legacy("§7"+subTitle)).send(p);
         if (sendInChat != null) p.sendMessage(CText.legacy(sendInChat));
     }
 
-    public void doScoldEffect(ProxiedPlayer p, String title, String subTitle, AsyncCallback<Boolean> callback) {
+    public void doScoldEffect(ProxiedPlayer p, String titleText, String subTitle, AsyncCallback<Boolean> callback) {
         this.doCompositeEffect(p, CompositeEffectType.Scold, callback);
-        new BungeeTitle().title(CText.legacy("§4"+title)).subTitle(CText.legacy("§7"+subTitle)).send(p);
+        net.md_5.bungee.api.Title title = ProxyServer.getInstance().createTitle();
+        title.title(CText.legacy("§4"+titleText)).subTitle(CText.legacy("§7"+subTitle)).send(p);
     }
 
     public void doHmmmEffect(ProxiedPlayer p, AsyncCallback<Boolean> callback) {

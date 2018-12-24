@@ -5,7 +5,7 @@
  */
 package com.lumengaming.skillsaw.listeners;
 
-import com.lumengaming.skillsaw.bungee.utility.CText;
+import com.lumengaming.skillsaw.utility.CText;
 import com.lumengaming.skillsaw.SpigotMain;
 import com.lumengaming.skillsaw.Options;
 import java.util.ArrayList;
@@ -49,7 +49,6 @@ public class SpigotCommandListener implements Listener{
                     break;
                 }
             }
-            
             
             if (isMatch){
                 Player p = e.getPlayer();

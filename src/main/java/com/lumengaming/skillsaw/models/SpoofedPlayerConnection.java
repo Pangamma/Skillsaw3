@@ -1,4 +1,4 @@
-package com.lumengaming.skillsaw.bungee.models;
+package com.lumengaming.skillsaw.models;
 
 ///*
 // * To change this license header, choose License Headers in Project Properties.

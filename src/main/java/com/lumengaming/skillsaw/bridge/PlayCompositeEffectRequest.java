@@ -6,7 +6,7 @@
 package com.lumengaming.skillsaw.bridge;
 
 import com.google.common.io.ByteArrayDataOutput;
-import com.lumengaming.skillsaw.bungee.utility.Constants;
+import com.lumengaming.skillsaw.utility.Constants;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.UUID;

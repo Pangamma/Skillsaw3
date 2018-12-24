@@ -9,7 +9,7 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
 import com.lumengaming.skillsaw.SpigotMain;
-import com.lumengaming.skillsaw.bungee.utility.Constants;
+import com.lumengaming.skillsaw.utility.Constants;
 import com.lumengaming.skillsaw.models.XLocation;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;

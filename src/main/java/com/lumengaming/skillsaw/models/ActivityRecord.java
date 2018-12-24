@@ -1,4 +1,4 @@
-package com.lumengaming.skillsaw.bungee.models;
+package com.lumengaming.skillsaw.models;
 
 import java.util.Objects;
 import java.util.UUID;

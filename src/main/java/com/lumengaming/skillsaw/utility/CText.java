@@ -1,4 +1,4 @@
-package com.lumengaming.skillsaw.bungee.utility;
+package com.lumengaming.skillsaw.utility;
 
 
 import net.md_5.bungee.api.ChatColor;

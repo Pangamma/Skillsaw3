@@ -3,9 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.lumengaming.skillsaw.bungee.utility;
+package com.lumengaming.skillsaw.utility;
 
 import com.lumengaming.skillsaw.common.ICommandSender;
+import com.lumengaming.skillsaw.wrappers.IPlayer;
 import net.md_5.bungee.api.ChatColor;
 
 
@@ -135,11 +136,11 @@ public enum PERMISSION {
      * @param node
      * @return *
      */
-    public static boolean USER_HAS_PERMISSION(ICommandSender cs, PERMISSION node) {
+    public static boolean USER_HAS_PERMISSION(IPlayer cs, PERMISSION node) {
         return USER_HAS_PERMISSION(cs, node, true);
     }
 
-    public static boolean USER_HAS_PERMISSION(ICommandSender cs, PERMISSION node, boolean tellIfLacking) {
+    public static boolean USER_HAS_PERMISSION(IPlayer cs, PERMISSION node, boolean tellIfLacking) {
 
         if (cs.isOp()) {
             return true;

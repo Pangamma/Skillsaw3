@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.lumengaming.skillsaw.bungee.models;
+package com.lumengaming.skillsaw.models;
 
-import com.lumengaming.skillsaw.bungee.utility.CText;
+import com.lumengaming.skillsaw.utility.CText;
 import com.lumengaming.skillsaw.common.ICommandSender;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;

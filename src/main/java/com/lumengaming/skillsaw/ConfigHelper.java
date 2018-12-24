@@ -27,7 +27,7 @@ public class ConfigHelper {
             ;
     
     public static String LoadJson(String fileName){
-        File file = new File(DATA_FOLDER, "plugin-info.json");
+        File file = new File(DATA_FOLDER, fileName);
         Path path = file.toPath();
         Charset cs = Charset.defaultCharset();
         if (Charset.isSupported("UTF-16")){
@@ -50,7 +50,7 @@ public class ConfigHelper {
     
     public static boolean SaveJson(Object o, String fileName){
         try {
-            File file = new File(DATA_FOLDER, "plugin-info.json");
+            File file = new File(DATA_FOLDER, fileName);
             Path path = file.toPath();
             
             Charset cs = Charset.defaultCharset();

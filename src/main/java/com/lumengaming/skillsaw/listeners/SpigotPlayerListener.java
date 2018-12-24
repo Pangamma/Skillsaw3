@@ -1,7 +1,7 @@
 package com.lumengaming.skillsaw.listeners;
 
 import com.lumengaming.skillsaw.SpigotMain;
-import com.lumengaming.skillsaw.bungee.utility.Constants;
+import com.lumengaming.skillsaw.utility.Constants;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Firework;
 import org.bukkit.event.EventHandler;
@@ -21,7 +21,7 @@ public class SpigotPlayerListener implements Listener{
         if (e.getDamager() == null) return;
         if (e.getCause() != DamageCause.ENTITY_EXPLOSION) return;
         if (e.getDamager().getCustomName().equals(Constants.CH_CompositeEffect)){
-            e.setCancelled(true);
+            e.setCancelled(true); // cancel hurt from firework effects
         }
     }
 }

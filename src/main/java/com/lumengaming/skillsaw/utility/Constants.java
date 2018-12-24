@@ -43,7 +43,7 @@ public class Constants {
      * §2=§e§l SkillSaw - * Start with a div line above this and end with a div
      * line below it.
      */
-    public static final String C_DIV_TITLE_PREFIX = "§2=§e§l SkillSaw - ";
+    public static final String C_DIV_TITLE_PREFIX = "§2=§e§l SkillSaw3 - ";
 
     /**
      * §2=§e§l SkillSaw - * Start with a div line above this and end with a div

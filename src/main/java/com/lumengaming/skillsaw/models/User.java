@@ -103,6 +103,7 @@ public class User {
         this.isInstructor = orig.isInstructor;
         this.isStaff = orig.isStaff;
         this.activityScore = orig.activityScore;
+        this.p = orig.p;
     }
 
     /**
@@ -446,6 +447,13 @@ public class User {
         }
         
         if (oLevel < this.LEVEL) {
+            if (p() == null){
+                if (!p.isValid()){
+                    plugin.broadcast("ZZZZ0");
+                }else{
+                    plugin.broadcast("ZZZZ1");
+                }
+            }
             plugin.playLevelUpEffect(p(), "Reputation Level Increased", "§aCongratulations! Your total§2 Reputation Level§a has increased!");
         } else if (oLevel > this.LEVEL) {
             plugin.playLevelDownEffect(p(), "§cYour total §4Reputation Level§c has decreased.");
@@ -568,6 +576,18 @@ public class User {
         p.sendMessage(Constants.C_MENU_CONTENT + "Staff Rep = §e" + usr.getStaffRep());
         p.sendMessage(Constants.C_MENU_CONTENT + "Total Rep Level = §e" + usr.getRepLevel());
         p.sendMessage(Constants.C_MENU_CONTENT + "Repping Power = §e" + usr.getRepPower());
+        
+        {
+            int score = usr.getActivityScore();
+            String scoreStr = "";
+            if (score > 350) scoreStr = "§a350+";
+            else if (score > 100) scoreStr = "§a"+score;
+            else if (score > 70) scoreStr = "§2"+score;
+            else if (score >= 0 && (usr.isStaff || usr.isInstructor)) scoreStr = "§c"+score;
+            else scoreStr = "§e"+score;
+            
+            p.sendMessage(Constants.C_MENU_CONTENT + "Activity Score = " + scoreStr);
+        }
 
         double upperLim = User.getMinimumRepRequiredToBeAtLevel(usr.getRepLevel() + 1);
         double lowerLim = User.getMinimumRepRequiredToBeAtLevel(usr.getRepLevel());
@@ -694,8 +714,10 @@ public class User {
     }
 
     private IPlayer p() {
-        if (p != null && p.isValid()) return this.p;
-        else return null;
+        if ((p == null || !this.p.isValid()) && this.uuid != null){
+            this.p = plugin.getPlayer(this.uuid);
+        }
+        return this.p;
     }
 
     public UUID getUuid() {

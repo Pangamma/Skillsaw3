@@ -11,7 +11,10 @@ import com.lumengaming.skillsaw.listeners.SpigotJoinListener;
 import com.lumengaming.skillsaw.bridge.SpigotMessageListener;
 import com.lumengaming.skillsaw.listeners.SpigotPlayerListener;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
+import com.lumengaming.skillsaw.wrappers.SpigotPlayer;
+import java.util.UUID;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -77,6 +80,19 @@ public class SpigotMain extends JavaPlugin implements ISkillsaw{
     @Override
     public void playLevelDownEffect(IPlayer p, String cYour_total_4Reputation_Levelc_has_decrea) {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void broadcast(String legacyText) {
+        Bukkit.broadcastMessage(legacyText);
+    }
+
+    @Override
+    public IPlayer getPlayer(UUID uuid) {
+        if (uuid == null) return null;
+        Player p = Bukkit.getPlayer(uuid);
+        if (p == null) return null;
+        return new SpigotPlayer(p);
     }
     
 }

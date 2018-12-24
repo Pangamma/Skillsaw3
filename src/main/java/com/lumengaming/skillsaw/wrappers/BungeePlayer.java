@@ -5,6 +5,7 @@
  */
 package com.lumengaming.skillsaw.wrappers;
 
+import com.lumengaming.skillsaw.utility.BungeeHelper;
 import com.lumengaming.skillsaw.utility.CText;
 import java.util.UUID;
 import net.md_5.bungee.api.CommandSender;

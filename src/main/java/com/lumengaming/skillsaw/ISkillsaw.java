@@ -6,6 +6,7 @@
 package com.lumengaming.skillsaw;
 
 import com.lumengaming.skillsaw.wrappers.IPlayer;
+import java.util.UUID;
 
 
 /**
@@ -22,4 +23,8 @@ public interface ISkillsaw {
     public void playLevelUpEffect(IPlayer p, String reputation_Level_Increased, String aCongratulations_Your_total2_Reputation_L);
 
     public void playLevelDownEffect(IPlayer p, String cYour_total_4Reputation_Levelc_has_decrea);
+    
+    public void broadcast(String legacyText);
+
+    public IPlayer getPlayer(UUID uuid);
 }

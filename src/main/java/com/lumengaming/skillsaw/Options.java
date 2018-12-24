@@ -6,11 +6,12 @@
 package com.lumengaming.skillsaw;
 
 import com.google.gson.Gson;
+import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.lumengaming.skillsaw.models.SkillType;
 import com.lumengaming.skillsaw.models.User;
+import com.lumengaming.skillsaw.utility.ColorCodeAdapter;
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -171,21 +172,27 @@ public class Options
     
     public static class StringOptions{
         @SerializedName("repped-natural-issuer")
+        @JsonAdapter(ColorCodeAdapter.class)
         public String nRepIssuerMessage_012 = "&aGave %amount% rep to %target% for :&2 %reason%";
         
         @SerializedName("repped-natural-target")
+        @JsonAdapter(ColorCodeAdapter.class)
         public String nRepTargetMessage_012 = "&a%issuer% just gave you %amount% rep. Reason: %reason%";
         
         @SerializedName("repped-staff-issuer")
+        @JsonAdapter(ColorCodeAdapter.class)
         public String sRepIssuerMessage_012 = "&aGave %amount% s-rep to %target% for :&2 %reason%";
         
         @SerializedName("repped-staff-target")
+        @JsonAdapter(ColorCodeAdapter.class)
         public String sRepTargetMessage_012 = "&a%issuer% just gave you %amount% staff rep. Reason: %reason%";
         
         @SerializedName("repped-fix-issuer")
+        @JsonAdapter(ColorCodeAdapter.class)
         public String xRepIssuerMessage_012 = "&aGave %amount% x-rep to %target% for :&2 %reason%";
         
         @SerializedName("repped-fix-target")
+        @JsonAdapter(ColorCodeAdapter.class)
         public String xRepTargetMessage_01 = "&a%issuer% just fixed your rep. Reason: %reason%";
         
         /** Replaces isuer, target, amount, and reason variables with the inputs. **/

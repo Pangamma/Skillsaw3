@@ -6,6 +6,7 @@
 package com.lumengaming.skillsaw.utility;
 
 import java.util.concurrent.TimeUnit;
+import net.md_5.bungee.api.ChatColor;
 
 /**
  *
@@ -43,5 +44,28 @@ public class SharedUtility {
         s += timeParts[2] + "m ";
         s += timeParts[3] + "s";
         return s;
+    }
+    
+    
+    // & --> §
+    public static String enableColorCodes(String input){
+        String output = input;
+        String colorCodes = "abcdef0123456789rlonmk";
+        
+        for(char c : colorCodes.toCharArray()){
+            output = output.replace("&"+c, "§"+c);
+        }
+        return output;
+    }
+    
+    // § --> &
+    public static String disableColorCodes(String input){
+        String output = input;
+        String colorCodes = "abcdef0123456789rlonmk";
+        
+        for(char c : colorCodes.toCharArray()){
+            output = output.replace("§"+c, "&"+c);
+        }
+        return output;
     }
 }

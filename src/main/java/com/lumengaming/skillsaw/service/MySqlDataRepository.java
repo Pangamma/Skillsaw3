@@ -630,6 +630,109 @@ public class MySqlDataRepository implements IDataRepository {
         }
         return output;
     }
+    
+    
+    
+    @Override
+    public void getActivityScore(UUID uuid, boolean excludeAfk) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void logActivity(UUID uuid, String serverName, boolean isAfk) {
+        if (connect() && !isReadOnly){
+			try{
+				String q = "INSERT INTO `skillsaw`.`activity_log` (`user_id`, `uuid`, `server`,`is_afk`) VALUES (IFNULL((SELECT `user_id` FROM `skillsaw_users` WHERE `uuid` = ?),-1),?, ?,?);";
+				PreparedStatement ps = connection.prepareStatement(q);
+				int i = 1;
+				ps.setString(i++, uuid.toString());
+				ps.setString(i++, uuid.toString());
+				ps.setString(i++, serverName);
+				ps.setInt(i++, isAfk ? 1 : 0);
+				ps.execute();
+			}
+			catch (SQLException ex){
+				Logger.getLogger(MySqlDataRepository.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		}
+    }
+
+    @Override
+    public void logChatMessage(User user, String serverName, String message, boolean isCommand) {
+        
+        if (connect() && !isReadOnly){
+			try{
+				String q = "INSERT INTO `messages` (`server`, `username`,`uuid`, `message`,`is_command`) VALUES (?,?,?,?,?);";
+				PreparedStatement ps = connection.prepareStatement(q);
+				int i = 1;
+				ps.setString(i++, serverName);
+				ps.setString(i++, user.getName());
+				ps.setString(i++, user.getUniqueId().toString());
+				ps.setString(i++, message);
+				ps.setInt(i++, isCommand ? 1 : 0);
+				ps.execute();
+			}
+			catch (SQLException ex){
+				Logger.getLogger(MySqlDataRepository.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		}
+    }
+
+    @Override
+    public void logPromotion(User issuer, User target, SkillType st, int oLevel, int nLevel, XLocation l) {
+    
+        String q = "INSERT INTO `promo_log` (`skill_type`,  `issuer_id`,  `target_id`,  `issuer_name`,  `target_name`,  `olevel`,`nlevel`,  `location`) "
+                + "VALUES (?,IFNULL((SELECT `user_id` FROM `skillsaw_users` WHERE `uuid` = ?),-1),IFNULL((SELECT `user_id` FROM `skillsaw_users` WHERE `uuid` = ?),-1),?,?,?,?,?);";
+        if (connect() && !isReadOnly) {
+            try {
+                PreparedStatement ps = connection.prepareStatement(q);
+                int i = 1;
+                ps.setString(i++, st.getKey());
+                ps.setString(i++, issuer.getUuid().toString());
+                ps.setString(i++, target.getUuid().toString());
+                ps.setString(i++, issuer.getName());
+                ps.setString(i++, target.getName());
+                ps.setInt(i++, oLevel);
+                ps.setInt(i++, nLevel);
+                ps.setString(i++, l.toTeleportCommand());
+                ps.executeUpdate();
+            } catch (SQLException ex) {
+                Logger.getLogger(MySqlDataRepository.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            System.out.println("Failed to connect to the DB. Could not log rep.");
+        }
+    }
+
+    HashMap<UUID, Integer> getUpdatedActivityScores(Set<UUID> set) {
+        HashMap<UUID, Integer> map = new HashMap<>();
+        if (set == null || set.isEmpty()) return new HashMap<>();
+        List<String> qMarks = set.stream().map(x-> "?").collect(Collectors.toList());
+        String q = "SELECT `uuid`, `activity_score` FROM skillsaw_users WHERE `uuid` IN ("+String.join(",", qMarks)+")";
+        if (connect() && !isReadOnly) {
+            try {
+                PreparedStatement ps = connection.prepareStatement(q);
+                int i = 1;
+                for(UUID uuid : set){
+                    ps.setString(i++, uuid.toString());
+                }
+                ResultSet rs = ps.executeQuery();
+                while(rs.next()){
+                    String uuidStr = rs.getString("uuid");
+                    UUID uuid = UUID.fromString(uuidStr);
+                    int cnt = rs.getInt("activity_score");
+                    map.put(uuid, cnt);
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(MySqlDataRepository.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            System.out.println("Failed to connect to the DB. Could not update counts");
+        }
+        return map;
+    }
+
+
 
     //<editor-fold defaultstate="collapsed" desc="Script RUnner">
     /*
@@ -679,55 +782,6 @@ public class MySqlDataRepository implements IDataRepository {
         }
     }
     
-    @Override
-    public void getActivityScore(UUID uuid, boolean excludeAfk) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void logActivity(UUID uuid, String serverName, boolean isAfk) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void logChatMessage(User user, String serverName, String message, boolean isCommand) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void logPromotion(User suer, User target, SkillType st, int oLevel, int nLevel, XLocation location) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    HashMap<UUID, Integer> getUpdatedActivityScores(Set<UUID> set) {
-        HashMap<UUID, Integer> map = new HashMap<>();
-        if (set == null || set.isEmpty()) return new HashMap<>();
-        List<String> qMarks = set.stream().map(x-> "?").collect(Collectors.toList());
-        String q = "SELECT `uuid`, `activity_score` FROM skillsaw_users WHERE `uuid` IN ("+String.join(",", qMarks)+")";
-        if (connect() && !isReadOnly) {
-            try {
-                PreparedStatement ps = connection.prepareStatement(q);
-                int i = 1;
-                for(UUID uuid : set){
-                    ps.setString(i++, uuid.toString());
-                }
-                ResultSet rs = ps.executeQuery();
-                while(rs.next()){
-                    String uuidStr = rs.getString("uuid");
-                    UUID uuid = UUID.fromString(uuidStr);
-                    int cnt = rs.getInt("activity_score");
-                    map.put(uuid, cnt);
-                }
-            } catch (SQLException ex) {
-                Logger.getLogger(MySqlDataRepository.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } else {
-            System.out.println("Failed to connect to the DB. Could not update counts");
-        }
-        return map;
-    }
-
-
     /**
      * Tool to run database scripts
      */

@@ -14,6 +14,7 @@ import com.lumengaming.skillsaw.service.MySqlDataRepository;
 import com.lumengaming.skillsaw.utility.CText;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import net.md_5.bungee.api.ProxyServer;
@@ -110,11 +111,29 @@ public class BungeeMain extends Plugin implements ISkillsaw{
 
     @Override
     public void playLevelDownEffect(IPlayer p, String subtitle) {
+        if (p == null) return;
         BungeePlayer bp = (BungeePlayer) p;
-        this.getSender().doLevelDownEffect(bp.p(), subtitle,  subtitle, (b) -> {});
+        this.getSender().doLevelDownEffect(
+            bp.p(),
+            subtitle, 
+            subtitle, 
+            (b) -> {});
     }
 
     public DataService getService() {
         return this.getDataService();
+    }
+
+    @Override
+    public void broadcast(String legacyText) {
+        this.getProxy().broadcast(CText.legacy(legacyText));
+    }
+
+    @Override
+    public IPlayer getPlayer(UUID uuid) {
+        if (uuid == null) return null;
+        ProxiedPlayer player = this.getProxy().getPlayer(uuid);
+        if (player == null) return null;
+        return new BungeePlayer(player);
     }
 }

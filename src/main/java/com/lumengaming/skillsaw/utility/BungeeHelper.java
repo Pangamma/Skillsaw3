@@ -24,4 +24,9 @@ public class BungeeHelper extends AbstractHelper{
         }
         return null;
     }
+    
+    
+    public static void broadcast(String legacyText) {
+        ProxyServer.getInstance().broadcast(CText.legacy(legacyText));
+    }
 }

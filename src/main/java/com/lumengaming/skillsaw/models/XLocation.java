@@ -5,6 +5,9 @@
  */
 package com.lumengaming.skillsaw.models;
 
+import com.google.gson.Gson;
+import java.text.MessageFormat;
+
 /**
  *
  * @author prota
@@ -22,8 +25,20 @@ public class XLocation {
     
     @Override
     public String toString() {
-        return Server + " " + World + " (" + X + ", " + Y + ", " + Z
-            + ") Yaw=" + Math.round(Yaw)
-            + ", Pitch=" + Math.round(Pitch);
+        return "s:"+Server + " w:" + World + " xyz:(" + X + ", " + Y + ", " + Z
+            + ") yaw:" + Math.round(Yaw)
+            + ", pitch:" + Math.round(Pitch);
+    }   
+    
+    public String toJson() {
+        Gson gson = new Gson();
+        String json = gson.toJson(this);
+        return json;
+    }
+    
+    public String toTeleportCommand() 
+    {
+        String msg = MessageFormat.format("s:{0} w:{1} {2} {3} {4} yaw:{5} pitch:{6}", Server, World, X, Y, Z, Yaw, Pitch);
+        return msg;
     }
 }

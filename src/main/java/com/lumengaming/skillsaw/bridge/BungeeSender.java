@@ -198,14 +198,10 @@ public class BungeeSender implements Listener {
     private void doCompositeEffect(ProxiedPlayer p, CompositeEffectType t, AsyncCallback<Boolean> c){
         try {
             long key = this.map.push(c);
-            ProxyServer.getInstance().broadcast("A1");
             byte[] data = new PlayCompositeEffectRequest(key, p.getUniqueId(), t).ToBytes();
             p.sendData(Constants.CH_RootChannel, data);
-            
-            ProxyServer.getInstance().broadcast("A2");
             this.map.pop(key);
             c.doCallback(true);
-            ProxyServer.getInstance().broadcast("A3");
         } catch (IOException ex) {
             Logger.getLogger(BungeeSender.class.getName()).log(Level.SEVERE, null, ex);
             c.doCallback(false);

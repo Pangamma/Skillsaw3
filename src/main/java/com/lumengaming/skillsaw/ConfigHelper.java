@@ -26,13 +26,16 @@ public class ConfigHelper {
        // Bukkit.getServer().getPluginManager().getPlugin("Skillsaw3").getDataFolder()
             ;
     
-    public static String LoadJson(String fileName){
-        File file = new File(DATA_FOLDER, fileName);
-        Path path = file.toPath();
+    private static Charset getCharset(){
         Charset cs = Charset.defaultCharset();
         if (Charset.isSupported("UTF-16")){
             cs = Charset.forName("UTF-16");
         }
+        return cs;
+    }
+    public static String LoadJson(String fileName){
+        File file = new File(DATA_FOLDER, fileName);
+        Path path = file.toPath();
         
         String json = null;
         try {
@@ -41,7 +44,7 @@ public class ConfigHelper {
             }
             
             byte[] data = Files.readAllBytes(path);
-            json = new String(data, cs);
+            json = new String(data, getCharset());
         } catch (IOException ex) {
             Logger.getLogger(ConfigHelper.class.getName()).log(Level.SEVERE, "Failed to load config '"+fileName+"'", ex);
         }
@@ -53,17 +56,12 @@ public class ConfigHelper {
             File file = new File(DATA_FOLDER, fileName);
             Path path = file.toPath();
             
-            Charset cs = Charset.defaultCharset();
-            if (Charset.isSupported("UTF-16")){
-                cs = Charset.forName("UTF-16");
-            }
-            
             if (!file.exists()){
                 file.createNewFile();
             }
             
             String json = new GsonBuilder().setPrettyPrinting().create().toJson(o, o.getClass());
-            Files.write(path, json.getBytes(cs), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+            Files.write(path, json.getBytes(getCharset()), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
             return true;
         } catch (IOException ex) {
             Logger.getLogger(ConfigHelper.class.getName()).log(Level.SEVERE, "Failed to save config '"+fileName+"'", ex);

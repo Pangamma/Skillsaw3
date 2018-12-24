@@ -8,6 +8,7 @@ package com.lumengaming.skillsaw;
 import com.lumengaming.skillsaw.Options.MysqlOptions;
 import com.lumengaming.skillsaw.bridge.BungeeSender;
 import com.lumengaming.skillsaw.commands.*;
+import com.lumengaming.skillsaw.listeners.BungeeChatListener;
 import com.lumengaming.skillsaw.listeners.BungeePlayerActivityListener;
 import com.lumengaming.skillsaw.service.DataService;
 import com.lumengaming.skillsaw.service.MySqlDataRepository;
@@ -61,7 +62,9 @@ public class BungeeMain extends Plugin implements ISkillsaw{
         this.activityListener = new BungeePlayerActivityListener(this);
         this.activityListener.onEnable();
 		this.getProxy().getPluginManager().registerListener(this, this.activityListener);
+		this.getProxy().getPluginManager().registerListener(this, new BungeeChatListener(this));
         if (Options.Get().RepSystem.IsEnabled){
+            this.getProxy().getPluginManager().registerCommand(this, new NoteCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new NaturalRepCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new StaffRepCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new XRepCommand(this));

@@ -500,6 +500,36 @@ public class DataService {
 	 * @param useCache
 	 * @return *
 	 */
+	public void getOfflineUserByNameOrDisplayName(String username, AsyncCallback<User> callback) {
+        User bestMatch = this.getUserBestOnlineMatch(username);
+        if (bestMatch != null){
+            callback.doCallback(bestMatch);
+        }else{
+            this.getOfflineUsers(username, false, (ArrayList<User> users) -> {
+                int shortestLen = Integer.MAX_VALUE;
+                User tmp = null;
+                for (int i = 0; i < users.size(); i++) {
+                    User u = users.get(i);
+                    if (u.getName().length() < shortestLen) {
+                        shortestLen = u.getName().length();
+                        tmp = u;
+                    }
+                }
+                callback.doCallback(tmp);
+            });
+        }
+	}
+
+	/**
+	 * IO heavy operation. Loads the user from the database. Run this
+	 * asynchronously. if useCache is true, users can be loaded from the online
+	 * users hashmap before being taken from the database.
+	 *
+	 * @param username
+	 * @param callback
+	 * @param useCache
+	 * @return *
+	 */
 	public void getOfflineUsers(String username, boolean useCache, AsyncManyCallback<User> callback) {
 		if (useCache) {
 			synchronized (this.onlineUsers) {

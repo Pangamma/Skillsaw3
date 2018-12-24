@@ -5,7 +5,7 @@ import com.lumengaming.skillsaw.Options;
 import com.lumengaming.skillsaw.models.RepType;
 import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.utility.Constants;
-import com.lumengaming.skillsaw.utility.PERMISSION;
+import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
 import org.bukkit.command.CommandSender;
 
@@ -24,7 +24,7 @@ public class XRepCommand extends IRepCommand{
 	@Override
 	protected boolean doRep(IPlayer cs, final User target, final double amount, final String reason){
 		// Permissions?
-		if (PERMISSION.USER_HAS_PERMISSION(cs, PERMISSION. REP_FIX)){
+		if (Permissions.USER_HAS_PERMISSION(cs, Permissions. REP_FIX)){
 			
             Options.StringOptions strings = Options.Get().Strings;
 			// Check sender is valid.
@@ -48,7 +48,7 @@ public class XRepCommand extends IRepCommand{
 			dh.logRep(issuer,target,amount, RepType.XRep, reason);
 			
 		}else{
-			cs.sendMessage(PERMISSION.TELL_USER_PERMISSION_THEY_LACK(PERMISSION.REP_FIX));
+			cs.sendMessage(Permissions.TELL_USER_PERMISSION_THEY_LACK(Permissions.REP_FIX));
 			return false;
 		}
 		return true;

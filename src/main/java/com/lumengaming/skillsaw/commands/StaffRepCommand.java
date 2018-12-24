@@ -5,7 +5,7 @@ import com.lumengaming.skillsaw.Options;
 import com.lumengaming.skillsaw.models.RepType;
 import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.utility.Constants;
-import com.lumengaming.skillsaw.utility.PERMISSION;
+import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
 import org.bukkit.command.CommandSender;
 
@@ -28,7 +28,7 @@ public class StaffRepCommand extends IRepCommand{
 	@Override
 	protected boolean doRep(IPlayer cs, final User target, final double amount, final String reason){
 		// Permissions?
-		if (PERMISSION.USER_HAS_PERMISSION(cs, PERMISSION.REP_STAFF, true)){
+		if (Permissions.USER_HAS_PERMISSION(cs, Permissions.REP_STAFF, true)){
 			
 			// Check sender is valid.
 			final User issuer = dh.getUserBestOnlineMatch(cs.getName());

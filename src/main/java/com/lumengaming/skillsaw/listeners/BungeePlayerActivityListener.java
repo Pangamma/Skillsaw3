@@ -15,13 +15,14 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.event.ChatEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 import net.md_5.bungee.event.EventHandler;
 
 /**
- *
+ * TODO: Split into multiple classes for each purpose.
  * @author Taylor
  */
 public class BungeePlayerActivityListener implements Listener {
@@ -42,14 +43,14 @@ public class BungeePlayerActivityListener implements Listener {
         this.activityLogTask = ProxyServer.getInstance().getScheduler().schedule(plugin, () -> {
             synchronized (records) {
                 for (ActivityRecord record : records) {
-                    plugin.getService().logActivity(record.getPlayerUUID(), record.getServerName(), record.isAfk());
+                    plugin.getApi().logActivity(record.getPlayerUUID(), record.getServerName(), record.isAfk());
                 }
                 records.clear();
                 for (ProxiedPlayer p : ProxyServer.getInstance().getPlayers()) {
                     records.add(new ActivityRecord(p.getUniqueId(), p.getServer().getInfo().getName()));
                 }
             }
-            plugin.getService().updateActivityLevels(() -> {});
+            plugin.getApi().updateActivityLevels(() -> {});
         }, 1, 12, TimeUnit.MINUTES);
     }
 
@@ -64,12 +65,17 @@ public class BungeePlayerActivityListener implements Listener {
         }
     }
     
-    @EventHandler
-    public void onAnyPlayerMessage(final net.md_5.bungee.api.event.ChatEvent e) {
-        if (!(e.getSender() instanceof ProxiedPlayer)) {
-            return;
-        }
+    @EventHandler(priority = -32)
+    public void onAnyPlayerMessage(final ChatEvent e) {
+        
+		if (!(e.getSender() instanceof ProxiedPlayer)){
+			return;
+		}
+        
         ProxiedPlayer p = (ProxiedPlayer) e.getSender();
+        
+        this.plugin.getApi().logMessage(p.getName(),p.getUniqueId(),p.getServer().getInfo().getName(), e.getMessage(), e.isCommand());
+        
         synchronized (records) {
             if (e.getMessage().equals("/lumencloud debug")) {
                 p.sendMessage("recordSize:" + records.size());
@@ -104,7 +110,7 @@ public class BungeePlayerActivityListener implements Listener {
                     }
                 }
             }
-            plugin.getService().logoutUser(new BungeePlayer(p));
+            plugin.getApi().logoutUser(new BungeePlayer(p));
         }
     }
 
@@ -140,7 +146,7 @@ public class BungeePlayerActivityListener implements Listener {
                 if ("Joining->".equals(this.userStates.get(p.getUniqueId()))) {
                     this.userStates.put(p.getUniqueId(), "joined");
 					
-					plugin.getService().getOfflineUser(p.getUniqueId(), true, (u) -> {
+					plugin.getApi().getOfflineUser(p.getUniqueId(), true, (u) -> {
                         boolean hasPlayed = u != null && (u.getFirstPlayed() + 20000 < System.currentTimeMillis());                      
                         String msg = "§a" + p.getName() + " §ajoined §athe §agame §afor §athe §afirst §atime! §a("+p.getServer().getInfo().getName()+")";
 

@@ -165,19 +165,21 @@ public class BungeeSender implements Listener {
         if (sendInChat != null) p.sendMessage(CText.legacy(sendInChat));
     }
     
-    public void doLevelUpEffect(ProxiedPlayer p,String subTitle, String sendInChat, AsyncCallback<Boolean> callback) {
+    public void doLevelUpEffect(ProxiedPlayer p, String titleText, String subTitle, String sendInChat, AsyncCallback<Boolean> callback) {
         this.doCompositeEffect(p, CompositeEffectType.LevelUp, callback);
         net.md_5.bungee.api.Title title = ProxyServer.getInstance().createTitle();
-        title.title(new ComponentBuilder("Level-Up!").color(ChatColor.DARK_GREEN).create())
+        title.title(titleText != null ? CText.legacy(titleText) : new ComponentBuilder("Level-Up!").color(ChatColor.DARK_GREEN).create())
             .subTitle(new ComponentBuilder(subTitle).color(ChatColor.GRAY).create())
             .send(p);
         if (sendInChat != null) p.sendMessage(CText.legacy(sendInChat));
     }
 
-    public void doLevelDownEffect(ProxiedPlayer p, String subTitle, String sendInChat, AsyncCallback<Boolean> callback) {
+    public void doLevelDownEffect(ProxiedPlayer p, String titleText, String subTitle, String sendInChat, AsyncCallback<Boolean> callback) {
         this.doCompositeEffect(p, CompositeEffectType.LevelDown, callback);
         net.md_5.bungee.api.Title title = ProxyServer.getInstance().createTitle();
-        title.title(CText.legacy("§4Level-Down")).subTitle(CText.legacy("§7"+subTitle)).send(p);
+        title
+            .title(titleText != null ? CText.legacy(titleText) : CText.legacy("§4Level-Down"))
+            .subTitle(CText.legacy("§7"+subTitle)).send(p);
         if (sendInChat != null) p.sendMessage(CText.legacy(sendInChat));
     }
 

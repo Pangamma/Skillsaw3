@@ -14,17 +14,13 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.md_5.bungee.api.ProxyServer;
 
 /**
  *
  * @author prota
  */
 public class ConfigHelper {
-    public static File DATA_FOLDER = 
-        ProxyServer.getInstance().getPluginManager().getPlugin("Skillsaw3").getDataFolder()
-       // Bukkit.getServer().getPluginManager().getPlugin("Skillsaw3").getDataFolder()
-            ;
+    public static File DATA_FOLDER;
     
     private static Charset getCharset(){
         Charset cs = Charset.defaultCharset();

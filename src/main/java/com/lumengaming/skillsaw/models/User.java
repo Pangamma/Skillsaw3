@@ -52,6 +52,7 @@ public class User {
     private CopyOnWriteArraySet<String> ignored = new CopyOnWriteArraySet<>();
     private IPlayer p;
     private int activityScore = 0;
+    private UUID lastWhisperedUuid;
 
     /**
      * Use only for creating a new default user object when one can't be pulled
@@ -173,6 +174,10 @@ public class User {
         return new ArrayList<Title>(this.customTitles);
     }
 
+    /**
+     * @return
+     * @deprecated Replace with "getCurrentTitle"
+     */
     @Deprecated
     public synchronized Title getTitle() {
         return this.title;
@@ -541,7 +546,7 @@ public class User {
 
     public void showStatisticsTo(IPlayer p) {
         User usr = this;
-        boolean isChatEnabled =  Options.Get().IsChatEnabled;
+        boolean isChatEnabled =  Options.Get().ChatSystem.IsEnabled;
 
         Calendar lPlayed = Calendar.getInstance();
         lPlayed.setTimeInMillis(usr.getLastPlayed());
@@ -580,13 +585,14 @@ public class User {
         {
             int score = usr.getActivityScore();
             String scoreStr = "";
-            if (score > 350) scoreStr = "§a350+";
-            else if (score > 100) scoreStr = "§a"+score;
-            else if (score > 70) scoreStr = "§2"+score;
+            if (score > 350) scoreStr = "§2350+";
+            else if (score > 100) scoreStr = "§2"+score;
+            else if (score > 70) scoreStr = "§a"+score;
             else if (score >= 0 && (usr.isStaff || usr.isInstructor)) scoreStr = "§c"+score;
             else scoreStr = "§e"+score;
-            
-            p.sendMessage(Constants.C_MENU_CONTENT + "Activity Score = " + scoreStr);
+            BaseComponent[] legacy = CText.legacy(Constants.C_MENU_CONTENT + "Activity Score = " + scoreStr);
+            CText.applyEvent(legacy, new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, score+""));
+            p.sendMessage(legacy);
         }
 
         double upperLim = User.getMinimumRepRequiredToBeAtLevel(usr.getRepLevel() + 1);
@@ -713,11 +719,18 @@ public class User {
         return "notYetSupported.";
     }
 
-    private IPlayer p() {
+    public IPlayer p() {
         if ((p == null || !this.p.isValid()) && this.uuid != null){
             this.p = plugin.getPlayer(this.uuid);
         }
         return this.p;
+    }
+    
+    /** You will need to cast it to ProxiedPlayer or Player or CommandSender. **/
+    public Object getRawPlayer() {
+        IPlayer pl = this.p();
+        if (pl != null) return pl.getRaw();
+        return null;
     }
 
     public UUID getUuid() {
@@ -729,6 +742,14 @@ public class User {
     }
     public void setActivityScore(int score) {
         this.activityScore = score;
+    }
+
+    public void setLastWhispered(UUID uniqueId) {
+        this.lastWhisperedUuid = uniqueId;
+    }
+    
+    public UUID getLastWhispered() {
+        return this.lastWhisperedUuid;
     }
 
 }

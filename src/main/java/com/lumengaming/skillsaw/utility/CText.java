@@ -20,6 +20,11 @@ public class CText{
         return TextComponent.toLegacyText(orig);
     }
     
+	public static BaseComponent[] stripColors(BaseComponent[] orig){
+        String txt = TextComponent.toPlainText(orig);
+        return legacy(txt);
+    }
+    
     /** Merges two arrays of base components.
      * @param o1
      * @param o2

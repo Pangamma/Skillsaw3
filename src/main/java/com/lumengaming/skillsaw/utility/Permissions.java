@@ -12,7 +12,7 @@ import net.md_5.bungee.api.ChatColor;
 
 //<editor-fold defaultstate="collapsed" desc="permissions">
 
-public enum PERMISSION {
+public enum Permissions {
 
     ALL("Skillsaw.*"),
     CHANNEL_ALL("Skillsaw.chat.*"),
@@ -95,12 +95,12 @@ public enum PERMISSION {
     TITLE_SET_SELF("Skillsaw.title.set.self"),
     TITLE_SET_OTHERS("Skillsaw.title.set.others"),
     TITLE_EDIT_ANY("SkillSaw.title.edit.*"),
-    TITLE_EDIT_SPECIFIC("SkillSaw.title.edit"),
+    CUSTOM_TITLES("Skillsaw.customtitles"),
     VIEWLOGS_STAFF_REP("SkillSaw.viewlogs.staffrep"),
     VIEWLOGS_NATURAL_REP("SkillSaw.viewlogs.naturalrep"),
     VIEWLOGS_NOTE("SkillSaw.viewlogs.note"),
-    VIEWLOGS_REP_FIX("SkillSaw.viewlogs.xrep"),
-    CUSTOM_TITLES("Skillsaw.customtitles");
+    VIEWLOGS_REP_FIX("SkillSaw.viewlogs.xrep")
+    ;
 
     //<editor-fold defaultstate="collapsed" desc="methods">
     public String node = "SkillSaw.*";
@@ -113,7 +113,7 @@ public enum PERMISSION {
         return node;
     }
 
-    private PERMISSION(String node) {
+    private Permissions(String node) {
         this.node = node;
     }
 
@@ -121,7 +121,7 @@ public enum PERMISSION {
         return ChatColor.RED + "Sorry, it seems that you need to have a total rep level of " + lvl + " or higher to be able to use this command.";
     }
 
-    public static String TELL_USER_PERMISSION_THEY_LACK(PERMISSION node) {
+    public static String TELL_USER_PERMISSION_THEY_LACK(Permissions node) {
         return TELL_USER_PERMISSION_THEY_LACK(node.node);
     }
 
@@ -136,11 +136,11 @@ public enum PERMISSION {
      * @param node
      * @return *
      */
-    public static boolean USER_HAS_PERMISSION(IPlayer cs, PERMISSION node) {
+    public static boolean USER_HAS_PERMISSION(IPlayer cs, Permissions node) {
         return USER_HAS_PERMISSION(cs, node, true);
     }
 
-    public static boolean USER_HAS_PERMISSION(IPlayer cs, PERMISSION node, boolean tellIfLacking) {
+    public static boolean USER_HAS_PERMISSION(IPlayer cs, Permissions node, boolean tellIfLacking) {
 
         if (cs.isOp()) {
             return true;

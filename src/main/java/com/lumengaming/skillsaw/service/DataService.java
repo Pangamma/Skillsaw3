@@ -24,6 +24,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -127,6 +128,11 @@ public class DataService {
 
     //<editor-fold defaultstate="collapsed" desc="Mutes">
     
+    public synchronized ArrayList<MutedPlayer> getMutedPlayersReadOnly() {
+		ArrayList<MutedPlayer> users = new ArrayList<>(this.mutedUsers.values());
+        return users;
+    }
+
 	/** Removes any original matching mp then adds a new one. **/
 	public synchronized void addMutedPlayer(MutedPlayer mp){
 		this.mutedUsers.remove(mp.getUniqueId());
@@ -134,8 +140,8 @@ public class DataService {
 	}
 	
 	/** Removes any original matching mp. Returns the original or null. **/
-	public synchronized  MutedPlayer removeMutedPlayer(MutedPlayer mp){
-        MutedPlayer remove = mutedUsers.remove(mp.getUniqueId());
+	public synchronized  MutedPlayer removeMutedPlayer(UUID mp){
+        MutedPlayer remove = mutedUsers.remove(mp);
         return remove;
 	}
 	
@@ -180,6 +186,16 @@ public class DataService {
 	
 	/** Removes all mutes. **/
 	public synchronized  void clearMutedPlayers(){
+        for(MutedPlayer mp : getMutedPlayersReadOnly()){
+            User u = getUser(mp.getUniqueId());
+            if (u != null){
+                if (!mp.isSoftMute()) {
+                    u.sendMessage("§aUnmuted.");
+                } else {
+                    u.sendMessage("§7You can talk again. :)");
+                }
+            }
+        }
 		this.mutedUsers.clear();
 	}
     //</editor-fold>
@@ -245,19 +261,6 @@ public class DataService {
 		}
 	}
 
-	/**
-	 * asynchronously log a chat message *
-	 */
-	public void logChat(UUID p_uuid, String p_displayName, String p_channel, String p_message) {
-
-	}
-
-	/**
-	 * Asynchronously log a command *
-	 */
-	public void logCommand(UUID p_uuid, String p_command) {
-
-	}
 	//</editor-fold>
 
 	//<editor-fold defaultstate="collapsed" desc="Login">
@@ -513,6 +516,36 @@ public class DataService {
 	 * @param useCache
 	 * @return *
 	 */
+	public void getOfflineUserByNameOrDisplayName(String username, AsyncCallback<User> callback) {
+        User bestMatch = this.getUserBestOnlineMatch(username);
+        if (bestMatch != null){
+            callback.doCallback(bestMatch);
+        }else{
+            this.getOfflineUsers(username, false, (ArrayList<User> users) -> {
+                int shortestLen = Integer.MAX_VALUE;
+                User tmp = null;
+                for (int i = 0; i < users.size(); i++) {
+                    User u = users.get(i);
+                    if (u.getName().length() < shortestLen) {
+                        shortestLen = u.getName().length();
+                        tmp = u;
+                    }
+                }
+                callback.doCallback(tmp);
+            });
+        }
+	}
+
+	/**
+	 * IO heavy operation. Loads the user from the database. Run this
+	 * asynchronously. if useCache is true, users can be loaded from the online
+	 * users hashmap before being taken from the database.
+	 *
+	 * @param username
+	 * @param callback
+	 * @param useCache
+	 * @return *
+	 */
 	public void getOfflineUsers(String username, boolean useCache, AsyncManyCallback<User> callback) {
 		if (useCache) {
 			synchronized (this.onlineUsers) {
@@ -538,6 +571,12 @@ public class DataService {
 	//</editor-fold>
     
 	//<editor-fold defaultstate="collapsed" desc="Logging">
+    public void logMessage(String username, UUID uuid, String server, String message, boolean command) {
+        this.plugin.runTaskAsynchronously(() -> { 
+            repo.logMessage(uuid, username, server, message, command);
+        });
+    }
+    
     public void logActivity(UUID playerUUID, String serverName, boolean afk) {
         plugin.runTaskAsynchronously(() -> {
             repo.logActivity(playerUUID, serverName, afk);
@@ -551,7 +590,7 @@ public class DataService {
     public void updateActivityLevels(AsyncEmptyCallback callback){
         final Set<UUID> keySet = this.onlineUsers.keySet();
         plugin.runTaskAsynchronously(() -> {
-            repo.updateActivityScores();
+            repo.refreshActivityScoresCache();
             final HashMap<UUID, Integer> vals = repo.getUpdatedActivityScores(keySet);
             
             plugin.runTask(() -> { 
@@ -666,5 +705,12 @@ public class DataService {
 
 	}
 	//</editor-fold>
+
+    public void purgeOldMessages(int numToKeep) {
+        plugin.runTaskAsynchronously(() -> { 
+            this.repo.purgeOldMessages(numToKeep);
+        });
+        
+    }
 
 }

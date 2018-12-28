@@ -8,7 +8,7 @@ import com.lumengaming.skillsaw.models.RepType;
 import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.service.DataService;
 import com.lumengaming.skillsaw.utility.Constants;
-import com.lumengaming.skillsaw.utility.PERMISSION;
+import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.utility.SharedUtility;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ public class NaturalRepCommand extends IRepCommand{
         }
         
         // Permissions?
-        if (PERMISSION.USER_HAS_PERMISSION(cs, PERMISSION.REP_NATURAL,false) || issuer.getRepLevel() >= 2){
+        if (Permissions.USER_HAS_PERMISSION(cs, Permissions.REP_NATURAL,false) || issuer.getRepLevel() >= 2){
             if (issuer.getName().equalsIgnoreCase(target.getName()) && issuer.getName().equalsIgnoreCase("Pangamma")){
                 cs.sendMessage("§cYou cannot rep yourself.");
                 return false;
@@ -73,11 +73,11 @@ public class NaturalRepCommand extends IRepCommand{
                     }
                 }
                 
-                if (targeted != null && !PERMISSION.USER_HAS_PERMISSION(cs, PERMISSION.REP_NATURAL_INF,false)){
+                if (targeted != null && !Permissions.USER_HAS_PERMISSION(cs, Permissions.REP_NATURAL_INF,false)){
                     long timeToWait = targeted.getTime().getTime() - timePeriodCutoff;
                     String timeStr = SharedUtility.getTimePartsString(timeToWait);
                     cs.sendMessage("§cYou must wait §4"+timeStr+"§c before you can rep this person again. Can only rep someone once within a §4"+Options.Get().RepSystem.HoursPerTimePeriod+"§c hour time period.");
-                }else if (logEntries.size() >= maxReps && !PERMISSION.USER_HAS_PERMISSION(cs, PERMISSION.REP_NATURAL_INF,false)){
+                }else if (logEntries.size() >= maxReps && !Permissions.USER_HAS_PERMISSION(cs, Permissions.REP_NATURAL_INF,false)){
                     long timeToWait = oldest.getTime().getTime() - timePeriodCutoff;
                     String timeStr = SharedUtility.getTimePartsString(timeToWait);
                     cs.sendMessage("§cYou must wait §4"+timeStr+"§c before you can rep again. Limit of §4"+maxReps+"§c per §4"+Options.Get().RepSystem.HoursPerTimePeriod+"§c hour time period.");
@@ -106,7 +106,7 @@ public class NaturalRepCommand extends IRepCommand{
                 }
             });
         }else{
-            cs.sendMessage(PERMISSION.TELL_USER_PERMISSION_THEY_LACK(PERMISSION.REP_NATURAL));
+            cs.sendMessage(Permissions.TELL_USER_PERMISSION_THEY_LACK(Permissions.REP_NATURAL));
             return false;
         }
         return true;

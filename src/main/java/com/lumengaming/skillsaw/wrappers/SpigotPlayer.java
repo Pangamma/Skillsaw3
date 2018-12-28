@@ -89,4 +89,8 @@ public class SpigotPlayer implements IPlayer {
         return true;
     }
     
+    @Override
+    public Object getRaw() {
+        return this.cs;
+    }
 }

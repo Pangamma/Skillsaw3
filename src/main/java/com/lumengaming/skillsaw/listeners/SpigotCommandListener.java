@@ -7,7 +7,7 @@ package com.lumengaming.skillsaw.listeners;
 
 import com.lumengaming.skillsaw.utility.CText;
 import com.lumengaming.skillsaw.SpigotMain;
-import com.lumengaming.skillsaw.Options;
+import com.lumengaming.skillsaw.SpigotOptions;
 import java.util.ArrayList;
 import java.util.HashMap;
 import net.md_5.bungee.api.ChatColor;
@@ -39,7 +39,7 @@ public class SpigotCommandListener implements Listener{
 	
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlugins(final PlayerCommandPreprocessEvent e) {
-        if (Options.Get().IsEnhancedPluginListEnabled){
+        if (SpigotOptions.Get().IsEnhancedPluginListEnabled){
             String scrubbed = (e.getMessage().startsWith("/") ? e.getMessage().substring(1) : e.getMessage()).toLowerCase();
             String[] aliases = new String[]{ "pl","plugins" };
             boolean isMatch = false;

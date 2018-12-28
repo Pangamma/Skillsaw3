@@ -46,5 +46,4 @@ public class GetPlayerLocationRequest extends IBridgePayload<GetPlayerLocationRe
         this.ServerName = in.readUTF();
         return this;
     }
-    
 }

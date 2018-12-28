@@ -8,6 +8,7 @@ package com.lumengaming.skillsaw.wrappers;
 import com.lumengaming.skillsaw.utility.BungeeHelper;
 import com.lumengaming.skillsaw.utility.CText;
 import java.util.UUID;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -90,12 +91,19 @@ public class BungeePlayer implements IPlayer {
 
     @Override
     public void sendMessage(BaseComponent... message) {
-        p().sendMessage(message);
+        if (p() == null) return;
+        if (this.isPlayer()){
+            p().sendMessage(message);
+        }else{
+            p().sendMessage(CText.stripColors(message));
+        }
     }
 
     @Override
     public void sendMessage(String legacyText) {
-        sendMessage(CText.legacy(legacyText));
+        if (p() == null) return;
+        if (!isPlayer()) legacyText = ChatColor.stripColor(legacyText);
+        p().sendMessage(CText.legacy(legacyText));
     }
 
     @Override
@@ -119,5 +127,10 @@ public class BungeePlayer implements IPlayer {
     @Override
     public boolean isOp() {
         return isPlayer() == false; // Console == OP.
+    }
+
+    @Override
+    public Object getRaw() {
+        return this.cs;
     }
 }

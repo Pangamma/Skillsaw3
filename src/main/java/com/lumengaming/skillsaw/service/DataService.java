@@ -24,6 +24,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -127,6 +128,11 @@ public class DataService {
 
     //<editor-fold defaultstate="collapsed" desc="Mutes">
     
+    public synchronized ArrayList<MutedPlayer> getMutedPlayersReadOnly() {
+		ArrayList<MutedPlayer> users = new ArrayList<>(this.mutedUsers.values());
+        return users;
+    }
+
 	/** Removes any original matching mp then adds a new one. **/
 	public synchronized void addMutedPlayer(MutedPlayer mp){
 		this.mutedUsers.remove(mp.getUniqueId());
@@ -134,8 +140,8 @@ public class DataService {
 	}
 	
 	/** Removes any original matching mp. Returns the original or null. **/
-	public synchronized  MutedPlayer removeMutedPlayer(MutedPlayer mp){
-        MutedPlayer remove = mutedUsers.remove(mp.getUniqueId());
+	public synchronized  MutedPlayer removeMutedPlayer(UUID mp){
+        MutedPlayer remove = mutedUsers.remove(mp);
         return remove;
 	}
 	
@@ -180,6 +186,16 @@ public class DataService {
 	
 	/** Removes all mutes. **/
 	public synchronized  void clearMutedPlayers(){
+        for(MutedPlayer mp : getMutedPlayersReadOnly()){
+            User u = getUser(mp.getUniqueId());
+            if (u != null){
+                if (!mp.isSoftMute()) {
+                    u.sendMessage("§aUnmuted.");
+                } else {
+                    u.sendMessage("§7You can talk again. :)");
+                }
+            }
+        }
 		this.mutedUsers.clear();
 	}
     //</editor-fold>

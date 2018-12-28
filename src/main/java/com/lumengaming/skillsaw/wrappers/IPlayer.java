@@ -39,4 +39,10 @@ public interface IPlayer {
     public boolean hasPermission(String string);
 
     public boolean isOp();
+
+    /**
+     * Returns the base player/command sender instance. You must cast the result yourself.
+     * @return 
+     */
+    public Object getRaw();
 }

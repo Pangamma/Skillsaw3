@@ -13,6 +13,7 @@ import com.lumengaming.skillsaw.listeners.SpigotPlayerListener;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
 import com.lumengaming.skillsaw.wrappers.SpigotPlayer;
 import java.util.UUID;
+import net.md_5.bungee.api.ProxyServer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
@@ -31,8 +32,11 @@ public class SpigotMain extends JavaPlugin implements ISkillsaw{
         if (!Bukkit.getServer().getPluginManager().getPlugin(this.getName()).getDataFolder().exists()){
             Bukkit.getServer().getPluginManager().getPlugin(this.getName()).getDataFolder().mkdir();
         }
-        Options.Load();
-        Options.Save();
+        
+        ConfigHelper.DATA_FOLDER = Bukkit.getServer().getPluginManager().getPlugin("Skillsaw3").getDataFolder();
+
+        SpigotOptions.Load();
+        SpigotOptions.Save();
         
         getServer().getPluginManager().registerEvents(new SpigotCommandListener(this), this);
         getServer().getPluginManager().registerEvents(new SpigotJoinListener(this), this);

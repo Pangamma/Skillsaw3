@@ -7,7 +7,6 @@ import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.utility.Constants;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
-import org.bukkit.command.CommandSender;
 
 public class XRepCommand extends IRepCommand{
 

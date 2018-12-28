@@ -32,7 +32,7 @@ public class MutedPlayer implements Comparable<MutedPlayer>{
 	
 	/** D:H:M:S **/
 	public String getTotalMuteTimeStr(){
-		if (this.secondsToLive == -1){ return "infnite";}
+		if (this.secondsToLive == -1){ return "infnite time";}
 		String s = "";
 		long[] timeParts = SharedUtility.getTimeParts(secondsToLive*1000);
 		s += timeParts[0]+"d ";

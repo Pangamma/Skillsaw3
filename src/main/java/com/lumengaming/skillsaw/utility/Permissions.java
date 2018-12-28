@@ -95,12 +95,12 @@ public enum Permissions {
     TITLE_SET_SELF("Skillsaw.title.set.self"),
     TITLE_SET_OTHERS("Skillsaw.title.set.others"),
     TITLE_EDIT_ANY("SkillSaw.title.edit.*"),
-    TITLE_EDIT_SPECIFIC("SkillSaw.title.edit"),
+    CUSTOM_TITLES("Skillsaw.customtitles"),
     VIEWLOGS_STAFF_REP("SkillSaw.viewlogs.staffrep"),
     VIEWLOGS_NATURAL_REP("SkillSaw.viewlogs.naturalrep"),
     VIEWLOGS_NOTE("SkillSaw.viewlogs.note"),
-    VIEWLOGS_REP_FIX("SkillSaw.viewlogs.xrep"),
-    CUSTOM_TITLES("Skillsaw.customtitles");
+    VIEWLOGS_REP_FIX("SkillSaw.viewlogs.xrep")
+    ;
 
     //<editor-fold defaultstate="collapsed" desc="methods">
     public String node = "SkillSaw.*";

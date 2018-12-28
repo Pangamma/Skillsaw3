@@ -11,9 +11,11 @@ import com.google.gson.annotations.SerializedName;
 import com.lumengaming.skillsaw.models.SkillType;
 import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.utility.ColorCodeAdapter;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.md_5.bungee.api.ProxyServer;
 
 /**
  * Idk. Sometimes I just disagree with Java's naming conventions. Properties are great, alright? C# is bae.
@@ -21,12 +23,10 @@ import java.util.logging.Logger;
  */
 public class Options
 {
+    
     //<editor-fold defaultstate="collapsed" desc="Properties">
     @SerializedName("is-chat-enabled")
-    public boolean IsChatEnabled;
-    
-    @SerializedName("is-enhanced-plugin-list-enabled")
-    public boolean IsEnhancedPluginListEnabled = true;
+    public boolean IsChatEnabled = true;
     
     @SerializedName("review-list")
     public ReviewListOptions ReviewList = new ReviewListOptions();
@@ -37,8 +37,15 @@ public class Options
     @SerializedName("rep-system")
     public ReputationOptions RepSystem = new ReputationOptions();
     
+    @SerializedName("chat-system")
+    public ChatSystemOptions ChatSystem = new ChatSystemOptions();
+    
     @SerializedName("data.mysql")
     public MysqlOptions Mysql = new MysqlOptions();
+    
+    @SerializedName("discord-invite-link")
+    public String DiscordInviteLink = "https://discord.gg/QrvqAv2";
+    
     
 //    
 //    
@@ -263,5 +270,23 @@ public class Options
     public Options() {
     }
     //</editor-fold>
+
+    public static class ChatSystemOptions {
+
+        @SerializedName("enabled")
+        public boolean IsEnabled = true;
+        
+        @SerializedName("ignore-list-limit")
+        public int MaxIgnoreListSize = 10;
+        
+        @SerializedName("allow-me-on-main-channel")
+        public boolean IsMeAllowedOnMainChannel = true;
+        
+        @SerializedName("max-short-title-length")
+        public int MaxShortTitleLength = 8;
+        
+        public ChatSystemOptions() {
+        }
+    }
     
 }

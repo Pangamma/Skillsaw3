@@ -5,8 +5,10 @@
  */
 package com.lumengaming.skillsaw.utility;
 
+import com.lumengaming.skillsaw.common.TextReplacer;
 import java.util.concurrent.TimeUnit;
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.BaseComponent;
 
 /**
  *
@@ -68,4 +70,74 @@ public class SharedUtility {
         }
         return output;
     }
+
+    /**
+     * Expects input to be pre-prepared to § color code format. Goes through the
+     * input string and removes all the color codes as needed. Useful for doing
+     * stuff like checking if user has permissions to use certain color codes.
+     * Or maybe not for checking. But certainly for doing actions based on it. *
+     */
+    public static String removeColorCodes(String input, boolean canUseFormatCodes, boolean canUseBasicColors, boolean canUseBlack) {
+        String output = input;
+        for (ChatColor cc : ChatColor.values()) {
+            switch(cc){
+                case AQUA:
+                case BLUE: 
+                case DARK_AQUA:
+                case DARK_BLUE:
+                case DARK_GRAY:
+                case DARK_GREEN:
+                case DARK_PURPLE:
+                case DARK_RED:
+                case GOLD:
+                case GRAY:
+                case GREEN:
+                case LIGHT_PURPLE:
+                case RED:
+                case WHITE:
+                case YELLOW:
+                    if (!canUseBasicColors){
+                        output = output.replace(cc.toString().toUpperCase(), cc.toString().toLowerCase());
+                        output = output.replace(cc.toString().toLowerCase(), cc.toString().replace('§', '&'));
+                    }
+                    break;
+                case BLACK:
+                    if (!canUseBlack){
+                        output = output.replace("§0", "&0");
+                    }
+                    break;
+                case BOLD:
+                case ITALIC:
+                case UNDERLINE:
+                case STRIKETHROUGH:
+                case MAGIC:
+                case RESET:
+                    if (!canUseFormatCodes){
+                        output = output.replace(cc.toString().toUpperCase(), cc.toString().toLowerCase());
+                        output = output.replace(cc.toString().toLowerCase(), cc.toString().replace('§', '&'));
+                    }
+                    break;
+                default: break;
+            }
+        }
+        return output;
+    }
+    
+//    public static BaseComponent[] toBaseComponent(String haystack, String find, TextReplacer match, TextReplacer nonMatch){
+//        if (haystack == null || haystack.length() > 0) return new BaseComponent[0];
+//        if (find == null || find.length() > 0) return new BaseComponent[0];
+//        
+//        BaseComponent[] output = new BaseComponent[0];
+//        StringBuilder nonMatchSrc = new StringBuilder();
+//        for(int i = 0; i < haystack.length(); i++){
+//            output[0].toPlainText()
+//            if (haystack.startsWith(find, i)){
+//                match
+//            }else{
+//                nonMatchSrc.append(haystack.charAt(i));
+//            }
+//        }
+//    
+//        return null;
+//    }
 }

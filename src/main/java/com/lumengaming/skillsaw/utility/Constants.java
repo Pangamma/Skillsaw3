@@ -6,6 +6,7 @@
 package com.lumengaming.skillsaw.utility;
 
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.BaseComponent;
 
 
 /**
@@ -77,6 +78,8 @@ public class Constants {
     public static final String ERROR_TRY_AGAIN_LATER_COMMAND = "§cSorry, the system wasn't prepared for what you just did. Can you please try that again?";
     public static final String ERROR_TRY_AGAIN_LATER_CHAT = "§cHang on... try that chat message again.";
     public static final String MSG_PROCESSING = "§7Processing...";
+    public static final String ERROR_P_IGNORING_YOU = "§cThat message could not be sent because that player is ignoring you.";
+    public static final String ERROR_P_YOU_ARE_IGNORING = "§cThat message could not be sent because you are ignoring that player right now.";
 
     public static String ERROR_REPORT_THIS_TO_PANGAMMA(int errIdentifier) {
         return "§cYou shouldn't be seeing this. Report this number to Pangamma: '" + errIdentifier + "'.";

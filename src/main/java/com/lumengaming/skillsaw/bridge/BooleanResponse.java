@@ -29,9 +29,23 @@ public class BooleanResponse extends IBridgePayload<BooleanResponse>{
     public BooleanResponse() {
     }
     
+    public BooleanResponse FromBytes(String subChannel, DataInputStream in) throws IOException {
+        this.SubChannel = subChannel;
+        this.Key = in.readLong();
+        this.Value = in.readBoolean();
+        return this;
+    }
+    
+    /**
+     * 
+     * @param in
+     * @return
+     * @throws IOException
+     * @deprecated Include subchannel as well.
+     */
+    @Deprecated 
     @Override
     public BooleanResponse FromBytes(DataInputStream in) throws IOException {
-        in.reset();
         this.SubChannel = in.readUTF();
         this.Key = in.readLong();
         this.Value = in.readBoolean();

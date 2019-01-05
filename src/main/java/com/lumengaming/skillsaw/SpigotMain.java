@@ -13,7 +13,6 @@ import com.lumengaming.skillsaw.listeners.SpigotPlayerListener;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
 import com.lumengaming.skillsaw.wrappers.SpigotPlayer;
 import java.util.UUID;
-import net.md_5.bungee.api.ProxyServer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
@@ -24,6 +23,7 @@ import org.bukkit.plugin.java.JavaPlugin;
  * @author prota
  */
 public class SpigotMain extends JavaPlugin implements ISkillsaw{
+    private SpigotMessageListener pluginListener;
     
 //    private DataService dataService;
     
@@ -38,12 +38,14 @@ public class SpigotMain extends JavaPlugin implements ISkillsaw{
         SpigotOptions.Load();
         SpigotOptions.Save();
         
+        this.pluginListener = new SpigotMessageListener(this);
+        getServer().getPluginManager().registerEvents(this.pluginListener, this);
+        this.getServer().getMessenger().registerOutgoingPluginChannel(this, Constants.CH_RootChannel);
+        this.getServer().getMessenger().registerIncomingPluginChannel(this, Constants.CH_RootChannel, this.pluginListener);
         getServer().getPluginManager().registerEvents(new SpigotCommandListener(this), this);
         getServer().getPluginManager().registerEvents(new SpigotJoinListener(this), this);
         getServer().getPluginManager().registerEvents(new SpigotPlayerListener(this), this);
         
-        this.getServer().getMessenger().registerOutgoingPluginChannel(this, Constants.CH_RootChannel);
-        this.getServer().getMessenger().registerIncomingPluginChannel(this, Constants.CH_RootChannel, new SpigotMessageListener(this));
         
     }
     
@@ -54,6 +56,7 @@ public class SpigotMain extends JavaPlugin implements ISkillsaw{
         Bukkit.getScheduler().cancelTasks(this);
         this.getServer().getMessenger().unregisterIncomingPluginChannel(this);
         this.getServer().getMessenger().unregisterOutgoingPluginChannel(this);
+        getServer().getServicesManager(). unregisterAll(this);
     }
 
 //    @Override
@@ -97,6 +100,11 @@ public class SpigotMain extends JavaPlugin implements ISkillsaw{
         Player p = Bukkit.getPlayer(uuid);
         if (p == null) return null;
         return new SpigotPlayer(p);
+    }
+    
+    @Override
+    public void runTaskLater(Runnable runnable, long ticks) {
+        Bukkit.getScheduler().runTaskLater(this, runnable, ticks);
     }
     
 }

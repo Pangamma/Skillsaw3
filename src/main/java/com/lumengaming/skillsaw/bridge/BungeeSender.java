@@ -5,8 +5,6 @@
  */
 package com.lumengaming.skillsaw.bridge;
 
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
 import com.lumengaming.skillsaw.BungeeMain;
 import com.lumengaming.skillsaw.common.AsyncEmptyCallback;
@@ -18,22 +16,17 @@ import com.lumengaming.skillsaw.models.XLocation;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PluginMessageEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
-import net.md_5.bungee.protocol.packet.Title;
 
 public class BungeeSender implements Listener {
 
@@ -51,9 +44,9 @@ public class BungeeSender implements Listener {
         if (!e.getTag().equals(Constants.CH_RootChannel)) {
             return;
         }
-
         DataInputStream in = new DataInputStream(new ByteArrayInputStream(e.getData()));
         String subchannel = in.readUTF();
+        in = new DataInputStream(new ByteArrayInputStream(e.getData()));
         switch (subchannel) {
             case Constants.CH_GetPlayerLocation:
                 _getPlayerLocation(in);
@@ -63,6 +56,9 @@ public class BungeeSender implements Listener {
                 break;
             case Constants.CH_PlaySoundForPlayer:
                 _playSoundForPlayer(in);
+                break;
+            case Constants.CH_CompositeEffect:
+                _booleanResponse(subchannel, in);
                 break;
             default:
                 break;
@@ -96,30 +92,40 @@ public class BungeeSender implements Listener {
 
     //<editor-fold defaultstate="collapsed" desc="SetLocation">
     public void setLocation(ProxiedPlayer p, XLocation loc, AsyncCallback<Boolean> callback) {
-        try {
-            String serverName = p.getServer().getInfo().getName();
-            ServerInfo si = ProxyServer.getInstance().getServers().get(loc.Server);
-            if (si == null) {
-                plugin.getLogger().log(Level.WARNING, "Requested server (" + loc.Server + ") does not exist.");
-                callback.doCallback(false);
-                return;
+        if (loc == null) return;
+        if (p == null) return;
+        String serverName = p.getServer().getInfo().getName();
+        ServerInfo si = ProxyServer.getInstance().getServers().get(loc.Server);
+        if (si == null) {
+            plugin.getLogger().log(Level.WARNING, "Requested server ({0}) does not exist.", loc.Server);
+            callback.doCallback(false);
+            return;
+        }
+
+        if (!serverName.equalsIgnoreCase(loc.Server)) {
+            p.connect(si, (Boolean result, Throwable error) -> {
+                if (result){
+                    plugin.runTaskLater(() -> {
+                        try {
+                            long key = this.map.push(callback);
+                            byte[] data = new SetPlayerLocationRequest(key, p.getUniqueId(), loc).ToBytes();
+                            si.sendData(Constants.CH_RootChannel, data);
+                        } catch (IOException ex) {
+                            Logger.getLogger(BungeeSender.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }, 20);
+                }else{
+                    Logger.getLogger(BungeeSender.class.getName()).log(Level.SEVERE, null, error);
+                }
+            });
+        }else{
+            try {
+                long key = this.map.push(callback);
+                byte[] data = new SetPlayerLocationRequest(key, p.getUniqueId(), loc).ToBytes();
+                si.sendData(Constants.CH_RootChannel, data);
+            } catch (IOException ex) {
+                Logger.getLogger(BungeeSender.class.getName()).log(Level.SEVERE, null, ex);
             }
-            
-            if (!serverName.equalsIgnoreCase(loc.Server)) {
-                p.connect(si);
-            }
-            
-            long key = this.map.push(callback);
-            byte[] data = new SetPlayerLocationRequest(key, p.getUniqueId(), loc).ToBytes();
-//            ByteArrayDataOutput out = ByteStreams.newDataOutput();
-//            out.writeUTF(Constants.CH_SetPlayerLocation);
-//            out.writeLong(key);
-//            out.writeUTF(p.getUniqueId().toString());
-//            String json = gson.toJson(loc);
-//            out.writeUTF(json);
-            p.getServer().sendData(Constants.CH_RootChannel, data);
-        } catch (IOException ex) {
-            Logger.getLogger(BungeeSender.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -134,7 +140,7 @@ public class BungeeSender implements Listener {
     }
     //</editor-fold>
 
-    //<editor-fold defaultstate="collapsed" desc="SetLocation">
+    //<editor-fold defaultstate="collapsed" desc="playSound">
     public void playSoundForPlayer(ProxiedPlayer p, String soundName, AsyncCallback<Boolean> callback) {
         try {
             String serverName = p.getServer().getInfo().getName();
@@ -157,21 +163,33 @@ public class BungeeSender implements Listener {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="CompositeEffect">
-    public void doTitle(ProxiedPlayer p,String titleText, String subTitle, String sendInChat) {
+    public void doTitle(ProxiedPlayer p, String titleText, String subTitle, String sendInChat) {
         net.md_5.bungee.api.Title title = ProxyServer.getInstance().createTitle();
         title.title(CText.legacy(titleText))
             .subTitle(CText.legacy(subTitle))
             .send(p);
-        if (sendInChat != null) p.sendMessage(CText.legacy(sendInChat));
+        if (sendInChat != null) {
+            p.sendMessage(CText.legacy(sendInChat));
+        }
     }
-    
+
+    public void doLevelUpEffect(ProxiedPlayer p, String subTitle, String sendInChat, AsyncCallback<Boolean> callback) {
+        this.doLevelUpEffect(p, null, subTitle, sendInChat, callback);
+    }
+
     public void doLevelUpEffect(ProxiedPlayer p, String titleText, String subTitle, String sendInChat, AsyncCallback<Boolean> callback) {
         this.doCompositeEffect(p, CompositeEffectType.LevelUp, callback);
         net.md_5.bungee.api.Title title = ProxyServer.getInstance().createTitle();
         title.title(titleText != null ? CText.legacy(titleText) : new ComponentBuilder("Level-Up!").color(ChatColor.DARK_GREEN).create())
             .subTitle(new ComponentBuilder(subTitle).color(ChatColor.GRAY).create())
             .send(p);
-        if (sendInChat != null) p.sendMessage(CText.legacy(sendInChat));
+        if (sendInChat != null) {
+            p.sendMessage(CText.legacy(sendInChat));
+        }
+    }
+
+    public void doLevelDownEffect(ProxiedPlayer p, String subTitle, String sendInChat, AsyncCallback<Boolean> callback) {
+        this.doLevelDownEffect(p, null, subTitle, sendInChat, callback);
     }
 
     public void doLevelDownEffect(ProxiedPlayer p, String titleText, String subTitle, String sendInChat, AsyncCallback<Boolean> callback) {
@@ -179,14 +197,16 @@ public class BungeeSender implements Listener {
         net.md_5.bungee.api.Title title = ProxyServer.getInstance().createTitle();
         title
             .title(titleText != null ? CText.legacy(titleText) : CText.legacy("§4Level-Down"))
-            .subTitle(CText.legacy("§7"+subTitle)).send(p);
-        if (sendInChat != null) p.sendMessage(CText.legacy(sendInChat));
+            .subTitle(CText.legacy("§7" + subTitle)).send(p);
+        if (sendInChat != null) {
+            p.sendMessage(CText.legacy(sendInChat));
+        }
     }
 
     public void doScoldEffect(ProxiedPlayer p, String titleText, String subTitle, AsyncCallback<Boolean> callback) {
         this.doCompositeEffect(p, CompositeEffectType.Scold, callback);
         net.md_5.bungee.api.Title title = ProxyServer.getInstance().createTitle();
-        title.title(CText.legacy("§4"+titleText)).subTitle(CText.legacy("§7"+subTitle)).send(p);
+        title.title(CText.legacy("§4" + titleText)).subTitle(CText.legacy("§7" + subTitle)).send(p);
     }
 
     public void doHmmmEffect(ProxiedPlayer p, AsyncCallback<Boolean> callback) {
@@ -197,19 +217,17 @@ public class BungeeSender implements Listener {
         this.doCompositeEffect(p, CompositeEffectType.NamePling, callback);
     }
 
-    private void doCompositeEffect(ProxiedPlayer p, CompositeEffectType t, AsyncCallback<Boolean> c){
+    private void doCompositeEffect(ProxiedPlayer p, CompositeEffectType t, AsyncCallback<Boolean> c) {
         try {
             long key = this.map.push(c);
             byte[] data = new PlayCompositeEffectRequest(key, p.getUniqueId(), t).ToBytes();
-            p.sendData(Constants.CH_RootChannel, data);
-            this.map.pop(key);
-            c.doCallback(true);
+            p.getServer().sendData(Constants.CH_RootChannel, data);
         } catch (IOException ex) {
-            Logger.getLogger(BungeeSender.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BungeeSender.class.getName()).log(Level.SEVERE, "Composite effect failed.", ex);
             c.doCallback(false);
         }
     }
-    
+
     public void doReviewListUpdatedEffect(AsyncEmptyCallback callback) {
         Collection<ProxiedPlayer> players = ProxyServer.getInstance().getPlayers();
         long key = this.map.push(callback);
@@ -217,7 +235,7 @@ public class BungeeSender implements Listener {
         try {
             for (ProxiedPlayer p : players) {
                 byte[] data = new PlayCompositeEffectRequest(key, p.getUniqueId(), CompositeEffectType.ReviewListUpdated).ToBytes();
-                p.sendData(Constants.CH_RootChannel, data);
+                p.getServer().sendData(Constants.CH_RootChannel, data);
             }
         } catch (IOException ex) {
             Logger.getLogger(BungeeSender.class.getName()).log(Level.SEVERE, null, ex);
@@ -229,4 +247,16 @@ public class BungeeSender implements Listener {
         }
     }
     //</editor-fold>
+
+    private void _booleanResponse(String subchannel, DataInputStream in) {
+        try {
+            BooleanResponse rsp = new BooleanResponse().FromBytes(subchannel, in);
+            AsyncCallback<Boolean> pop = (AsyncCallback<Boolean>) this.map.pop(rsp.Key);
+            if (pop != null) {
+                pop.doCallback(rsp.Value);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(BungeeSender.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 }

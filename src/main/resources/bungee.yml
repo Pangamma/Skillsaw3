@@ -1,4 +1,5 @@
 name: Skillsaw3
 author: Pangamma
-version: 1.0
+version: 1.0R
 main: com.lumengaming.skillsaw.BungeeMain
+depends: ['NuVotifier']

@@ -6,8 +6,6 @@ import com.lumengaming.skillsaw.service.DataService;
 import com.lumengaming.skillsaw.utility.Constants;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
-import net.md_5.bungee.api.CommandSender;
-import net.md_5.bungee.api.plugin.Command;
 
 /**
  *
@@ -25,51 +23,56 @@ public abstract class IRepCommand extends BungeeCommand {
     @Override
     public void execute(BungeePlayer cs, String[] args) {
 
-        try {
             if (args.length > 0) {
                 User onlineU = this.dh.getUserBestOnlineMatch(args[0]);
                 final String fName = onlineU != null ? onlineU.getName() : args[0];
 
                 dh.getOfflineUser(fName, true, (User target) -> {
-                    if (target == null) {
-                        cs.sendMessage(Constants.ERROR_P_NOT_FOUND);
-                        return;
-                    }
-
-                    if (args.length == 1) {
-                        // View Info?
-                        target.showStatisticsTo(cs);
-                    } else if (args.length >= 3) {
-
-                        if (!cs.isPlayer()) {
-                            cs.sendMessage(Constants.ERROR_PLAYERS_ONLY);
+                    
+                try {
+                        if (target == null) {
+                            cs.sendMessage(Constants.ERROR_P_NOT_FOUND);
                             return;
                         }
 
-                        // I allow it for debug reasons.
-                        if (fName.equalsIgnoreCase(cs.getName()) && !cs.getName().equalsIgnoreCase("Pangamma")) {
-                            cs.sendMessage("§cYou cannot rep yourself!");
-                            return;
-                        }
+                        if (args.length == 1) {
+                            // View Info?
+                            target.showStatisticsTo(cs);
+                        } else if (args.length >= 3) {
 
-                        // Already have our target.
-                        double amount = Double.parseDouble(args[1]);
-
-                        String reason = "";
-                        for (int i = 2; i < args.length; i++) {
-                            reason += args[i];
-                            if (i < args.length - 1) {
-                                reason += " ";
+                            if (!cs.isPlayer()) {
+                                cs.sendMessage(Constants.ERROR_PLAYERS_ONLY);
+                                return;
                             }
-                        }
 
-                        // Cap amount of rep to send.
-                        if (reason.length() < 10) {
-                            cs.sendMessage("§cLeave a better reason than that. The reasons are saved so we can look at them in the future.");
-                            return;
+                            // I allow it for debug reasons.
+                            if (fName.equalsIgnoreCase(cs.getName()) && !cs.getName().equalsIgnoreCase("Pangamma")) {
+                                cs.sendMessage("§cYou cannot rep yourself!");
+                                return;
+                            }
+
+                            // Already have our target.
+                            double amount = Double.parseDouble(args[1]);
+
+                            String reason = "";
+                            for (int i = 2; i < args.length; i++) {
+                                reason += args[i];
+                                if (i < args.length - 1) {
+                                    reason += " ";
+                                }
+                            }
+
+                            // Cap amount of rep to send.
+                            if (reason.length() < 10) {
+                                cs.sendMessage("§cLeave a better reason than that. The reasons are saved so we can look at them in the future.");
+                                return;
+                            }
+                            doRep(cs, target, amount, reason);
+                        } else {
+                            printHelp(cs);
                         }
-                        doRep(cs, target, amount, reason);
-                    } else {
+                    
+                    } catch (NumberFormatException | ArrayIndexOutOfBoundsException ex) {
                         printHelp(cs);
                     }
                 });
@@ -77,9 +80,6 @@ public abstract class IRepCommand extends BungeeCommand {
             } else {
                 printHelp(cs);
             }
-        } catch (NumberFormatException | ArrayIndexOutOfBoundsException ex) {
-            printHelp(cs);
-        }
     }
 
     protected abstract void printHelp(IPlayer cs);

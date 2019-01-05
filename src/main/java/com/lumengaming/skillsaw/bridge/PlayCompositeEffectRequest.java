@@ -10,7 +10,6 @@ import com.lumengaming.skillsaw.utility.Constants;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.UUID;
-import net.md_5.bungee.api.ProxyServer;
 
 /**
  *
@@ -32,11 +31,10 @@ public class PlayCompositeEffectRequest extends IBridgePayload<PlayCompositeEffe
     
     @Override
     public PlayCompositeEffectRequest FromBytes(DataInputStream in) throws IOException {
-        in.reset();
         this.SubChannel = in.readUTF();
         this.Key = in.readLong();
         this.UUID = UUID.fromString(in.readUTF());
-        this.Type = CompositeEffectType.valueOf(in.readUTF());
+        this.Type = CompositeEffectType.valueOf(in.readUTF());        
         return this;
     }
 

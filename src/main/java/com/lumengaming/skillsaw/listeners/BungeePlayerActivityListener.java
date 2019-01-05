@@ -50,7 +50,7 @@ public class BungeePlayerActivityListener implements Listener {
                     records.add(new ActivityRecord(p.getUniqueId(), p.getServer().getInfo().getName()));
                 }
             }
-            plugin.getApi().updateActivityLevels(() -> {});
+            plugin.getApi().updateCalculatedCacheValues(() -> {});
         }, 1, 12, TimeUnit.MINUTES);
     }
 
@@ -104,13 +104,13 @@ public class BungeePlayerActivityListener implements Listener {
             synchronized (this.userStates) {
                 if (this.userStates.containsKey(p.getUniqueId())) {
                     this.userStates.remove(p.getUniqueId());
-                    BaseComponent[] txt = CText.legacy("§e" + e.getPlayer().getName() + " §eleft §ethe §egame.");
-                    for (ProxiedPlayer plr : e.getPlayer().getServer().getInfo().getPlayers()) {
-                        plr.sendMessage(txt);
-                    }
                 }
             }
             plugin.getApi().logoutUser(new BungeePlayer(p));
+            BaseComponent[] txt = CText.legacy("§e" + e.getPlayer().getName() + " §eleft §ethe §egame.");
+            for (ProxiedPlayer plr : plugin.getProxy().getPlayers()) {
+                plr.sendMessage(txt);
+            }
         }
     }
 
@@ -189,26 +189,27 @@ public class BungeePlayerActivityListener implements Listener {
                 }
             }
         }
-        Map<String, ServerInfo> servers = ProxyServer.getInstance().getServers();
-        if (!"?".equals(srcServerName) && !"?".equals(destServerName)) {
-            BaseComponent[] txt = CText.legacy("§e" + p.getName() + " §eswitched §eto §ethe §e'" + destServerName + "' §eserver with §6/server §6" + destServerName);
-            BaseComponent[] txt2 = CText.legacy("§e" + p.getName() + " §ejoined §efrom §ethe §e'" + srcServerName + "' §eserver");
-            for (ServerInfo si : servers.values()) {
-                if (si.getName().equals(srcServerName)) {
-                    Collection<ProxiedPlayer> players = si.getPlayers();
-                    for (ProxiedPlayer plr : players) {
-                        if (!plr.getName().equals(p.getName())) {
-                            plr.sendMessage(txt);
-                        }
-                    }
-                } else if (si.getName().equals(destServerName)) {
-                    Collection<ProxiedPlayer> players = si.getPlayers();
-                    for (ProxiedPlayer plr : players) {
-                        plr.sendMessage(txt2);
-                    }
-                }
-            }
-        }
+        
+//        Map<String, ServerInfo> servers = ProxyServer.getInstance().getServers();
+//        if (!"?".equals(srcServerName) && !"?".equals(destServerName)) {
+//            BaseComponent[] txt = CText.legacy("§e" + p.getName() + " §eswitched §eto §ethe §e'" + destServerName + "' §eserver with §6/server §6" + destServerName);
+//            BaseComponent[] txt2 = CText.legacy("§e" + p.getName() + " §ejoined §efrom §ethe §e'" + srcServerName + "' §eserver");
+//            for (ServerInfo si : servers.values()) {
+//                if (si.getName().equals(srcServerName)) {
+//                    Collection<ProxiedPlayer> players = si.getPlayers();
+//                    for (ProxiedPlayer plr : players) {
+//                        if (!plr.getName().equals(p.getName())) {
+//                            plr.sendMessage(txt);
+//                        }
+//                    }
+//                } else if (si.getName().equals(destServerName)) {
+//                    Collection<ProxiedPlayer> players = si.getPlayers();
+//                    for (ProxiedPlayer plr : players) {
+//                        plr.sendMessage(txt2);
+//                    }
+//                }
+//            }
+//        }
     }
 
 }

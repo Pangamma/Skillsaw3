@@ -6,16 +6,21 @@
 package com.lumengaming.skillsaw.bridge;
 
 import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
 import com.lumengaming.skillsaw.SpigotMain;
 import com.lumengaming.skillsaw.utility.Constants;
 import com.lumengaming.skillsaw.models.XLocation;
+import com.lumengaming.skillsaw.utility.ExpireMap;
+import com.lumengaming.skillsaw.utility.SH;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
@@ -25,6 +30,9 @@ import org.bukkit.SoundCategory;
 import org.bukkit.World;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.meta.FireworkMeta;
 
@@ -32,7 +40,7 @@ import org.bukkit.inventory.meta.FireworkMeta;
  *
  * @author prota
  */
-public class SpigotMessageListener implements org.bukkit.plugin.messaging.PluginMessageListener {
+public class SpigotMessageListener implements org.bukkit.plugin.messaging.PluginMessageListener, Listener {
 
     private final SpigotMain plugin;
     private final Gson gson;
@@ -41,23 +49,17 @@ public class SpigotMessageListener implements org.bukkit.plugin.messaging.Plugin
         this.plugin = p;
         this.gson = new Gson();
     }
-
+    
     @Override
     public void onPluginMessageReceived(String channel, Player player, byte[] message) {
-        Bukkit.getScheduler().runTask(plugin, () -> {
-        Bukkit.broadcastMessage("§cZ0");
-        });
-        Bukkit.broadcastMessage("§cZ");
         if (!channel.equals(Constants.CH_RootChannel)) {
             return;
         }
-        Bukkit.broadcastMessage("§cY");
         try {
             DataInputStream in = new DataInputStream(new ByteArrayInputStream(message));
-            String subchannel = in.readUTF();
-        Bukkit.broadcastMessage("§cX="+subchannel);
+            String subchannel = in.readUTF(); 
+            in = new DataInputStream(new ByteArrayInputStream(message));
             switch (subchannel) {
-                case "MaSuitePlayerLocation":
                 case Constants.CH_GetPlayerLocation:
                     onGetLocation(player, in);
                     break;
@@ -72,47 +74,20 @@ public class SpigotMessageListener implements org.bukkit.plugin.messaging.Plugin
                     break;
             }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Failed to read message from the proxy.", ex);
         }
     }
-
-    //<editor-fold defaultstate="collapsed" desc="UTILITY">
-    private void SendBoolean(Player player, ByteArrayDataOutput out, long key, boolean value) {
-        out.writeLong(key);
-        out.writeBoolean(true);
-        player.sendPluginMessage(plugin, Constants.CH_RootChannel, out.toByteArray());
-    }
-    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="GetLocation">
     private void onGetLocation(Player player, DataInputStream in) throws IOException {
         GetPlayerLocationRequest req = new GetPlayerLocationRequest().FromBytes(in);
         Player p = Bukkit.getPlayer(req.UUID);
-
-        
-                p.playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_DEATH, 1F, 1F);
-                FireworkEffect fwe = org.bukkit.FireworkEffect.builder().withColor(Color.SILVER).withColor(Color.RED).withColor(Color.RED).with(FireworkEffect.Type.BALL_LARGE).withColor(Color.YELLOW).build();
-                ArrayList<Firework> fwList = new ArrayList<>();
-                fwList.add(p.getWorld().spawn(p.getLocation(), Firework.class));
-                fwList.add(p.getWorld().spawn(p.getLocation().subtract(1, 0, -1), Firework.class));
-                fwList.add(p.getWorld().spawn(p.getLocation().subtract(1, 0, 1), Firework.class));
-                fwList.add(p.getWorld().spawn(p.getLocation().subtract(-1, 0, 1), Firework.class));
-                fwList.add(p.getWorld().spawn(p.getLocation().subtract(-1, 0, -1), Firework.class));
-                fwList.add(p.getWorld().spawn(p.getLocation().subtract(0, 1, 0), Firework.class));
-                for (Firework fw : fwList) {
-                    FireworkMeta data = (FireworkMeta) fw.getFireworkMeta();
-                    data.addEffects(fwe);
-                    data.setPower(0);
-                    fw.setFireworkMeta(data);
-                    fw.setCustomName(Constants.CH_CompositeEffect);
-                }
-        Location loc;
         if (p == null) {
-            loc = Bukkit.getWorlds().get(0).getSpawnLocation();
-        } else {
-            loc = p.getLocation();
+        SH.broadcast("§dPNull");
+            return;
         }
 
+        Location loc = p.getLocation();
         XLocation xLoc = new XLocation();
         xLoc.X = loc.getX();
         xLoc.Y = loc.getY();
@@ -122,28 +97,51 @@ public class SpigotMessageListener implements org.bukkit.plugin.messaging.Plugin
         xLoc.World = loc.getWorld().getName();
         xLoc.Server = req.ServerName;
 
+        SH.broadcast("§d"+xLoc.toJson());
         byte[] data = new GetPlayerLocationResponse(req.Key, xLoc).ToBytes();
         player.sendPluginMessage(plugin, Constants.CH_RootChannel, data);
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="SetLocation">
+
+    @EventHandler
+    public void onJoin(PlayerJoinEvent e) {
+        UUID key = e.getPlayer().getUniqueId();
+        final XLocation val = pendingLocationMap.remove(key);
+        if (val != null){
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                World w = Bukkit.getWorld(val.World);
+                if (w == null){
+                    e.getPlayer().sendMessage("§cNo world found by the name of '§4"+val.World+"§c.");
+                    return;
+                }
+            
+                Location loc = new Location(w, val.X, val.Y, val.Z, val.Yaw, val.Pitch);
+                boolean isSuccess = e.getPlayer().teleport(loc, PlayerTeleportEvent.TeleportCause.PLUGIN);
+            }, 100);
+        }
+    }
+
+    private final ExpireMap<UUID, XLocation> pendingLocationMap = new ExpireMap<>();
     private void onSetLocation(Player player, DataInputStream in) throws IOException {
         SetPlayerLocationRequest req = new SetPlayerLocationRequest().FromBytes(in);
         Player p = Bukkit.getPlayer(req.UUID);
+        pendingLocationMap.put(req.UUID, req.Loc, Duration.ofMinutes(3));
 
         if (p == null) {
             byte[] data = new BooleanResponse(Constants.CH_SetPlayerLocation, req.Key, false).ToBytes();
             player.sendPluginMessage(plugin, Constants.CH_RootChannel, data);
             return;
         }
-
+        
         if (req.Loc == null) {
             byte[] data = new BooleanResponse(Constants.CH_SetPlayerLocation, req.Key, false).ToBytes();
             player.sendPluginMessage(plugin, Constants.CH_RootChannel, data);
+            Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Location passed to set location method was null.");
             return;
         }
-
+        
         World w = Bukkit.getWorld(req.Loc.World);
         if (w == null) {
             byte[] data = new BooleanResponse(Constants.CH_SetPlayerLocation, req.Key, false).ToBytes();
@@ -152,7 +150,11 @@ public class SpigotMessageListener implements org.bukkit.plugin.messaging.Plugin
         }
 
         Location loc = new Location(w, req.Loc.X, req.Loc.Y, req.Loc.Z, req.Loc.Yaw, req.Loc.Pitch);
-        p.teleport(loc, PlayerTeleportEvent.TeleportCause.PLUGIN);
+        boolean teleport = p.teleport(loc, PlayerTeleportEvent.TeleportCause.PLUGIN);
+        
+        if (teleport){
+            pendingLocationMap.remove(req.UUID);
+        }
 
         byte[] data = new BooleanResponse(Constants.CH_SetPlayerLocation, req.Key, true).ToBytes();
         player.sendPluginMessage(plugin, Constants.CH_RootChannel, data);
@@ -210,23 +212,25 @@ public class SpigotMessageListener implements org.bukkit.plugin.messaging.Plugin
     }
 
     private void onCompositeEffectForPlayer(Player player, DataInputStream in) throws IOException {
-        Bukkit.broadcastMessage("AAA");
         PlayCompositeEffectRequest req = new PlayCompositeEffectRequest().FromBytes(in);
         Player p = Bukkit.getPlayer(req.UUID);
         if (p == null) {
             return;
         }
-        Bukkit.broadcastMessage("B");
+        byte[] data;
         switch (req.Type) {
             case Hmmm:
                 p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_AMBIENT, SoundCategory.NEUTRAL, 1, 1);
+                data = new BooleanResponse(Constants.CH_CompositeEffect, req.Key, true).ToBytes();
+                player.sendPluginMessage(plugin, Constants.CH_RootChannel, data);
                 break;
             case Scold:
             case LevelDown:
                 p.playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1, 1);
+                data = new BooleanResponse(Constants.CH_CompositeEffect, req.Key, true).ToBytes();
+                player.sendPluginMessage(plugin, Constants.CH_RootChannel, data);
                 break;
             case LevelUp:
-        Bukkit.broadcastMessage("C");
                 p.playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_DEATH, 1F, 1F);
                 FireworkEffect fwe = org.bukkit.FireworkEffect.builder().withColor(Color.SILVER).withColor(Color.RED).withColor(Color.RED).with(FireworkEffect.Type.BALL_LARGE).withColor(Color.YELLOW).build();
                 ArrayList<Firework> fwList = new ArrayList<>();
@@ -237,18 +241,24 @@ public class SpigotMessageListener implements org.bukkit.plugin.messaging.Plugin
                 fwList.add(p.getWorld().spawn(p.getLocation().subtract(-1, 0, -1), Firework.class));
                 fwList.add(p.getWorld().spawn(p.getLocation().subtract(0, 1, 0), Firework.class));
                 for (Firework fw : fwList) {
-                    FireworkMeta data = (FireworkMeta) fw.getFireworkMeta();
-                    data.addEffects(fwe);
-                    data.setPower(0);
-                    fw.setFireworkMeta(data);
+                    FireworkMeta fwdata = (FireworkMeta) fw.getFireworkMeta();
+                    fwdata.addEffects(fwe);
+                    fwdata.setPower(0);
+                    fw.setFireworkMeta(fwdata);
                     fw.setCustomName(Constants.CH_CompositeEffect);
                 }
+                data = new BooleanResponse(Constants.CH_CompositeEffect, req.Key, true).ToBytes();
+                player.sendPluginMessage(plugin, Constants.CH_RootChannel, data);
                 break;
             case NamePling:
                 p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1f);
+                data = new BooleanResponse(Constants.CH_CompositeEffect, req.Key, true).ToBytes();
+                player.sendPluginMessage(plugin, Constants.CH_RootChannel, data);
                 break;
             case ReviewListUpdated:
                 p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+                data = new BooleanResponse(Constants.CH_CompositeEffect, req.Key, true).ToBytes();
+                player.sendPluginMessage(plugin, Constants.CH_RootChannel, data);
                 break;
         }
     }

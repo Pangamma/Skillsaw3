@@ -62,8 +62,8 @@ public class BungeeChatListener implements Listener {
             msg = msg.substring(channel.length()+"/ch:".length()).trim();
         }
         
-        this.doNamePingIfNamed(channel, user.getName(), msg);
         this.sendMessageToChannelAndFormatIt(user, msg, channel.toLowerCase());
+        this.doNamePingIfNamed(channel, user.getName(), msg);
     }
     
     private void doNamePingIfNamed(String ch, String senderName, String rawMessage) {
@@ -78,7 +78,6 @@ public class BungeeChatListener implements Listener {
                             Object up = u.getRawPlayer();
                             if (up != null){
                                 plugin.getSender().doNameMentionedEffect((ProxiedPlayer) u.getRawPlayer(), (b) -> {
-                                    plugin.broadcast("Name Ping");
                                 });
                             }
                         }
@@ -92,7 +91,7 @@ public class BungeeChatListener implements Listener {
         if (u == null) return;
         if (msg == null || msg.isEmpty()) return;
         if (p_channel == null || p_channel.isEmpty()) return;
-        
+//        if (plugin.getApi().isMuted(u.getUniqueId())) return; // handled in send command
         
         //</editor-fold>
 

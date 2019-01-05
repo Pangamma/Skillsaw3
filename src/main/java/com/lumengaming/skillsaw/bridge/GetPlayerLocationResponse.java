@@ -10,7 +10,6 @@ import com.lumengaming.skillsaw.utility.Constants;
 import com.lumengaming.skillsaw.models.XLocation;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.UUID;
 
 /**
  *
@@ -32,16 +31,17 @@ public class GetPlayerLocationResponse extends IBridgePayload<GetPlayerLocationR
     protected byte[] ToBytes(ByteArrayDataOutput out) throws IOException {
         out.writeUTF(this.SubChannel);
         out.writeLong(this.Key);
-        out.writeUTF(gson.toJson(this.Loc));
+        String json = gson.toJson(this.Loc, XLocation.class);
+        out.writeUTF(json);
         return out.toByteArray();
     }
 
     @Override
     public GetPlayerLocationResponse FromBytes(DataInputStream in) throws IOException {
-        in.reset();
         this.SubChannel = in.readUTF();
         this.Key = in.readLong();
-        this.Loc = gson.fromJson(in.readUTF(), XLocation.class);
+        String locJson = in.readUTF();
+        this.Loc = gson.fromJson(locJson, XLocation.class);
         return this;
     }
     

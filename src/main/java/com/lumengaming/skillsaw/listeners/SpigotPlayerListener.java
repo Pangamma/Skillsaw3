@@ -20,6 +20,7 @@ public class SpigotPlayerListener implements Listener{
     public void onPlayerHurt(org.bukkit.event.entity.EntityDamageByEntityEvent e){
         if (e.getDamager() == null) return;
         if (e.getCause() != DamageCause.ENTITY_EXPLOSION) return;
+        if (e.getDamager().getCustomName() == null) return;
         if (e.getDamager().getCustomName().equals(Constants.CH_CompositeEffect)){
             e.setCancelled(true); // cancel hurt from firework effects
         }

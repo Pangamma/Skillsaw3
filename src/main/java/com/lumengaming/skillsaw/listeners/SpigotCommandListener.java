@@ -105,7 +105,7 @@ public class SpigotCommandListener implements Listener{
                         for(BaseComponent bc : cbPluginName){
                             bc.setHoverEvent(hover);
                             if (website != null && website.length() > 5){ 
-                                bc.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, website));
+                                bc.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, website));
                             }
                         }
                         

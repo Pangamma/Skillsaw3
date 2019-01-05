@@ -11,11 +11,9 @@ import com.google.gson.annotations.SerializedName;
 import com.lumengaming.skillsaw.models.SkillType;
 import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.utility.ColorCodeAdapter;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.md_5.bungee.api.ProxyServer;
 
 /**
  * Idk. Sometimes I just disagree with Java's naming conventions. Properties are great, alright? C# is bae.
@@ -25,8 +23,6 @@ public class Options
 {
     
     //<editor-fold defaultstate="collapsed" desc="Properties">
-    @SerializedName("is-chat-enabled")
-    public boolean IsChatEnabled = true;
     
     @SerializedName("review-list")
     public ReviewListOptions ReviewList = new ReviewListOptions();
@@ -42,6 +38,13 @@ public class Options
     
     @SerializedName("data.mysql")
     public MysqlOptions Mysql = new MysqlOptions();
+    
+    @SerializedName("teleport-system")
+    public TeleportOptions Teleport = new TeleportOptions();
+    
+    @SerializedName("server-close-player-mover")
+    public ServerClosingPlayerMoverOptions ServerClosePlayerMover = new ServerClosingPlayerMoverOptions();
+    
     
     @SerializedName("discord-invite-link")
     public String DiscordInviteLink = "https://discord.gg/QrvqAv2";
@@ -143,6 +146,18 @@ public class Options
     
     
     //<editor-fold defaultstate="collapsed" desc="SubClasses">
+    
+    public static class ServerClosingPlayerMoverOptions{
+        @SerializedName("enabled")
+        public boolean IsEnabled = true;
+        
+        @SerializedName("reconnect-server")
+        public String ReconnectServer = "";
+        
+        @SerializedName("blacklisted-kick-reasons")
+        public ArrayList<String> KickReasonBlacklist = new ArrayList<>();
+    }
+    
     public static class ReputationOptions{
         @SerializedName("enabled")
         public boolean IsEnabled = true;
@@ -152,6 +167,11 @@ public class Options
         
         @SerializedName("hours-per-time-period")
         public int HoursPerTimePeriod = 6;
+    }
+        
+    public static class TeleportOptions{
+        @SerializedName("enabled")
+        public boolean IsEnabled = true;
     }
     
     public static class ReviewListOptions{
@@ -175,6 +195,24 @@ public class Options
         public String User = "YourUsername";
         public String Pass = "Password";
         public String Database = "skillsaw";
+    }
+    
+    public static class ChatSystemOptions {
+
+        @SerializedName("enabled")
+        public boolean IsEnabled = true;
+        
+        @SerializedName("ignore-list-limit")
+        public int MaxIgnoreListSize = 10;
+        
+        @SerializedName("allow-me-on-main-channel")
+        public boolean IsMeAllowedOnMainChannel = true;
+        
+        @SerializedName("max-short-title-length")
+        public int MaxShortTitleLength = 8;
+        
+        public ChatSystemOptions() {
+        }
     }
     
     public static class StringOptions{
@@ -202,6 +240,9 @@ public class Options
         @JsonAdapter(ColorCodeAdapter.class)
         public String xRepTargetMessage_01 = "&a%issuer% just fixed your rep. Reason: %reason%";
         
+        @SerializedName("server-closing-move-message")
+        public String ServerClosingMoveMessage = "&7Moved to another server. Reason: %reason%";
+        
         /** Replaces isuer, target, amount, and reason variables with the inputs. **/
         public String compileMessageFormat(String format, String issuer, String target, double amount, String reason){
             return format
@@ -224,6 +265,7 @@ public class Options
             this.Issuer = Issuer;
         }
     }
+    
     //</editor-fold>
     
     
@@ -271,22 +313,5 @@ public class Options
     }
     //</editor-fold>
 
-    public static class ChatSystemOptions {
-
-        @SerializedName("enabled")
-        public boolean IsEnabled = true;
-        
-        @SerializedName("ignore-list-limit")
-        public int MaxIgnoreListSize = 10;
-        
-        @SerializedName("allow-me-on-main-channel")
-        public boolean IsMeAllowedOnMainChannel = true;
-        
-        @SerializedName("max-short-title-length")
-        public int MaxShortTitleLength = 8;
-        
-        public ChatSystemOptions() {
-        }
-    }
     
 }

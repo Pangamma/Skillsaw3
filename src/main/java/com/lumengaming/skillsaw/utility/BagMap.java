@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Stream;
 import net.md_5.bungee.api.ProxyServer;
 
 /**
@@ -18,7 +17,7 @@ import net.md_5.bungee.api.ProxyServer;
  * @param <T>
  */
 public class BagMap <T> {
-    private final int MAX_SIZE = 20;
+    private final int MAX_SIZE = 300;
     private AtomicLong counter = new AtomicLong();
     private final ConcurrentHashMap<Long, T> map = new ConcurrentHashMap<>();
     public long push(T t){

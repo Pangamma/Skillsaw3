@@ -15,8 +15,9 @@ import java.util.UUID;
  */
 public interface ISkillsaw {
 //    public DataService getService();
-    public void runTaskAsynchronously(Runnable runnable);
     public void runTask(Runnable runnable);
+    public void runTaskAsynchronously(Runnable runnable);
+    public void runTaskLater(Runnable runnable, long ticks);
 
     public void playVillagerSound(IPlayer p);
 

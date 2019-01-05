@@ -24,23 +24,26 @@ public class CText{
         String txt = TextComponent.toPlainText(orig);
         return legacy(txt);
     }
-    
-    /** Merges two arrays of base components.
-     * @param o1
-     * @param o2
+        
+    /** Merges many arrays of base components.
+     * @param oL list of arrays
      * @return  **/
-    public static BaseComponent[] merge(BaseComponent[]  o1,BaseComponent[] o2){
-        BaseComponent[] n = new BaseComponent[o1.length+o2.length];
+    public static BaseComponent[] merge(BaseComponent[]... oL){
+        
+        int maxLen = 0;
+        for(BaseComponent[] bc : oL){
+            maxLen += bc.length;
+        }
+        
+        BaseComponent[] n = new BaseComponent[maxLen];
         int i = 0;
         
-        for(BaseComponent bc : o1)
-            n[i++] = bc;
-        for(BaseComponent bc : o2)
-            n[i++] = bc;
+        for(BaseComponent[] bcc : oL)
+            for(BaseComponent bc : bcc)
+                n[i++] = bc;
         
         return n;
     }
-    
     /** Iterates through all the base components and sets an event on them.
      * @param bcs
      * @param e **/

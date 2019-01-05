@@ -99,9 +99,16 @@ public enum Permissions {
     VIEWLOGS_STAFF_REP("SkillSaw.viewlogs.staffrep"),
     VIEWLOGS_NATURAL_REP("SkillSaw.viewlogs.naturalrep"),
     VIEWLOGS_NOTE("SkillSaw.viewlogs.note"),
-    VIEWLOGS_REP_FIX("SkillSaw.viewlogs.xrep")
+    VIEWLOGS_REP_FIX("SkillSaw.viewlogs.xrep"),
+    
+    TPA_LOCK("Skillsaw.teleport.tpalock"), 
+    TELEPORT_SELF("skillsaw.teleport.tp"),
+    TELEPORT_OTHERS("skillsaw.teleport.tphere"),
+    TPA_TO("skillsaw.teleport.tpa"),
+    TPA_HERE("skillsaw.teleport.tpahere"),
+    SLOG("skillsaw.slog"),
     ;
-
+    
     //<editor-fold defaultstate="collapsed" desc="methods">
     public String node = "SkillSaw.*";
 

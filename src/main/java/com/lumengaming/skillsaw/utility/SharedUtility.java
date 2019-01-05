@@ -1,3 +1,4 @@
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -15,6 +16,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
  * @author prota
  */
 public class SharedUtility {
+    
     
     /**
      * [0] days [1] hours [2] minutes [3] seconds [4] millis

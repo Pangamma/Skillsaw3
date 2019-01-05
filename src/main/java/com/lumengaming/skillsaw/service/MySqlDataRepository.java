@@ -1,10 +1,13 @@
 package com.lumengaming.skillsaw.service;
 
+import com.google.gson.Gson;
 import com.lumengaming.skillsaw.ISkillsaw;
 import com.lumengaming.skillsaw.Options;
+import com.lumengaming.skillsaw.models.BooleanAnswer;
 import com.lumengaming.skillsaw.models.RepLogEntry;
 import com.lumengaming.skillsaw.models.RepType;
 import com.lumengaming.skillsaw.models.SkillType;
+import com.lumengaming.skillsaw.models.SlogSettings;
 import com.lumengaming.skillsaw.models.Title;
 import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.models.XLocation;
@@ -52,8 +55,8 @@ public class MySqlDataRepository implements IDataRepository {
     private final boolean isReadOnly;
 
     public MySqlDataRepository(ISkillsaw p_plugin, String p_Host, int p_Port,
-            String p_Username, String p_Password, String p_Database,
-            boolean p_isReadOnly) {
+        String p_Username, String p_Password, String p_Database,
+        boolean p_isReadOnly) {
         this.plugin = p_plugin;
         this.host = p_Host;
         this.port = p_Port;
@@ -74,14 +77,14 @@ public class MySqlDataRepository implements IDataRepository {
     private boolean connect() {
         try {
             if (this.connection == null) {
-                this.connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + this.port + "/" + this.database+"?autoReconnect=true&useSSL=false", this.username, this.password);
+                this.connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + this.port + "/" + this.database + "?autoReconnect=true&useSSL=false", this.username, this.password);
             } else if (this.connection != null && !this.connection.isValid(3)) {
                 try {
                     this.connection.close();
                 } catch (Exception ex) {
                     System.err.println(ex);
                 }
-                this.connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + this.port + "/" + this.database+"?autoReconnect=true&useSSL=false", this.username, this.password);
+                this.connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + this.port + "/" + this.database + "?autoReconnect=true&useSSL=false", this.username, this.password);
             }
             return true;
         } catch (SQLException ex) {
@@ -94,6 +97,247 @@ public class MySqlDataRepository implements IDataRepository {
     public boolean onDisable() {
         return this.disconnect();
     }
+
+    //<editor-fold defaultstate="collapsed" desc="Script RUnner">
+    /*
+     * Slightly modified version of the com.ibatis.common.jdbc.ScriptRunner class
+     * from the iBATIS Apache project. Only removed dependency on Resource class
+     * and a constructor 
+     * GPSHansl, 06.08.2015: regex for delimiter, rearrange comment/delimiter detection, remove some ide warnings.
+     */
+    /*
+     *  Copyright 2004 Clinton Begin
+     *
+     *  Licensed under the Apache License, Version 2.0 (the "License");
+     *  you may not use this file except in compliance with the License.
+     *  You may obtain a copy of the License at
+     *
+     *      http://www.apache.org/licenses/LICENSE-2.0
+     *
+     *  Unless required by applicable law or agreed to in writing, software
+     *  distributed under the License is distributed on an "AS IS" BASIS,
+     *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     *  See the License for the specific language governing permissions and
+     *  limitations under the License.
+     */
+    /**
+     * Tool to run database scripts
+     */
+    protected static class ScriptRunner {
+
+        private static final String DEFAULT_DELIMITER = ";";
+        /**
+         * regex to detect delimiter. ignores spaces, allows delimiter in comment, allows an equals-sign
+         */
+        protected static final Pattern delimP = Pattern.compile("^\\s*(--)?\\s*delimiter\\s*=?\\s*([^\\s]+)+\\s*.*$", Pattern.CASE_INSENSITIVE);
+
+        private final Connection connection;
+
+        private final boolean stopOnError;
+        private final boolean autoCommit;
+
+        @SuppressWarnings("UseOfSystemOutOrSystemErr")
+        private PrintWriter logWriter = null; // new PrintWriter(System.out);
+        @SuppressWarnings("UseOfSystemOutOrSystemErr")
+        private PrintWriter errorLogWriter = null; //new PrintWriter(System.err);
+
+        private String delimiter = DEFAULT_DELIMITER;
+        private boolean fullLineDelimiter = false;
+
+        /**
+         * Default constructor
+         */
+        public ScriptRunner(Connection connection, boolean autoCommit,
+            boolean stopOnError) {
+            this.connection = connection;
+            this.autoCommit = autoCommit;
+            this.stopOnError = stopOnError;
+        }
+
+        public void setDelimiter(String delimiter, boolean fullLineDelimiter) {
+            this.delimiter = delimiter;
+            this.fullLineDelimiter = fullLineDelimiter;
+        }
+
+        /**
+         * Setter for logWriter property
+         *
+         * @param logWriter - the new value of the logWriter property
+         */
+        public void setLogWriter(PrintWriter logWriter) {
+            this.logWriter = logWriter;
+        }
+
+        /**
+         * Setter for errorLogWriter property
+         *
+         * @param errorLogWriter - the new value of the errorLogWriter property
+         */
+        public void setErrorLogWriter(PrintWriter errorLogWriter) {
+            this.errorLogWriter = errorLogWriter;
+        }
+
+        /**
+         * Runs an SQL script (read in using the Reader parameter)
+         *
+         * @param reader - the source of the script
+         */
+        public void runScript(Reader reader) throws IOException, SQLException {
+            try {
+                boolean originalAutoCommit = connection.getAutoCommit();
+                try {
+                    if (originalAutoCommit != this.autoCommit) {
+                        connection.setAutoCommit(this.autoCommit);
+                    }
+                    runScript(connection, reader);
+                } finally {
+                    connection.setAutoCommit(originalAutoCommit);
+                }
+            } catch (IOException | SQLException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new RuntimeException("Error running script.  Cause: " + e, e);
+            }
+        }
+
+        /**
+         * Runs an SQL script (read in using the Reader parameter) using the connection passed in
+         *
+         * @param conn - the connection to use for the script
+         * @param reader - the source of the script
+         * @throws SQLException if any SQL errors occur
+         * @throws IOException if there is an error reading from the Reader
+         */
+        private void runScript(Connection conn, Reader reader) throws IOException,
+            SQLException {
+            StringBuffer command = null;
+            try {
+                LineNumberReader lineReader = new LineNumberReader(reader);
+                String line;
+                while ((line = lineReader.readLine()) != null) {
+                    if (command == null) {
+                        command = new StringBuffer();
+                    }
+                    String trimmedLine = line.trim();
+                    final Matcher delimMatch = delimP.matcher(trimmedLine);
+                    if (trimmedLine.length() < 1
+                        || trimmedLine.startsWith("//")) {
+                        // Do nothing
+                    } else if (delimMatch.matches()) {
+                        setDelimiter(delimMatch.group(2), false);
+                    } else if (trimmedLine.startsWith("--")) {
+                        println(trimmedLine);
+                    } else if (trimmedLine.length() < 1
+                        || trimmedLine.startsWith("--")) {
+                        // Do nothing
+                    } else if (!fullLineDelimiter
+                        && trimmedLine.endsWith(getDelimiter())
+                        || fullLineDelimiter
+                        && trimmedLine.equals(getDelimiter())) {
+                        command.append(line.substring(0, line
+                            .lastIndexOf(getDelimiter())));
+                        command.append(" ");
+                        this.execCommand(conn, command, lineReader);
+                        command = null;
+                    } else {
+                        command.append(line);
+                        command.append("\n");
+                    }
+                }
+                if (command != null) {
+                    this.execCommand(conn, command, lineReader);
+                }
+                if (!autoCommit) {
+                    conn.commit();
+                }
+            } catch (Exception e) {
+                throw new IOException(String.format("Error executing '%s': %s", command, e.getMessage()), e);
+            } finally {
+                conn.rollback();
+                flush();
+            }
+        }
+
+        private void execCommand(Connection conn, StringBuffer command,
+            LineNumberReader lineReader) throws SQLException {
+            Statement statement = conn.createStatement();
+
+            println(command);
+
+            boolean hasResults = false;
+            try {
+                hasResults = statement.execute(command.toString());
+            } catch (SQLException e) {
+                final String errText = String.format("Error executing '%s' (line %d): %s", command, lineReader.getLineNumber(), e.getMessage());
+                if (stopOnError) {
+                    throw new SQLException(errText, e);
+                } else {
+                    println(errText);
+                }
+            }
+
+            if (autoCommit && !conn.getAutoCommit()) {
+                conn.commit();
+            }
+
+            ResultSet rs = statement.getResultSet();
+            if (hasResults && rs != null) {
+                ResultSetMetaData md = rs.getMetaData();
+                int cols = md.getColumnCount();
+                for (int i = 1; i <= cols; i++) {
+                    String name = md.getColumnLabel(i);
+                    print(name + "\t");
+                }
+                println("");
+                while (rs.next()) {
+                    for (int i = 1; i <= cols; i++) {
+                        String value = rs.getString(i);
+                        print(value + "\t");
+                    }
+                    println("");
+                }
+            }
+
+            try {
+                statement.close();
+            } catch (Exception e) {
+                // Ignore to workaround a bug in Jakarta DBCP
+            }
+        }
+
+        private String getDelimiter() {
+            return delimiter;
+        }
+
+        @SuppressWarnings("UseOfSystemOutOrSystemErr")
+        private void print(Object o) {
+            if (logWriter != null) {
+                System.out.print(o);
+            }
+        }
+
+        private void println(Object o) {
+            if (logWriter != null) {
+                logWriter.println(o);
+            }
+        }
+
+        private void printlnError(Object o) {
+            if (errorLogWriter != null) {
+                errorLogWriter.println(o);
+            }
+        }
+
+        private void flush() {
+            if (logWriter != null) {
+                logWriter.flush();
+            }
+            if (errorLogWriter != null) {
+                errorLogWriter.flush();
+            }
+        }
+    }
+    //</editor-fold>
 
     private boolean initTables() {
 //        if (connect()) {
@@ -158,7 +402,7 @@ public class MySqlDataRepository implements IDataRepository {
 //        return false;
         return true;
     }
-    
+
     private boolean disconnect() {
         if (this.connection != null) {
             try {
@@ -197,9 +441,9 @@ public class MySqlDataRepository implements IDataRepository {
         if (connect() && !isReadOnly) {
             try {
                 String q = "INSERT INTO `skillsaw_users` "
-                        + "(`uuid`, `username`,`display_name`, `ipv4`, `current_title`, `custom_titles`,"
-                        + "	`chat_color`,`rep_level`,`natural_rep`,`staff_rep`,`last_played`,"
-                        + "	`first_played`,`speaking_channel`,`sticky_channels`,`ignored_players`,`activity_score`";
+                    + "(`uuid`, `username`,`display_name`, `ipv4`, `current_title`, `custom_titles`,"
+                    + "	`chat_color`,`rep_level`,`natural_rep`,`staff_rep`,`last_played`,"
+                    + "	`first_played`,`speaking_channel`,`sticky_channels`,`ignored_players`,`activity_score`";
                 for (SkillType st : Options.Get().getSkillTypes()) {
                     q += ",`s_" + st.getKey() + "`";
                 }
@@ -246,11 +490,12 @@ public class MySqlDataRepository implements IDataRepository {
     public boolean saveUser(User u) {
 
         String q = "UPDATE `skillsaw_users` SET "
-                + "`username`=?, `display_name`=?, `ipv4`=?, `current_title`=?,"
-                + "`custom_titles` = ?,`chat_color` = ?, `rep_level` = ?,"
-                + "`natural_rep` = ?, `staff_rep`= ?,`last_played` = ?,"
-                + "`first_played` = ?,`speaking_channel` = ?, `sticky_channels` = ?,"
-                + "`ignored_players` = ?, is_staff = ?, is_instructor = ?, `activity_score` = ?";
+            + "`username`=?, `display_name`=?, `ipv4`=?, `current_title`=?,"
+            + "`custom_titles` = ?,`chat_color` = ?, `rep_level` = ?,"
+            + "`natural_rep` = ?, `staff_rep`= ?,`last_played` = ?,"
+            + "`first_played` = ?,`speaking_channel` = ?, `sticky_channels` = ?,"
+            + "`ignored_players` = ?, is_staff = ?, is_instructor = ?, `activity_score` = ?,"
+            + "`tpalock` = ?, `slog_settings` = ?";
 
         for (SkillType st : Options.Get().getSkillTypes()) {
             q += ",`s_" + st.getKey() + "` = " + u.getSkill(st);
@@ -283,6 +528,8 @@ public class MySqlDataRepository implements IDataRepository {
                 ps.setInt(i++, u.isStaff() ? 1 : 0);
                 ps.setInt(i++, u.isInstructor() ? 1 : 0);
                 ps.setInt(i++, u.getActivityScore());
+                ps.setString(i++, u.getTpaLockState().getShortLabel());
+                ps.setString(i++, new Gson().toJson(u.getSlogSettings()));
 
                 ps.setString(i++, u.getUuid().toString());
                 return ps.executeUpdate() > 0;
@@ -346,8 +593,7 @@ public class MySqlDataRepository implements IDataRepository {
     }
 
     /**
-     * Maximum of 1000 results. If more than that many are returned, something
-     * probably went wrong with the query.
+     * Maximum of 1000 results. If more than that many are returned, something probably went wrong with the query.
      *
      * @param username
      * @return
@@ -375,8 +621,8 @@ public class MySqlDataRepository implements IDataRepository {
     }
 
     /**
-     * Expects that RS has been primed before calling. "rs.next()". Returns null
-     * on failure, also throws exception into console.
+     * Expects that RS has been primed before calling. "rs.next()". Returns null on failure, also throws exception into
+     * console.
      */
     private User readUser(ResultSet rs) {
         User u = null;
@@ -413,9 +659,19 @@ public class MySqlDataRepository implements IDataRepository {
             String rsSpeakingChannel = rs.getString("speaking_channel");
             CopyOnWriteArraySet<String> rsStickie = new CopyOnWriteArraySet<>(readListFromString(rs.getString("sticky_channels")));
             CopyOnWriteArraySet<String> rsIgnored = new CopyOnWriteArraySet<>(readListFromString(rs.getString("ignored_players")));
+            BooleanAnswer rsTpaLock = BooleanAnswer.fromArg(rs.getString("tpalock"));
+            String rsSlogSettingsJson = rs.getString("slog_settings");
+
+            SlogSettings rsSlogSettings = new SlogSettings();
+            try {
+                rsSlogSettings = new Gson().fromJson(rsSlogSettingsJson, SlogSettings.class);
+            } catch (Exception ex) {
+                rsSlogSettings = new SlogSettings();
+            }
+
             u = new User(this.plugin, rsUuid, rsUsername, rsDispName, rsLPlayed, rsPlayed, rsNRep, rsSRep,
-                    skills, customTitles, rsCurTitle, rsChatcolor, rsIpv4, rsSpeakingChannel,
-                    rsStickie, rsIgnored, rsIsStaff, rsIsInstructor, rsActivityScore);
+                skills, customTitles, rsCurTitle, rsChatcolor, rsIpv4, rsSpeakingChannel,
+                rsStickie, rsIgnored, rsIsStaff, rsIsInstructor, rsActivityScore, rsTpaLock, rsSlogSettings);
         } catch (SQLException ex) {
             Logger.getLogger(MySqlDataRepository.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -423,9 +679,30 @@ public class MySqlDataRepository implements IDataRepository {
     }
 
     @Override
+    public void logVote(String username, String userIP, String serviceName) {
+        String q = "INSERT INTO `votes` (`username`, `user_id`, `ipv4`, `service_name`) "
+            + "VALUES (?,(SELECT `user_id` FROM `skillsaw_users` WHERE `username` = ?), ? ,?);";
+     if (connect() && !isReadOnly) {
+            try {
+                PreparedStatement ps = connection.prepareStatement(q);
+                int i = 1;
+                ps.setString(i++, username);
+                ps.setString(i++, username);
+                ps.setString(i++, userIP);
+                ps.setString(i++, serviceName);
+                ps.executeUpdate();
+            } catch (SQLException ex) {
+                Logger.getLogger(MySqlDataRepository.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            System.out.println("Failed to connect to the DB. Could not log vote");
+        }
+    }
+
+    @Override
     public void logRep(User issuer, User target, double amount, RepType repType, String reason) {
         String q = "INSERT INTO `replog` (`rep_type`,  `issuer_id`,  `target_id`,  `issuer_name`,  `target_name`,  `amount`,  `reason`) "
-                + "VALUES (?,(SELECT `user_id` FROM `skillsaw_users` WHERE `uuid` = ?),(SELECT `user_id` FROM `skillsaw_users` WHERE `uuid` = ?),?,?,?,?);";
+            + "VALUES (?,(SELECT `user_id` FROM `skillsaw_users` WHERE `uuid` = ?),(SELECT `user_id` FROM `skillsaw_users` WHERE `uuid` = ?),?,?,?,?);";
         if (connect() && !isReadOnly) {
             try {
                 PreparedStatement ps = connection.prepareStatement(q);
@@ -450,12 +727,12 @@ public class MySqlDataRepository implements IDataRepository {
     public ArrayList<RepLogEntry> getRepLogEntries(RepType type, int maxResultsReturned) {
         ArrayList<RepLogEntry> output = new ArrayList<>();
         String q
-                = "SELECT r.*,t.uuid as `target_uuid`,t.uuid as `issuer_uuid` FROM replog r\n "
-                + "INNER JOIN skillsaw_users i ON i.user_id = r.issuer_id\n "
-                + "INNER JOIN skillsaw_users t ON t.user_id = r.target_id\n "
-                + "WHERE `rep_type` = " + type.toInt()
-                + " ORDER BY r.`id` DESC "
-                + " limit " + maxResultsReturned;
+            = "SELECT r.*,t.uuid as `target_uuid`,t.uuid as `issuer_uuid` FROM replog r\n "
+            + "INNER JOIN skillsaw_users i ON i.user_id = r.issuer_id\n "
+            + "INNER JOIN skillsaw_users t ON t.user_id = r.target_id\n "
+            + "WHERE `rep_type` = " + type.toInt()
+            + " ORDER BY r.`id` DESC "
+            + " limit " + maxResultsReturned;
         if (connect()) {
             try {
                 PreparedStatement ps = connection.prepareStatement(q);
@@ -477,12 +754,12 @@ public class MySqlDataRepository implements IDataRepository {
     public ArrayList<RepLogEntry> getRepLogEntriesByTarget(RepType type, UUID targetUuid, int maxResultsReturned, long minLogDate) {
         ArrayList<RepLogEntry> output = new ArrayList<>();
         String q
-                = "SELECT r.*,t.uuid as `target_uuid`,t.uuid as `issuer_uuid` FROM replog r\n "
-                + "INNER JOIN skillsaw_users i ON i.user_id = r.issuer_id\n "
-                + "INNER JOIN skillsaw_users t ON t.user_id = r.target_id\n "
-                + "WHERE `rep_type` = " + type.toInt() + " AND t.uuid = ? AND r.time >= ? "
-                + " ORDER BY r.`id` DESC "
-                + " limit " + maxResultsReturned;
+            = "SELECT r.*,t.uuid as `target_uuid`,t.uuid as `issuer_uuid` FROM replog r\n "
+            + "INNER JOIN skillsaw_users i ON i.user_id = r.issuer_id\n "
+            + "INNER JOIN skillsaw_users t ON t.user_id = r.target_id\n "
+            + "WHERE `rep_type` = " + type.toInt() + " AND t.uuid = ? AND r.time >= ? "
+            + " ORDER BY r.`id` DESC "
+            + " limit " + maxResultsReturned;
         if (connect()) {
             try {
                 PreparedStatement ps = connection.prepareStatement(q);
@@ -506,12 +783,12 @@ public class MySqlDataRepository implements IDataRepository {
     public ArrayList<RepLogEntry> getRepLogEntriesByTarget(UUID targetUuid, int maxResultsReturned, long minLogDate) {
         ArrayList<RepLogEntry> output = new ArrayList<>();
         String q
-                = "SELECT r.*,t.uuid as `target_uuid`,t.uuid as `issuer_uuid` FROM replog r\n "
-                + "INNER JOIN skillsaw_users i ON i.user_id = r.issuer_id\n "
-                + "INNER JOIN skillsaw_users t ON t.user_id = r.target_id\n "
-                + "WHERE t.uuid = ? AND r.time >= ? "
-                + " ORDER BY r.`id` DESC "
-                + " limit " + maxResultsReturned;
+            = "SELECT r.*,t.uuid as `target_uuid`,t.uuid as `issuer_uuid` FROM replog r\n "
+            + "INNER JOIN skillsaw_users i ON i.user_id = r.issuer_id\n "
+            + "INNER JOIN skillsaw_users t ON t.user_id = r.target_id\n "
+            + "WHERE t.uuid = ? AND r.time >= ? "
+            + " ORDER BY r.`id` DESC "
+            + " limit " + maxResultsReturned;
         if (connect()) {
             try {
                 PreparedStatement ps = connection.prepareStatement(q);
@@ -536,12 +813,12 @@ public class MySqlDataRepository implements IDataRepository {
 
         ArrayList<RepLogEntry> output = new ArrayList<>();
         String q
-                = "SELECT r.*,t.uuid as `target_uuid`,t.uuid as `issuer_uuid` FROM replog r\n "
-                + "INNER JOIN skillsaw_users i ON i.user_id = r.issuer_id\n "
-                + "INNER JOIN skillsaw_users t ON t.user_id = r.target_id\n "
-                + "WHERE `rep_type` = " + type.toInt() + " AND i.uuid = ? AND r.time >= ? "
-                + " ORDER BY r.`id` DESC "
-                + " limit " + maxResultsReturned;
+            = "SELECT r.*,t.uuid as `target_uuid`,t.uuid as `issuer_uuid` FROM replog r\n "
+            + "INNER JOIN skillsaw_users i ON i.user_id = r.issuer_id\n "
+            + "INNER JOIN skillsaw_users t ON t.user_id = r.target_id\n "
+            + "WHERE `rep_type` = " + type.toInt() + " AND i.uuid = ? AND r.time >= ? "
+            + " ORDER BY r.`id` DESC "
+            + " limit " + maxResultsReturned;
         if (connect()) {
             try {
                 PreparedStatement ps = connection.prepareStatement(q);
@@ -580,7 +857,7 @@ public class MySqlDataRepository implements IDataRepository {
 
     public void logPromotion(User issuer, User target, SkillType st, int oLevel, int nLevel, Location l) {
         String q = "INSERT INTO `promo_log` (`skill_type`,  `issuer_id`,  `target_id`,  `issuer_name`,  `target_name`,  `olevel`,`nlevel`,  `location`) "
-                + "VALUES (?,IFNULL((SELECT `user_id` FROM `skillsaw_users` WHERE `uuid` = ?),-1),IFNULL((SELECT `user_id` FROM `skillsaw_users` WHERE `uuid` = ?),-1),?,?,?,?,?);";
+            + "VALUES (?,IFNULL((SELECT `user_id` FROM `skillsaw_users` WHERE `uuid` = ?),-1),IFNULL((SELECT `user_id` FROM `skillsaw_users` WHERE `uuid` = ?),-1),?,?,?,?,?);";
         if (connect() && !isReadOnly) {
             try {
                 PreparedStatement ps = connection.prepareStatement(q);
@@ -601,7 +878,7 @@ public class MySqlDataRepository implements IDataRepository {
             System.out.println("Failed to connect to the DB. Could not log rep.");
         }
     }
-    
+
     /**
      * Removes \r, splits by \n. *
      */
@@ -630,9 +907,7 @@ public class MySqlDataRepository implements IDataRepository {
         }
         return output;
     }
-    
-    
-    
+
     @Override
     public void getActivityScore(UUID uuid, boolean excludeAfk) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -640,49 +915,47 @@ public class MySqlDataRepository implements IDataRepository {
 
     @Override
     public void logActivity(UUID uuid, String serverName, boolean isAfk) {
-        if (connect() && !isReadOnly){
-			try{
-				String q = "INSERT INTO `skillsaw`.`activity_log` (`user_id`, `uuid`, `server`,`is_afk`) VALUES (IFNULL((SELECT `user_id` FROM `skillsaw_users` WHERE `uuid` = ?),-1),?, ?,?);";
-				PreparedStatement ps = connection.prepareStatement(q);
-				int i = 1;
-				ps.setString(i++, uuid.toString());
-				ps.setString(i++, uuid.toString());
-				ps.setString(i++, serverName);
-				ps.setInt(i++, isAfk ? 1 : 0);
-				ps.execute();
-			}
-			catch (SQLException ex){
-				Logger.getLogger(MySqlDataRepository.class.getName()).log(Level.SEVERE, null, ex);
-			}
-		}
+        if (connect() && !isReadOnly) {
+            try {
+                String q = "INSERT INTO `skillsaw`.`activity_log` (`user_id`, `uuid`, `server`,`is_afk`) VALUES (IFNULL((SELECT `user_id` FROM `skillsaw_users` WHERE `uuid` = ?),-1),?, ?,?);";
+                PreparedStatement ps = connection.prepareStatement(q);
+                int i = 1;
+                ps.setString(i++, uuid.toString());
+                ps.setString(i++, uuid.toString());
+                ps.setString(i++, serverName);
+                ps.setInt(i++, isAfk ? 1 : 0);
+                ps.execute();
+            } catch (SQLException ex) {
+                Logger.getLogger(MySqlDataRepository.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     @Override
     public void logMessage(UUID uuid, String p_username, String serverName, String message, boolean isCommand) {
-        
-        if (connect() && !isReadOnly){
-			try{
-				String q = "INSERT INTO `messages` (`server`, `username`,`uuid`, `message`,`is_command`) VALUES (?,?,?,?,?);";
-				PreparedStatement ps = connection.prepareStatement(q);
-				int i = 1;
-				ps.setString(i++, serverName);
-				ps.setString(i++, p_username);
-				ps.setString(i++, uuid.toString());
-				ps.setString(i++, message);
-				ps.setInt(i++, isCommand ? 1 : 0);
-				ps.execute();
-			}
-			catch (SQLException ex){
-				Logger.getLogger(MySqlDataRepository.class.getName()).log(Level.SEVERE, null, ex);
-			}
-		}
+
+        if (connect() && !isReadOnly) {
+            try {
+                String q = "INSERT INTO `messages` (`server`, `username`,`uuid`, `message`,`is_command`) VALUES (?,?,?,?,?);";
+                PreparedStatement ps = connection.prepareStatement(q);
+                int i = 1;
+                ps.setString(i++, serverName);
+                ps.setString(i++, p_username);
+                ps.setString(i++, uuid.toString());
+                ps.setString(i++, message);
+                ps.setInt(i++, isCommand ? 1 : 0);
+                ps.execute();
+            } catch (SQLException ex) {
+                Logger.getLogger(MySqlDataRepository.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     @Override
     public void logPromotion(User issuer, User target, SkillType st, int oLevel, int nLevel, XLocation l) {
-    
+
         String q = "INSERT INTO `promo_log` (`skill_type`,  `issuer_id`,  `target_id`,  `issuer_name`,  `target_name`,  `olevel`,`nlevel`,  `location`) "
-                + "VALUES (?,IFNULL((SELECT `user_id` FROM `skillsaw_users` WHERE `uuid` = ?),-1),IFNULL((SELECT `user_id` FROM `skillsaw_users` WHERE `uuid` = ?),-1),?,?,?,?,?);";
+            + "VALUES (?,IFNULL((SELECT `user_id` FROM `skillsaw_users` WHERE `uuid` = ?),-1),IFNULL((SELECT `user_id` FROM `skillsaw_users` WHERE `uuid` = ?),-1),?,?,?,?,?);";
         if (connect() && !isReadOnly) {
             try {
                 PreparedStatement ps = connection.prepareStatement(q);
@@ -706,18 +979,20 @@ public class MySqlDataRepository implements IDataRepository {
 
     public HashMap<UUID, Integer> getUpdatedActivityScores(Set<UUID> set) {
         HashMap<UUID, Integer> map = new HashMap<>();
-        if (set == null || set.isEmpty()) return new HashMap<>();
-        List<String> qMarks = set.stream().map(x-> "?").collect(Collectors.toList());
-        String q = "SELECT `uuid`, `activity_score` FROM skillsaw_users WHERE `uuid` IN ("+String.join(",", qMarks)+")";
+        if (set == null || set.isEmpty()) {
+            return new HashMap<>();
+        }
+        List<String> qMarks = set.stream().map(x -> "?").collect(Collectors.toList());
+        String q = "SELECT `uuid`, `activity_score` FROM skillsaw_users WHERE `uuid` IN (" + String.join(",", qMarks) + ")";
         if (connect() && !isReadOnly) {
             try {
                 PreparedStatement ps = connection.prepareStatement(q);
                 int i = 1;
-                for(UUID uuid : set){
+                for (UUID uuid : set) {
                     ps.setString(i++, uuid.toString());
                 }
                 ResultSet rs = ps.executeQuery();
-                while(rs.next()){
+                while (rs.next()) {
                     String uuidStr = rs.getString("uuid");
                     UUID uuid = UUID.fromString(uuidStr);
                     int cnt = rs.getInt("activity_score");
@@ -732,44 +1007,19 @@ public class MySqlDataRepository implements IDataRepository {
         return map;
     }
 
-
-
-    //<editor-fold defaultstate="collapsed" desc="Script RUnner">
-    /*
-     * Slightly modified version of the com.ibatis.common.jdbc.ScriptRunner class
-     * from the iBATIS Apache project. Only removed dependency on Resource class
-     * and a constructor 
-     * GPSHansl, 06.08.2015: regex for delimiter, rearrange comment/delimiter detection, remove some ide warnings.
-     */
-    /*
-     *  Copyright 2004 Clinton Begin
-     *
-     *  Licensed under the Apache License, Version 2.0 (the "License");
-     *  you may not use this file except in compliance with the License.
-     *  You may obtain a copy of the License at
-     *
-     *      http://www.apache.org/licenses/LICENSE-2.0
-     *
-     *  Unless required by applicable law or agreed to in writing, software
-     *  distributed under the License is distributed on an "AS IS" BASIS,
-     *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     *  See the License for the specific language governing permissions and
-     *  limitations under the License.
-     */
-
     @Override
     public boolean hasPlayedBefore(UUID uuid) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    public void refreshActivityScoresCache(){
-        String q = "UPDATE " +
-        "`skillsaw_users` `u` LEFT JOIN " +
-        "(SELECT user_id, (round(SUM(`minutes`)/12,0)) as `c_active` FROM activity_log `a` " +
-        "where (`a`.`time_online` > cast((now() - interval 14 day) as datetime)) " +
-        "GROUP BY `user_id`) as `a` ON `a`.user_id = `u`.user_id " +
-        "SET `u`.activity_score = IFNULL(`a`.c_active,0)  WHERE `u`.activity_score != IFNULL(`a`.c_active, 0); ";
-        
+    public void refreshActivityScoresCache() {
+        String q = "UPDATE "
+            + "`skillsaw_users` `u` LEFT JOIN "
+            + "(SELECT user_id, (round(SUM(`minutes`)/12,0)) as `c_active` FROM activity_log `a` "
+            + "where (`a`.`time_online` > cast((now() - interval 14 day) as datetime)) "
+            + "GROUP BY `user_id`) as `a` ON `a`.user_id = `u`.user_id "
+            + "SET `u`.activity_score = IFNULL(`a`.c_active,0)  WHERE `u`.activity_score != IFNULL(`a`.c_active, 0); ";
+
         if (connect() && !isReadOnly) {
             try {
                 PreparedStatement ps = connection.prepareStatement(q);
@@ -784,241 +1034,19 @@ public class MySqlDataRepository implements IDataRepository {
 
     @Override
     public void purgeOldMessages(int numToKeep) {
-		if (connect() && !this.isReadOnly){
-			try{
-				String q = "SELECT MAX(`id`) as `id` FROM `messages`;";
-				PreparedStatement ps = connection.prepareStatement(q);
-				ResultSet rs = ps.executeQuery();
-				if (rs.next()){
-					int maxId = rs.getInt("id");
-					ps = connection.prepareStatement("DELETE FROM `messages` WHERE `id` < ("+(maxId-500000)+")");
-					ps.execute();
-				}
-			}
-			catch (SQLException ex){
-				Logger.getLogger(MySqlDataRepository.class.getName()).log(Level.SEVERE, null, ex);
-			}
-		}
-    }
-    
-    /**
-     * Tool to run database scripts
-     */
-    protected static class ScriptRunner {
-
-        private static final String DEFAULT_DELIMITER = ";";
-        /**
-         * regex to detect delimiter.
-         * ignores spaces, allows delimiter in comment, allows an equals-sign
-         */
-        protected static final Pattern delimP = Pattern.compile("^\\s*(--)?\\s*delimiter\\s*=?\\s*([^\\s]+)+\\s*.*$", Pattern.CASE_INSENSITIVE);
-
-        private final Connection connection;
-
-        private final boolean stopOnError;
-        private final boolean autoCommit;
-
-        @SuppressWarnings("UseOfSystemOutOrSystemErr")
-        private PrintWriter logWriter = null; // new PrintWriter(System.out);
-        @SuppressWarnings("UseOfSystemOutOrSystemErr")
-        private PrintWriter errorLogWriter = null; //new PrintWriter(System.err);
-
-        private String delimiter = DEFAULT_DELIMITER;
-        private boolean fullLineDelimiter = false;
-
-        /**
-         * Default constructor
-         */
-        public ScriptRunner(Connection connection, boolean autoCommit,
-                boolean stopOnError) {
-            this.connection = connection;
-            this.autoCommit = autoCommit;
-            this.stopOnError = stopOnError;
-        }
-
-        public void setDelimiter(String delimiter, boolean fullLineDelimiter) {
-            this.delimiter = delimiter;
-            this.fullLineDelimiter = fullLineDelimiter;
-        }
-
-        /**
-         * Setter for logWriter property
-         *
-         * @param logWriter - the new value of the logWriter property
-         */
-        public void setLogWriter(PrintWriter logWriter) {
-            this.logWriter = logWriter;
-        }
-
-        /**
-         * Setter for errorLogWriter property
-         *
-         * @param errorLogWriter - the new value of the errorLogWriter property
-         */
-        public void setErrorLogWriter(PrintWriter errorLogWriter) {
-            this.errorLogWriter = errorLogWriter;
-        }
-
-        /**
-         * Runs an SQL script (read in using the Reader parameter)
-         *
-         * @param reader - the source of the script
-         */
-        public void runScript(Reader reader) throws IOException, SQLException {
+        if (connect() && !this.isReadOnly) {
             try {
-                boolean originalAutoCommit = connection.getAutoCommit();
-                try {
-                    if (originalAutoCommit != this.autoCommit) {
-                        connection.setAutoCommit(this.autoCommit);
-                    }
-                    runScript(connection, reader);
-                } finally {
-                    connection.setAutoCommit(originalAutoCommit);
+                String q = "SELECT MAX(`id`) as `id` FROM `messages`;";
+                PreparedStatement ps = connection.prepareStatement(q);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    int maxId = rs.getInt("id");
+                    ps = connection.prepareStatement("DELETE FROM `messages` WHERE `id` < (" + (maxId - 500000) + ")");
+                    ps.execute();
                 }
-            } catch (IOException | SQLException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new RuntimeException("Error running script.  Cause: " + e, e);
-            }
-        }
-
-        /**
-         * Runs an SQL script (read in using the Reader parameter) using the
-         * connection passed in
-         *
-         * @param conn - the connection to use for the script
-         * @param reader - the source of the script
-         * @throws SQLException if any SQL errors occur
-         * @throws IOException if there is an error reading from the Reader
-         */
-        private void runScript(Connection conn, Reader reader) throws IOException,
-                SQLException {
-            StringBuffer command = null;
-            try {
-                LineNumberReader lineReader = new LineNumberReader(reader);
-                String line;
-                while ((line = lineReader.readLine()) != null) {
-                    if (command == null) {
-                        command = new StringBuffer();
-                    }
-                    String trimmedLine = line.trim();
-                    final Matcher delimMatch = delimP.matcher(trimmedLine);
-                    if (trimmedLine.length() < 1
-                            || trimmedLine.startsWith("//")) {
-                        // Do nothing
-                    } else if (delimMatch.matches()) {
-                        setDelimiter(delimMatch.group(2), false);
-                    } else if (trimmedLine.startsWith("--")) {
-                        println(trimmedLine);
-                    } else if (trimmedLine.length() < 1
-                            || trimmedLine.startsWith("--")) {
-                        // Do nothing
-                    } else if (!fullLineDelimiter
-                            && trimmedLine.endsWith(getDelimiter())
-                            || fullLineDelimiter
-                            && trimmedLine.equals(getDelimiter())) {
-                        command.append(line.substring(0, line
-                                .lastIndexOf(getDelimiter())));
-                        command.append(" ");
-                        this.execCommand(conn, command, lineReader);
-                        command = null;
-                    } else {
-                        command.append(line);
-                        command.append("\n");
-                    }
-                }
-                if (command != null) {
-                    this.execCommand(conn, command, lineReader);
-                }
-                if (!autoCommit) {
-                    conn.commit();
-                }
-            } catch (Exception e) {
-                throw new IOException(String.format("Error executing '%s': %s", command, e.getMessage()), e);
-            } finally {
-                conn.rollback();
-                flush();
-            }
-        }
-
-            private void execCommand(Connection conn, StringBuffer command,
-                            LineNumberReader lineReader) throws SQLException {
-                    Statement statement = conn.createStatement();
-
-                    println(command);
-
-                    boolean hasResults = false;
-                    try {
-                        hasResults = statement.execute(command.toString());
-                    } catch (SQLException e) {
-                        final String errText = String.format("Error executing '%s' (line %d): %s", command, lineReader.getLineNumber(), e.getMessage());
-                        if (stopOnError) {
-                            throw new SQLException(errText, e);
-                        } else {
-                            println(errText);
-                        }
-                    }
-
-                    if (autoCommit && !conn.getAutoCommit()) {
-                        conn.commit();
-                    }
-
-                    ResultSet rs = statement.getResultSet();
-                    if (hasResults && rs != null) {
-                        ResultSetMetaData md = rs.getMetaData();
-                        int cols = md.getColumnCount();
-                        for (int i = 1; i <= cols; i++) {
-                            String name = md.getColumnLabel(i);
-                            print(name + "\t");
-                        }
-                        println("");
-                        while (rs.next()) {
-                            for (int i = 1; i <= cols; i++) {
-                                String value = rs.getString(i);
-                                print(value + "\t");
-                            }
-                            println("");
-                        }
-                    }
-
-                    try {
-                        statement.close();
-                    } catch (Exception e) {
-                        // Ignore to workaround a bug in Jakarta DBCP
-                    }
-            }
-
-        private String getDelimiter() {
-            return delimiter;
-        }
-
-        @SuppressWarnings("UseOfSystemOutOrSystemErr")
-        private void print(Object o) {
-            if (logWriter != null) {
-                System.out.print(o);
-            }
-        }
-
-        private void println(Object o) {
-            if (logWriter != null) {
-                logWriter.println(o);
-            }
-        }
-
-        private void printlnError(Object o) {
-            if (errorLogWriter != null) {
-                errorLogWriter.println(o);
-            }
-        }
-
-        private void flush() {
-            if (logWriter != null) {
-                logWriter.flush();
-            }
-            if (errorLogWriter != null) {
-                errorLogWriter.flush();
+            } catch (SQLException ex) {
+                Logger.getLogger(MySqlDataRepository.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
-    //</editor-fold>
 }

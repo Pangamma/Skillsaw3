@@ -7,7 +7,6 @@ package com.lumengaming.skillsaw.bridge;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.lumengaming.skillsaw.utility.Constants;
-import com.lumengaming.skillsaw.models.XLocation;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.UUID;
@@ -29,7 +28,6 @@ public class PlaySoundForPlayerRequest extends IBridgePayload<PlaySoundForPlayer
     
     @Override
     public PlaySoundForPlayerRequest FromBytes(DataInputStream in) throws IOException {
-        in.reset();
         this.SubChannel = in.readUTF();
         this.Key = in.readLong();
         this.UUID = UUID.fromString(in.readUTF());

@@ -8,6 +8,7 @@ package com.lumengaming.skillsaw.bridge;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 
@@ -29,4 +30,8 @@ public abstract class IBridgePayload<T> {
     }
     protected abstract byte[] ToBytes(ByteArrayDataOutput out) throws IOException;
     public abstract T FromBytes(DataInputStream in) throws IOException ;
+    public T FromBytes(byte[] data) throws IOException{
+        final DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
+        return FromBytes(in);
+    }
 }

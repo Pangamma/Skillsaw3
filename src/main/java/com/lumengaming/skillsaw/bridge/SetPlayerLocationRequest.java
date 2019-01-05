@@ -41,7 +41,6 @@ public class SetPlayerLocationRequest extends IBridgePayload<SetPlayerLocationRe
 
     @Override
     public SetPlayerLocationRequest FromBytes(DataInputStream in) throws IOException {
-        in.reset();
         this.SubChannel = in.readUTF();
         this.Key = in.readLong();
         this.UUID = UUID.fromString(in.readUTF());

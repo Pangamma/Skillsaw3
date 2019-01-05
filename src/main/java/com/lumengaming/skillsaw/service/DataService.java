@@ -17,16 +17,14 @@ import com.lumengaming.skillsaw.models.RepType;
 import com.lumengaming.skillsaw.models.SkillType;
 import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.models.XLocation;
+import com.lumengaming.skillsaw.models.XVote;
 import com.lumengaming.skillsaw.utility.CText;
-import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Set;
@@ -374,22 +372,22 @@ public class DataService {
                 }
 
                 String realName = ChatColor.stripColor(u.getName()).toLowerCase();
-                if (realName.contains(name)){
+                if (realName.startsWith(name)){
                     if (bestPartialMatch == null){
                         bestPartialMatch = u;
                         bestPartialMatchStr = realName;
-                    }else if (realName.contains(name) && realName.length() <= bestPartialMatchStr.length()){
+                    }else if (realName.length() <= bestPartialMatchStr.length()){
                         bestPartialMatch = u;
                         bestPartialMatchStr = realName;
                     }
                 }
 
                 String dispName = ChatColor.stripColor(u.getDisplayName()).toLowerCase();
-                if (dispName.contains(name)){
+                if (dispName.startsWith(name)){
                     if (bestPartialMatch == null){
                         bestPartialMatch = u;
                         bestPartialMatchStr = dispName;
-                    }else if (dispName.contains(name) && dispName.length() < bestPartialMatchStr.length()){
+                    }else if (dispName.length() < bestPartialMatchStr.length()){
                         bestPartialMatch = u;
                         bestPartialMatchStr = dispName;
                     }
@@ -571,6 +569,18 @@ public class DataService {
 	//</editor-fold>
     
 	//<editor-fold defaultstate="collapsed" desc="Logging">
+    
+    public void logVote(String username, String userIP, String serviceName, AsyncEmptyCallback callback){
+        plugin.runTaskAsynchronously(() -> { 
+            this.repo.logVote(username, userIP, serviceName);
+            callback.doCallback();
+        });
+    }
+    
+    public void getVoteCountForLastNDays(int n, AsyncCallback<Integer> callback){
+        
+    }
+    
     public void logMessage(String username, UUID uuid, String server, String message, boolean command) {
         this.plugin.runTaskAsynchronously(() -> { 
             repo.logMessage(uuid, username, server, message, command);
@@ -587,7 +597,7 @@ public class DataService {
      * Updates cached values in server memory based on values from repository.
      * @param callback 
      */
-    public void updateActivityLevels(AsyncEmptyCallback callback){
+    public void updateCalculatedCacheValues(AsyncEmptyCallback callback){
         final Set<UUID> keySet = this.onlineUsers.keySet();
         plugin.runTaskAsynchronously(() -> {
             repo.refreshActivityScoresCache();

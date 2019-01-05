@@ -45,6 +45,8 @@ public interface IDataRepository {
 	
 	//<editor-fold defaultstate="collapsed" desc="Logs">
     
+    void logVote(String username, String userIP, String serviceName);
+    
     public void getActivityScore(UUID uuid, boolean excludeAfk);
     
     public void logActivity(UUID uuid, String serverName,boolean isAfk);

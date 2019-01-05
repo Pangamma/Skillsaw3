@@ -22,6 +22,11 @@
             <id>bungeecord-repo</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </repository>
+        <repository>
+            <id>parallelblock-public</id>
+            <name>ParallelBlock Public Repository</name>
+            <url>https://repo.parallelblock.com/repository/maven-public/</url>
+        </repository>
     </repositories>
     <dependencies>
         <dependency>
@@ -42,6 +47,18 @@
             <artifactId>bungeecord-api</artifactId>
             <version>1.12-SNAPSHOT</version>
             <type>javadoc</type>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.vexsoftware</groupId>
+            <artifactId>nuvotifier-universal</artifactId>
+            <version>2.4.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>me.lucko.luckperms</groupId>
+            <artifactId>luckperms-api</artifactId>
+            <version>4.3</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

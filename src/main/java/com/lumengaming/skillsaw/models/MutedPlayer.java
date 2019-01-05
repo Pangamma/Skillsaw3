@@ -32,7 +32,7 @@ public class MutedPlayer implements Comparable<MutedPlayer>{
 	
 	/** D:H:M:S **/
 	public String getTotalMuteTimeStr(){
-		if (this.secondsToLive == -1){ return "infnite time";}
+		if (this.secondsToLive == -1){ return "infinite time";}
 		String s = "";
 		long[] timeParts = SharedUtility.getTimeParts(secondsToLive*1000);
 		s += timeParts[0]+"d ";
@@ -44,7 +44,7 @@ public class MutedPlayer implements Comparable<MutedPlayer>{
 	
 	/** D:H:M:S **/
 	public String getTimeRemainingStr(){
-		if (this.secondsToLive == -1){ return "infnite";}
+		if (this.secondsToLive == -1){ return "infinite";}
 		String s = "";
 		long ms = expireAt - System.currentTimeMillis();
 		if (ms < 0){ ms = 0;}

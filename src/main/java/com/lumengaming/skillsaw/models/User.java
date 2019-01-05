@@ -53,6 +53,8 @@ public class User {
     private IPlayer p;
     private int activityScore = 0;
     private UUID lastWhisperedUuid;
+    private BooleanAnswer tpaLockState = BooleanAnswer.Ask;
+    private SlogSettings slogSettings = new SlogSettings();
 
     /**
      * Use only for creating a new default user object when one can't be pulled
@@ -74,6 +76,7 @@ public class User {
         this.speakingChannel = "1";
         this.isStaff = false;
         this.isInstructor = false;
+        this.slogSettings = new SlogSettings();
     }
 
     /**
@@ -105,6 +108,8 @@ public class User {
         this.isStaff = orig.isStaff;
         this.activityScore = orig.activityScore;
         this.p = orig.p;
+        this.tpaLockState = orig.tpaLockState;
+        this.slogSettings = orig.slogSettings;
     }
 
     /**
@@ -127,12 +132,16 @@ public class User {
      * @param p_ignored
      * @param p_isStaff
      * @param p_isInstructor
+     * @param tpaLockState
+     * @param p_tpaLockState
+     * @param p_slog
      */
     public User(ISkillsaw p_plugin, UUID p_uuid, String p_username, String p_displayName, long p_lastPlayed,
             long p_firstPlayed, double p_nRep, double p_sRep, HashMap<SkillType, Integer> p_skills,
             ArrayList<Title> p_customTitles, Title p_curTitle, String p_chatColor, String p_ipv4,
             String p_speakingChannel, CopyOnWriteArraySet<String> p_stickyChannels,
-            CopyOnWriteArraySet<String> p_ignored, boolean p_isStaff, boolean p_isInstructor, int p_activityScore) {
+            CopyOnWriteArraySet<String> p_ignored, boolean p_isStaff, boolean p_isInstructor, int p_activityScore, 
+            BooleanAnswer p_tpaLockState, SlogSettings p_slog) {
         this.plugin = p_plugin;
         this.uuid = p_uuid;
         this.name = p_username;
@@ -153,6 +162,7 @@ public class User {
         this.isInstructor = p_isInstructor;
         this.isStaff = p_isStaff;
         this.activityScore = p_activityScore;
+        this.tpaLockState = p_tpaLockState;
 
         ArrayList<Title> allTitles = this.getAllTitles();
         this.title = Title.getMatchedTitle(p_curTitle, allTitles);
@@ -163,6 +173,7 @@ public class User {
         if (p() != null) {
             p().setDisplayName(this.displayName);
         }
+        this.slogSettings = p_slog;
     }
     //</editor-fold>
 
@@ -241,6 +252,11 @@ public class User {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Identifiers">
+    
+    public UUID getUuid() {
+        return this.getUniqueId();
+    }
+    
     public synchronized UUID getUniqueId() {
         return uuid;
     }
@@ -310,6 +326,7 @@ public class User {
     }
     //</editor-fold>
 
+    
     //<editor-fold defaultstate="collapsed" desc="Skills / Rep">
     public synchronized double getNaturalRep() {
         return User.round(this.nRep);
@@ -445,23 +462,16 @@ public class User {
         int oLevel = this.LEVEL;
         this.LEVEL = User.calculateRepLevel(nRep);
         
-        //throw new UnsupportedOperationException("Hey, don't forget to add the below code into the COMMAND. Check level up effects here as well.");
-        
         if (p() != null && p().isValid()){
             plugin.playVillagerSound(p());
         }
         
-        if (oLevel < this.LEVEL) {
-            if (p() == null){
-                if (!p.isValid()){
-                    plugin.broadcast("ZZZZ0");
-                }else{
-                    plugin.broadcast("ZZZZ1");
-                }
+        if (p() != null && p().isValid()){
+            if (oLevel < this.LEVEL) {
+                plugin.playLevelUpEffect(p(), "Reputation Level Increased", "§aCongratulations! Your total§2 Reputation Level§a has increased!");
+            } else if (oLevel > this.LEVEL) {
+                plugin.playLevelDownEffect(p(), "§cYour total §4Reputation Level§c has decreased.");
             }
-            plugin.playLevelUpEffect(p(), "Reputation Level Increased", "§aCongratulations! Your total§2 Reputation Level§a has increased!");
-        } else if (oLevel > this.LEVEL) {
-            plugin.playLevelDownEffect(p(), "§cYour total §4Reputation Level§c has decreased.");
         }
 
         return round(amount);//if successful
@@ -499,6 +509,21 @@ public class User {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Other / Utility">
+    
+    public IPlayer p() {
+        if ((p == null || !this.p.isValid()) && this.uuid != null){
+            this.p = plugin.getPlayer(this.uuid);
+        }
+        return this.p;
+    }
+    
+    /** You will need to cast it to ProxiedPlayer or Player or CommandSender. **/
+    public Object getRawPlayer() {
+        IPlayer pl = this.p();
+        if (pl != null) return pl.getRaw();
+        return null;
+    }
+    
     public synchronized boolean isStaff() {
         return isStaff;
     }
@@ -609,6 +634,27 @@ public class User {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Chat">
+    public boolean isSlogging(){
+        return this.slogSettings.IsEnabled;
+    }
+    
+    public SlogSettings getSlogSettings() {
+        return slogSettings;
+    }
+
+    public void setSlogSettings(SlogSettings slogSettings) {
+        this.slogSettings = slogSettings;
+    }
+    
+    
+    public void setLastWhispered(UUID uniqueId) {
+        this.lastWhisperedUuid = uniqueId;
+    }
+    
+    public UUID getLastWhispered() {
+        return this.lastWhisperedUuid;
+    }
+    
     public synchronized String getChatColor() {
         return this.chatColor;
     }
@@ -719,37 +765,20 @@ public class User {
         return "notYetSupported.";
     }
 
-    public IPlayer p() {
-        if ((p == null || !this.p.isValid()) && this.uuid != null){
-            this.p = plugin.getPlayer(this.uuid);
-        }
-        return this.p;
+    public BooleanAnswer getTpaLockState(){
+        return this.tpaLockState;
     }
     
-    /** You will need to cast it to ProxiedPlayer or Player or CommandSender. **/
-    public Object getRawPlayer() {
-        IPlayer pl = this.p();
-        if (pl != null) return pl.getRaw();
-        return null;
+    public void setTpaLockState(BooleanAnswer state){
+        this.tpaLockState = state;
     }
-
-    public UUID getUuid() {
-        return this.getUniqueId();
-    }
-
+    
+    
     public int getActivityScore() {
         return this.activityScore;
     }
     public void setActivityScore(int score) {
         this.activityScore = score;
-    }
-
-    public void setLastWhispered(UUID uniqueId) {
-        this.lastWhisperedUuid = uniqueId;
-    }
-    
-    public UUID getLastWhispered() {
-        return this.lastWhisperedUuid;
     }
 
 }

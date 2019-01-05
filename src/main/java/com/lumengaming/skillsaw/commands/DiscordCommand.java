@@ -25,9 +25,9 @@ public class DiscordCommand extends BungeeCommand{
 
     @Override
     public void execute(BungeePlayer csw, String[] args) {
-        BaseComponent[] legacy = CText.legacy("§aHere is a link to our discord server! " + Options.Get().DiscordInviteLink);
+        BaseComponent[] legacy = CText.legacy("§9" + Options.Get().DiscordInviteLink);
         CText.applyEvent(legacy, new ClickEvent(ClickEvent.Action.OPEN_URL, Options.Get().DiscordInviteLink));
-        CText.applyEvent(legacy, new HoverEvent(HoverEvent.Action.SHOW_TEXT, CText.legacy("Click to copy")));
+        CText.applyEvent(legacy, new HoverEvent(HoverEvent.Action.SHOW_TEXT, CText.legacy("Click to open")));
         csw.sendMessage(legacy);
     }
     

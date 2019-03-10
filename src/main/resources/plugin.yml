@@ -6,9 +6,11 @@ author: Pangamma
 main: com.lumengaming.skillsaw.SpigotMain
 description: Custom build skill rank system.
 commands:
-#  skillsaw:
-#    description: 'help'
-#    aliases: ['ssaw','skills','skill','skillsaw2']
+  pvpmode:
+    description: 'Enable or disable PVP mode.'
+    aliases: ['pvpm']
+  test2:
+    description: 'Test'
 #  testlock:
 #    description: 'Lock the main thread.'
 #  setskill:

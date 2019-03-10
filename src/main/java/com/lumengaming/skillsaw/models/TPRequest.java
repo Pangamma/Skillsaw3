@@ -34,14 +34,7 @@ public class TPRequest {
     private final IPlayer from;
     private final IPlayer to;
     private final long timeOfRequest;
-//    public static final String C_GOOD = "§a";
-//    public static final String C_BAD = "§c";
     public static final String C_REQ = "§e";
-//    public static final String YES = "/yes";
-//    public static final String NO = "/no";
-//    public static final String YES2 = "/tpaccept";
-//    public static final String NO2 = "/tpadeny";
-//    public static final String SILENTNO = "/silentno";
     public static final String ERROR_REQUEST_ALREADY_EXISTS = "§cYou have already sent a teleportation request of this type to that person. Please wait until they accept or deny your request.";
 
 
@@ -61,63 +54,6 @@ public class TPRequest {
         this.loc = loc;
     }
 
-
-    //<editor-fold defaultstate="collapsed" desc="notify">
-//
-//    /**
-//     * participant *
-//     */
-//    public boolean finish(String result) {
-//        boolean success = false;
-//        Player pTo = STATIC.getPlayer(to);
-//        Player pFrom = STATIC.getPlayer(from);
-//        if (pTo == null && pFrom != null) {
-//            pFrom.sendMessage(C_BAD + "Cannot finish the teleportation action with " + to + " because " + to + " is unavailable.");
-//            return false;
-//        }
-//        if (pFrom == null && pTo != null) {
-//            pTo.sendMessage(C_BAD + "Cannot finish the teleportation action with " + from + " because " + from + " is unavailable.");
-//            return false;
-//        }
-//        if (pFrom == null && pTo == null) {
-//            System.out.println("what the heck just happened?");
-//        }
-//        if (type == TpaType.TPA) {
-//            if (result.equalsIgnoreCase(NO) || result.equalsIgnoreCase(NO2)) {
-//                pFrom.sendMessage(C_BAD + to + " has denied your teleport request.");
-//                pTo.sendMessage(C_BAD + "You have denied " + from + "'s teleport request.");
-//                success = true;
-//            } else if (result.equalsIgnoreCase(YES) || result.equalsIgnoreCase(YES2)) {
-//                pFrom.sendMessage(C_GOOD + to + " has accepted your teleport request.");
-//                pTo.sendMessage(C_GOOD + "You have accepted " + from + "'s teleport request.");
-//                success = pFrom.teleport(pTo.getLocation());
-//            } else if (result.equalsIgnoreCase(SILENTNO)) {
-//                pTo.sendMessage(C_BAD + "You have silently denied " + from + "'s teleport request.");
-//                success = true;
-//            } else {
-//                pFrom.sendMessage("something weired happened.");
-//                pTo.sendMessage("something weired happened.");
-//            }
-//        } else if (type == TpaType.TPAHERE) {
-//            if (result.equalsIgnoreCase(NO) || result.equalsIgnoreCase(NO2)) {
-//                pFrom.sendMessage(C_BAD + to + " has denied your teleport request.");
-//                pTo.sendMessage(C_BAD + "You have denied " + from + "'s teleport request.");
-//                success = true;
-//            } else if (result.equalsIgnoreCase(YES) || result.equalsIgnoreCase(YES2)) {
-//                pFrom.sendMessage(C_GOOD + to + " has accepted your teleport request.");
-//                pTo.sendMessage(C_GOOD + "You have accepted " + from + "'s teleport request.");
-//                success = pTo.teleport(pFrom.getLocation());
-//            } else if (result.equalsIgnoreCase(SILENTNO)) {
-//                pTo.sendMessage(C_BAD + "You have silently denied " + from + "'s teleport request.");
-//                success = true;
-//            } else {
-//                pFrom.sendMessage("something weired happened.");
-//                pTo.sendMessage("something weired happened.");
-//            }
-//        }
-//        return success;
-//    }
-	//</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="access">
 
     /**

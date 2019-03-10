@@ -26,7 +26,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -50,7 +52,10 @@ public class STATIC {
      * FUCK THIS SHIT. GOD FUCKING DAMMIT. FUCK THIS. FUCK YOU. FUCK IT. FUCK 
      * EVERYTHING. GOD. SIX GOD DAMN HOURS ON THIS. WASTED. GOD FUCKING DAMMIT 
      * AAAAAAAAAAAAAAAAAAAAAARRRRRRRRRRRRRRRRRRRRRRRRRRRRRCCGHGHGHGHGHGHGHHGHGHGHHGHGHGHGHGHHGHGHGH!!!!!!!!!!!!!!!!!!!
-     * 
+     *  "[4:13 PM] Matthew (Me4502): I would really not recommend using a Scanner to read in a file
+        [4:14 PM] Matthew (Me4502): Also that won’t work as is, you’ll just read the first chunk of data then return it
+            [4:14 PM] Matthew (Me4502): I’d recommend using a BufferedReader and a while loop"
+            * 
      * (Me finding this later: "Ahhhhhh. The screams of learning. *sips coffee*")
      * @param fileName
      * @return 
@@ -79,6 +84,7 @@ public class STATIC {
         if (p != null && p.isOnline()) {
             return p;
         }
+        
         for (Player n : Bukkit.getOnlinePlayers()) {
             String nick = ChatColor.stripColor(n.getDisplayName()).toLowerCase();
             if (nick.contains(name)) {

@@ -1,12 +1,12 @@
 package com.lumengaming.skillsaw.commands.chat;
 
 import com.lumengaming.skillsaw.BungeeMain;
-import com.lumengaming.skillsaw.Options;
+import com.lumengaming.skillsaw.config.Options;
 import com.lumengaming.skillsaw.commands.BungeeCommand;
 import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.service.DataService;
 import com.lumengaming.skillsaw.utility.CText;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
@@ -40,7 +40,7 @@ public class IgnoreCommand extends BungeeCommand {
         }
 
         if (!cs.isPlayer()) {
-            cs.sendMessage(Constants.ERROR_PLAYERS_ONLY);
+            cs.sendMessage(C.ERROR_PLAYERS_ONLY);
             return;
         }
 
@@ -48,7 +48,7 @@ public class IgnoreCommand extends BungeeCommand {
             DataService system = plugin.getDataService();
             User cp = system.getUser(cs.getUniqueId());
             if (cp == null) {
-                cs.sendMessage(Constants.ERROR_TRY_AGAIN_LATER_COMMAND);
+                cs.sendMessage(C.ERROR_TRY_AGAIN_LATER_COMMAND);
                 return;
             }
 
@@ -110,16 +110,16 @@ public class IgnoreCommand extends BungeeCommand {
                 cs.sendMessage("§aNo longer ignoring anyone.");
                 plugin.getDataService().saveUser(cp);
             } else if ("?".equals(args[0])) {
-                cs.sendMessage(Constants.C_DIV_LINE);
-                cs.sendMessage(Constants.C_DIV_TITLE_PREFIX + " Ignore List");
-                cs.sendMessage(Constants.C_DIV_LINE);
+                cs.sendMessage(C.C_DIV_LINE);
+                cs.sendMessage(C.C_DIV_TITLE_PREFIX + " Ignore List");
+                cs.sendMessage(C.C_DIV_LINE);
                 for (String name : cp.getIgnored()) {
-                    BaseComponent[] txt = CText.legacy(Constants.C_MENU_CONTENT + name);
+                    BaseComponent[] txt = CText.legacy(C.C_MENU_CONTENT + name);
                     CText.applyEvent(txt, new HoverEvent(HoverEvent.Action.SHOW_TEXT, CText.legacy("Click to remove.")));
                     CText.applyEvent(txt, new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/ignore - " + name));
                     cs.sendMessage(txt);
                 }
-                cs.sendMessage(Constants.C_DIV_LINE);
+                cs.sendMessage(C.C_DIV_LINE);
             } else {
                 printHelp(cs);
             }

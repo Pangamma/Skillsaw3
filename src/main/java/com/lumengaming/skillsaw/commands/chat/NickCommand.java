@@ -4,7 +4,7 @@ import com.lumengaming.skillsaw.BungeeMain;
 import com.lumengaming.skillsaw.commands.BungeeCommand;
 import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.service.DataService;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.utility.SharedUtility;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
@@ -38,7 +38,7 @@ public class NickCommand extends BungeeCommand {
 
         User issuer = dh.getUser(cs.getUniqueId());
         if (issuer == null) {
-            cs.sendMessage(Constants.ERROR_TRY_AGAIN_LATER_COMMAND);
+            cs.sendMessage(C.ERROR_TRY_AGAIN_LATER_COMMAND);
             return;
         }
 
@@ -54,19 +54,17 @@ public class NickCommand extends BungeeCommand {
 
         try {
             String nick = "";
-            User target = null;
             if (args.length == 1) {
-
                 nick = args[0];
                 part2(issuer, issuer, nick, canNickFormat, canNickColors, canNickBlack, canNickSpecialChars);
             } else if (args.length == 2) {
-                dh.getOfflineUserByNameOrDisplayName(args[0], (u) -> {
-                    if (u == null) {
-                        cs.sendMessage(Constants.ERROR_P_NOT_FOUND);
+                dh.getOfflineUserByNameOrDisplayName(args[0], (target) -> {
+                    if (target == null) {
+                        cs.sendMessage(C.ERROR_P_NOT_FOUND);
                         return;
                     }
 
-                    if (!canNickOthers && !cs.getName().equalsIgnoreCase(u.getName())) {
+                    if (!canNickOthers && !cs.getName().equalsIgnoreCase(target.getName())) {
                         cs.sendMessage(Permissions.TELL_USER_PERMISSION_THEY_LACK(Permissions.NICK_OTHERS));
                         return;
                     }

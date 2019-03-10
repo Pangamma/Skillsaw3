@@ -2,10 +2,10 @@ package com.lumengaming.skillsaw.commands;
 
 import com.lumengaming.skillsaw.utility.CText;
 import com.lumengaming.skillsaw.BungeeMain;
-import com.lumengaming.skillsaw.Options;
+import com.lumengaming.skillsaw.config.Options;
 import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.models.XLocation;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
@@ -36,7 +36,7 @@ public class ReviewCommand extends BungeeCommand {
     @Override
     public void execute(BungeePlayer cs, String[] args) {
         if (!cs.isPlayer()) {
-            cs.sendMessage(Constants.ERROR_PLAYERS_ONLY);
+            cs.sendMessage(C.ERROR_PLAYERS_ONLY);
             return;
         }
 
@@ -46,7 +46,7 @@ public class ReviewCommand extends BungeeCommand {
                     return;
                 }
 
-                cs.sendMessage(Constants.MSG_PROCESSING);
+                cs.sendMessage(C.MSG_PROCESSING);
                 plugin.getSender().getPlayerLocation(cs.p(), (loc) -> {
 
                     boolean canPostAgain = true;
@@ -108,11 +108,11 @@ public class ReviewCommand extends BungeeCommand {
                     return;
                 }
                 //<editor-fold defaultstate="collapsed" desc="list">
-                cs.sendMessage(Constants.C_DIV_LINE);
+                cs.sendMessage(C.C_DIV_LINE);
                 ArrayList<BaseComponent[]> results = new ArrayList<BaseComponent[]>();
                 for (ReviewRequest r : requests) {
                     String strike = r.visitors.contains(cs.getName()) ? "§m" : "";
-                    String msg = Constants.C_MENU_CONTENT + strike + r.getRequester() + " @ " + ((System.currentTimeMillis() - r.getTimeOfReq()) / 3600000) + "h " + ((System.currentTimeMillis() - r.getTimeOfReq()) / 60000) + "m";
+                    String msg = C.C_MENU_CONTENT + strike + r.getRequester() + " @ " + ((System.currentTimeMillis() - r.getTimeOfReq()) / 3600000) + "h " + ((System.currentTimeMillis() - r.getTimeOfReq()) / 60000) + "m";
                     BaseComponent[] text = CText.hoverText(msg, "Click to teleport");
                     CText.applyEvent(text, new ClickEvent(Action.RUN_COMMAND, "/rev tp " + r.getRequester()));
                     results.add(text);
@@ -120,20 +120,20 @@ public class ReviewCommand extends BungeeCommand {
                 while (!results.isEmpty()) {
                     cs.sendMessage(results.remove(results.size() - 1));
                 }
-                cs.sendMessage(Constants.C_DIV_LINE);
+                cs.sendMessage(C.C_DIV_LINE);
                 //<editor-fold defaultstate="collapsed" desc="summary">
                 int size = requests.size();
                 if (size == 0) {
-                    cs.sendMessage(Constants.C_MENU_CONTENT + "No one is waiting for a peer review right now.");
+                    cs.sendMessage(C.C_MENU_CONTENT + "No one is waiting for a peer review right now.");
                 } else if (size == 1) {
-                    cs.sendMessage(Constants.C_MENU_CONTENT + "There is one person waiting for a peer review right now.");
-                    cs.sendMessage(Constants.C_MENU_CONTENT + "/review tp <their name>");
+                    cs.sendMessage(C.C_MENU_CONTENT + "There is one person waiting for a peer review right now.");
+                    cs.sendMessage(C.C_MENU_CONTENT + "/review tp <their name>");
                 } else {
-                    cs.sendMessage(Constants.C_MENU_CONTENT + "There are " + requests.size() + " people waiting for a peer review right now.");
-                    cs.sendMessage(Constants.C_MENU_CONTENT + "/review tp <their names>");
+                    cs.sendMessage(C.C_MENU_CONTENT + "There are " + requests.size() + " people waiting for a peer review right now.");
+                    cs.sendMessage(C.C_MENU_CONTENT + "/review tp <their names>");
                 }
                 //</editor-fold>
-                cs.sendMessage(Constants.C_DIV_LINE);
+                cs.sendMessage(C.C_DIV_LINE);
                 //</editor-fold>
             } else if (args[0].matches(regexTeleport)) {
                 if (!Permissions.USER_HAS_PERMISSION(cs, Permissions.REVIEW_LIST)) {
@@ -298,7 +298,7 @@ public class ReviewCommand extends BungeeCommand {
 					// Let them teleport to the location again if they want the rep...
                     // otherwise just let them do their visit, but don't try to give
                     // a rep reward to a ghost.
-//					p.sendMessage(Constants.ERROR_TRY_AGAIN_LATER_COMMAND);
+//					p.sendMessage(C.ERROR_TRY_AGAIN_LATER_COMMAND);
                     return;
                 }
                 this.visitors.add(p.getName());

@@ -55,7 +55,8 @@ public abstract class BungeeCommand extends Command {
     protected void addSyntax(Permissions requiredPermission, boolean hideIfNoPermission, boolean isSubCommand, String syntax, String hoverText){
         BaseComponent[] txtSuccess;
         BaseComponent[] txtRed;
-        if (hoverText == null){
+        
+        if (hoverText != null){
             txtSuccess = CText.hoverTextSuggest("§7"+syntax, hoverText, syntax);
             txtRed = CText.hoverTextSuggest("§c"+syntax, hoverText, syntax);
         }else{

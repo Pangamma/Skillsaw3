@@ -8,7 +8,6 @@ package com.lumengaming.skillsaw.utility;
 import com.lumengaming.skillsaw.common.AsyncCallback;
 import java.time.Duration;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.function.Predicate;
@@ -20,6 +19,8 @@ import java.util.logging.Logger;
  * Why did I make this class? I mean I like what it DOES. I like the functions it makes easier. In all honesty,
  * I highly doubt I'd ever need to store more than 2k elements in this collection. 
  * @author prota
+ * @param <K>
+ * @param <V>
  */
 public class ExpireMap<K, V> {
     
@@ -28,14 +29,22 @@ public class ExpireMap<K, V> {
         public V val;
         public Long expireMS;
         public AsyncCallback<V> onExpire; 
+        private Integer TTL = null;
 
         public ExpireMapHeapNode(K key, V val, Long expireMS, AsyncCallback<V> onExpire) {
             this.key = key;
             this.val = val;
             this.expireMS = expireMS;
             this.onExpire = onExpire;
-        }
+        }        
         
+        public ExpireMapHeapNode(K key, V val, int expireTTL, AsyncCallback<V> onExpire) {
+            this.key = key;
+            this.val = val;
+            this.expireMS = System.currentTimeMillis() + expireTTL;
+            this.onExpire = onExpire;
+            this.TTL = expireTTL;
+        }
     }
     
     public final PriorityQueue<ExpireMapHeapNode<K, V>> minHeap = new PriorityQueue<>(new Comparator<ExpireMapHeapNode<K, V>>() {
@@ -75,7 +84,14 @@ public class ExpireMap<K, V> {
         long futureDate = System.currentTimeMillis()+timeToLive.toMillis();
         remove(key);
         purgeExpired();
-        this.minHeap.add(new ExpireMapHeapNode<K, V>(key, val, futureDate, onExpire));
+        this.minHeap.add(new ExpireMapHeapNode<>(key, val, futureDate, onExpire));
+    }
+    
+    public synchronized void putWithBumpableCache(K key, V val, Duration timeToLive, AsyncCallback<V> onExpire){
+        long futureDate = System.currentTimeMillis()+timeToLive.toMillis();
+        remove(key);
+        purgeExpired();
+        this.minHeap.add(new ExpireMapHeapNode<>(key, val, (int) timeToLive.toMillis(), onExpire));
     }
     
     public synchronized void put(K key, V val, Duration timeToLive){
@@ -99,10 +115,15 @@ public class ExpireMap<K, V> {
         if (key == null) return null;
         Optional<ExpireMapHeapNode<K, V>> fst = minHeap.stream().filter(x -> x.key.equals(key)).findFirst();
         if (!fst.isPresent()) return null;
-        return fst.get().val;
+        ExpireMapHeapNode<K, V> get = fst.get();
+        if (get.TTL != null){
+            get.expireMS = System.currentTimeMillis() + get.TTL;
+        }
+        return get.val;
     }
     
     public synchronized boolean contains(K key){
+        purgeExpired();
         return key != null && minHeap.stream().anyMatch(x -> x.key.equals(key));
     }
 

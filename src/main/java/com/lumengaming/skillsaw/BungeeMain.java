@@ -5,6 +5,8 @@
  */
 package com.lumengaming.skillsaw;
 
+import com.lumengaming.skillsaw.config.ConfigHelper;
+import com.lumengaming.skillsaw.config.Options;
 import com.lumengaming.skillsaw.commands.skills.NoteLogCommand;
 import com.lumengaming.skillsaw.commands.skills.NoteCommand;
 import com.lumengaming.skillsaw.commands.skills.StaffRepLogCommand;
@@ -34,29 +36,31 @@ import com.lumengaming.skillsaw.commands.teleportation.TpCommand;
 import com.lumengaming.skillsaw.commands.teleportation.TpDenyCommand;
 import com.lumengaming.skillsaw.commands.teleportation.TpAcceptCommand;
 import com.lumengaming.skillsaw.commands.teleportation.TpaHereCommand;
-import com.lumengaming.skillsaw.Options.MysqlOptions;
+import com.lumengaming.skillsaw.config.Options.MysqlOptions;
 import com.lumengaming.skillsaw.bridge.BungeeSender;
 import com.lumengaming.skillsaw.commands.*;
+import com.lumengaming.skillsaw.commands.admin.SlogCommand;
 import com.lumengaming.skillsaw.listeners.BungeeChatListener;
 import com.lumengaming.skillsaw.listeners.BungeeSlogListener;
 import com.lumengaming.skillsaw.listeners.BungeePlayerActivityListener;
 import com.lumengaming.skillsaw.listeners.BungeeServerCloseListener;
 import com.lumengaming.skillsaw.listeners.BungeeVoteListener;
+import com.lumengaming.skillsaw.listeners.BungeeWrongHostListener;
 import com.lumengaming.skillsaw.models.TPRequest;
 import com.lumengaming.skillsaw.service.DataService;
 import com.lumengaming.skillsaw.service.MySqlDataRepository;
 import com.lumengaming.skillsaw.utility.CText;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.ExpireMap;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import me.lucko.luckperms.LuckPerms;
+import me.lucko.luckperms.api.LuckPermsApi;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -72,9 +76,7 @@ public class BungeeMain extends Plugin implements ISkillsaw {
     private final BungeeSender sender = new BungeeSender(this);
     private DataService dataService;
     private BungeePlayerActivityListener activityListener;
-	private final ExpireMap<String, TPRequest> teleportRequests = new ExpireMap<>();
-    
-    
+    private final ExpireMap<String, TPRequest> teleportRequests = new ExpireMap<>();
 
     @Override
     public void onEnable() {
@@ -108,18 +110,25 @@ public class BungeeMain extends Plugin implements ISkillsaw {
         this.getProxy().getPluginManager().registerListener(this, this.activityListener);
         this.getProxy().getPluginManager().registerCommand(this, new SetSkillCommand(this));
 //        this.getProxy().getPluginManager().registerCommand(this, new SkillSawCommand(this));
-        this.getProxy().getPluginManager().registerCommand(this, new DiscordCommand(this));
+
         this.getProxy().getPluginManager().registerCommand(this, new SlogCommand(this));
         this.getProxy().getPluginManager().registerListener(this, new BungeeSlogListener(this));
 
         this.getProxy().getPluginManager().registerCommand(this, new TestCommand(this));
 
-        
-        //<editor-fold defaultstate="collapsed" desc="Server Disconnect">
-        if (Options.Get().ServerClosePlayerMover.IsEnabled){
-            this.getProxy().getPluginManager().registerListener(this, new BungeeServerCloseListener(this));
+        if (Options.Get().Discord.IsEnabled){
+            this.getProxy().getPluginManager().registerCommand(this, new DiscordCommand(this));
         }
         
+        //<editor-fold defaultstate="collapsed" desc="Server Disconnect">
+        if (Options.Get().ServerClosePlayerMover.IsEnabled) {
+            this.getProxy().getPluginManager().registerListener(this, new BungeeServerCloseListener(this));
+        }
+
+        if (!Options.Get().ForcedHosts.isEmpty()) {
+            this.getProxy().getPluginManager().registerListener(this, new BungeeWrongHostListener(this));
+        }
+
         //<editor-fold defaultstate="collapsed" desc="Chat">
         if (Options.Get().ChatSystem.IsEnabled) {
             this.getProxy().getPluginManager().registerListener(this, new BungeeChatListener(this));
@@ -128,17 +137,17 @@ public class BungeeMain extends Plugin implements ISkillsaw {
             this.getProxy().getPluginManager().registerCommand(this, new GlobalCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new IgnoreCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new MeeCommand(this));
-            this.getProxy().getPluginManager().registerCommand(this, new UnmuteCommand(this));
-            this.getProxy().getPluginManager().registerCommand(this, new SoftMuteCommand(this));
-            this.getProxy().getPluginManager().registerCommand(this, new MuteCommand(this));
-            this.getProxy().getPluginManager().registerCommand(this, new MuteListCommand(this));
+//            this.getProxy().getPluginManager().registerCommand(this, new UnmuteCommand(this));
+//            this.getProxy().getPluginManager().registerCommand(this, new SoftMuteCommand(this));
+//            this.getProxy().getPluginManager().registerCommand(this, new MuteCommand(this));
+//            this.getProxy().getPluginManager().registerCommand(this, new MuteListCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new NickCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new WhisperCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new ReplyCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new TitleCommand(this));
         }
         //</editor-fold>
-        
+
         //<editor-fold defaultstate="collapsed" desc="Rep">
         if (Options.Get().RepSystem.IsEnabled) {
             this.getProxy().getPluginManager().registerCommand(this, new NoteCommand(this));
@@ -155,7 +164,7 @@ public class BungeeMain extends Plugin implements ISkillsaw {
         //</editor-fold>
 
         //<editor-fold defaultstate="collapsed" desc="Teleports">
-        if (Options.Get().Teleport.IsEnabled){
+        if (Options.Get().Teleport.IsEnabled) {
             this.getProxy().getPluginManager().registerCommand(this, new TpLockCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new TpCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new TpHereCommand(this));
@@ -165,19 +174,18 @@ public class BungeeMain extends Plugin implements ISkillsaw {
             this.getProxy().getPluginManager().registerCommand(this, new TpDenyCommand(this));
         }
         //</editor-fold>
-        
+
         //<editor-fold defaultstate="collapsed" desc="Review List">
-        if (Options.Get().ReviewList.IsEnabled){
+        if (Options.Get().ReviewList.IsEnabled) {
             this.getProxy().getPluginManager().registerCommand(this, new ReviewCommand(this));
         }
         //</editor-fold>
-        
-        
+
         this.getProxy().getScheduler().schedule(this, () -> {
             getTeleportRequests().purgeExpired();
-        }, 2,2, TimeUnit.SECONDS);
-        
-        if (this.getProxy().getPluginManager().getPlugin("NuVotifier") != null){
+        }, 2, 2, TimeUnit.SECONDS);
+
+        if (this.getProxy().getPluginManager().getPlugin("NuVotifier") != null) {
             this.getProxy().getPluginManager().registerListener(this, new BungeeVoteListener(this));
         }
     }
@@ -235,7 +243,7 @@ public class BungeeMain extends Plugin implements ISkillsaw {
             bp.p(),
             "§4Level-Down",
             subtitle,
-            subtitle, 
+            subtitle,
             (b) -> {
             });
     }
@@ -264,9 +272,9 @@ public class BungeeMain extends Plugin implements ISkillsaw {
     }
 
     public void printHelp(BungeePlayer cs) {
-        cs.sendMessage(Constants.C_DIV_LINE);
-        cs.sendMessage(Constants.C_DIV_TITLE_PREFIX + "Help");
-        cs.sendMessage(Constants.C_DIV_LINE);
+        cs.sendMessage(C.C_DIV_LINE);
+        cs.sendMessage(C.C_DIV_TITLE_PREFIX + "Help");
+        cs.sendMessage(C.C_DIV_LINE);
         printSyntax(cs, "/skillsaw perms", "List all Skillsaw permissions.");
         printSyntax(cs, Permissions.ALL, "/skillsaw reload", "Reloads skillsaw.\nDoes a save and a load.");
         printSyntax(cs, Permissions.STAFF_LIST, "/staff list", "List staff members\nAlso shows time since\nlast login.");
@@ -321,20 +329,20 @@ public class BungeeMain extends Plugin implements ISkillsaw {
         }
 
         if (Options.Get().ReviewList.IsEnabled) {
-            cs.sendMessage(Constants.C_MENU_CONTENT + "/review this");
-            cs.sendMessage(Constants.C_MENU_CONTENT + "/review list");
-            cs.sendMessage(Constants.C_MENU_CONTENT + "/review tp [name]");
+            cs.sendMessage(C.C_MENU_CONTENT + "/review this");
+            cs.sendMessage(C.C_MENU_CONTENT + "/review list");
+            cs.sendMessage(C.C_MENU_CONTENT + "/review tp [name]");
         }
 
-        cs.sendMessage(Constants.C_DIV_LINE);
+        cs.sendMessage(C.C_DIV_LINE);
     }
 
     private void printSyntax(boolean hideIfNoPermission, BungeePlayer cs, Permissions permRequired, String cmdSyntax, String hoverText) {
         if (Permissions.USER_HAS_PERMISSION(cs, permRequired, false)) {
-            BaseComponent[] txt = CText.hoverText(Constants.C_MENU_CONTENT + cmdSyntax, hoverText);
+            BaseComponent[] txt = CText.hoverText(C.C_MENU_CONTENT + cmdSyntax, hoverText);
             cs.sendMessage(txt);
         } else if (!hideIfNoPermission) {
-            cs.sendMessage(Constants.C_MENU_CONTENT + "§c" + cmdSyntax);
+            cs.sendMessage(C.C_MENU_CONTENT + "§c" + cmdSyntax);
         }
     }
 
@@ -343,7 +351,7 @@ public class BungeeMain extends Plugin implements ISkillsaw {
     }
 
     private void printSyntax(BungeePlayer cs, String cmdSyntax, String hoverText) {
-        BaseComponent[] txt = CText.hoverText(Constants.C_MENU_CONTENT + cmdSyntax, hoverText);
+        BaseComponent[] txt = CText.hoverText(C.C_MENU_CONTENT + cmdSyntax, hoverText);
         cs.sendMessage(txt);
     }
 
@@ -354,9 +362,20 @@ public class BungeeMain extends Plugin implements ISkillsaw {
     public ExpireMap<String, TPRequest> getTeleportRequests() {
         return teleportRequests;
     }
-    
+
     @Override
     public void runTaskLater(Runnable runnable, long ticks) {
-        ScheduledTask task = ProxyServer.getInstance().getScheduler().schedule(this, runnable, ticks/20, TimeUnit.SECONDS);
+        ScheduledTask task = ProxyServer.getInstance().getScheduler().schedule(this, runnable, ticks / 20, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public LuckPermsApi getLuckPermsAPI() {
+        try {
+            LuckPermsApi api = LuckPerms.getApi();
+            return api;
+        } catch (IllegalStateException ex) {
+            Logger.getLogger("Skillsaw3").log(Level.WARNING, "Luckperms API is not available yet, but something tried to get an instance of it.");
+        }
+        return null;
     }
 }

@@ -10,7 +10,7 @@ import com.lumengaming.skillsaw.commands.BungeeCommand;
 import com.lumengaming.skillsaw.models.TPRequest;
 import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.utility.CText;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import java.time.Duration;
@@ -36,7 +36,7 @@ public class TpaHereCommand extends BungeeCommand{
         }
         
         if (!cs.isPlayer()){
-            cs.sendMessage(Constants.ERROR_PLAYERS_ONLY);
+            cs.sendMessage(C.ERROR_PLAYERS_ONLY);
             return;
         }
         
@@ -53,7 +53,7 @@ public class TpaHereCommand extends BungeeCommand{
         BaseComponent[] promptForFromUser = CText.merge(p1, p2, p3);
 
         if (args[0].equals("*")){
-            cs.sendMessage(Constants.MSG_PROCESSING);
+            cs.sendMessage(C.MSG_PROCESSING);
             plugin.getSender().getPlayerLocation((ProxiedPlayer) to.getRawPlayer(), (loc) -> {          
                 cs.sendMessage("§eSent a request to all players on the server asking them if they would like to teleport to you. Request will be alive for a 2 minutes.");
                 for(User from : plugin.getApi().getOnlineUsersReadOnly()){
@@ -70,18 +70,18 @@ public class TpaHereCommand extends BungeeCommand{
         }else{
             final User from = plugin.getApi().getUserBestOnlineMatch(args[0]);
             if (from == null){
-                cs.sendMessage(Constants.ERROR_P_NOT_FOUND);
+                cs.sendMessage(C.ERROR_P_NOT_FOUND);
                 return;
             }
             
-            cs.sendMessage(Constants.MSG_PROCESSING);
+            cs.sendMessage(C.MSG_PROCESSING);
             plugin.getSender().getPlayerLocation((ProxiedPlayer) to.getRawPlayer(), (loc) -> {
                 TPRequest req = new TPRequest(from.p(), to.p(), loc, TPRequest.TpaType.TPAHERE);
                 if (!plugin.getTeleportRequests().contains(req.getKey())){
                     cs.sendMessage("§eSent a request to §6"+from.getName()+"§e asking them if they would like to teleport to you.");
                     plugin.getTeleportRequests().put(req.getKey(), req, Duration.ofMinutes(1), (expired) -> {
-                        cs.sendMessage("§cYour teleport request to "+from.getName()+" has expired.");
-                        from.sendMessage("§cYour teleport request from "+cs.getName()+" has expired.");
+                        cs.sendMessage("§cYour teleport request to  §4"+from.getName()+"§c has expired.");
+                        from.sendMessage("§cYour teleport request from  §4"+cs.getName()+"§c has expired.");
                     });
                     from.sendMessage(promptForFromUser);
                 }else{

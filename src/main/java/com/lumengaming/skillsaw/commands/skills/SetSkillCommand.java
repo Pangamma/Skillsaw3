@@ -1,12 +1,13 @@
 package com.lumengaming.skillsaw.commands.skills;
 
 import com.lumengaming.skillsaw.BungeeMain;
-import com.lumengaming.skillsaw.Options;
+import com.lumengaming.skillsaw.config.Options;
 import com.lumengaming.skillsaw.commands.BungeeCommand;
+import com.lumengaming.skillsaw.commands.HelpModule;
 import com.lumengaming.skillsaw.models.SkillType;
 import com.lumengaming.skillsaw.utility.CText;
 import com.lumengaming.skillsaw.models.User;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
@@ -36,21 +37,23 @@ public class SetSkillCommand extends BungeeCommand {
                 cs.sendMessage("loading configs.");
                 return;
             } else if (args[0].equalsIgnoreCase("perms")) {
-                cs.sendMessage(Constants.C_DIV_LINE);
-                cs.sendMessage(Constants.C_DIV_TITLE_PREFIX + "Permissions");
-                cs.sendMessage(Constants.C_DIV_LINE);
+                cs.sendMessage(C.C_DIV_LINE);
+                cs.sendMessage(C.C_DIV_TITLE_PREFIX + "Permissions");
+                cs.sendMessage(C.C_DIV_LINE);
                 for (Permissions s : Permissions.values()) {
-                    cs.sendMessage(CText.hoverTextSuggest(Constants.C_MENU_CONTENT + s.node, "Click to copy", s.node));
+                    cs.sendMessage(CText.hoverTextSuggest(C.C_MENU_CONTENT + s.node, "Click to copy", s.node));
                 }
-                cs.sendMessage(Constants.C_DIV_LINE);
+                cs.sendMessage(C.C_DIV_LINE);
+            } else if (args[0].equalsIgnoreCase("help")){
+                HelpModule.printHelp(cs, args);
             } else {
                 //<editor-fold defaultstate="collapsed" desc="show data about...">
-                cs.sendMessage(Constants.MSG_PROCESSING);
+                cs.sendMessage(C.MSG_PROCESSING);
                 plugin.getDataService().getOfflineUserByNameOrDisplayName(args[0], (User u) -> {
                     if (u != null) {
                         u.showStatisticsTo(cs);
                     } else {
-                        cs.sendMessage(Constants.ERROR_P_NOT_FOUND);
+                        cs.sendMessage(C.ERROR_P_NOT_FOUND);
                     }
                 });
                 //</editor-fold>
@@ -89,7 +92,7 @@ public class SetSkillCommand extends BungeeCommand {
 
                 User issuer = plugin.getDataService().getUser(cs.getUniqueId());
                 if (issuer == null) {
-                    cs.sendMessage(Constants.ERROR_TRY_AGAIN_LATER_COMMAND);
+                    cs.sendMessage(C.ERROR_TRY_AGAIN_LATER_COMMAND);
                     return;
                 }
                 
@@ -100,12 +103,12 @@ public class SetSkillCommand extends BungeeCommand {
                 }
 
                 //<editor-fold defaultstate="collapsed" desc="user">
-                cs.sendMessage(Constants.MSG_PROCESSING);
+                cs.sendMessage(C.MSG_PROCESSING);
                 
                 plugin.getDataService().getOfflineUserByNameOrDisplayName(args[0], (User target) -> {
 
                     if (target == null) {
-                        cs.sendMessage(Constants.ERROR_P_NOT_FOUND);
+                        cs.sendMessage(C.ERROR_P_NOT_FOUND);
                         return;
                     }
 

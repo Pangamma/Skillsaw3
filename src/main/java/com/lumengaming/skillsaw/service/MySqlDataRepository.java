@@ -2,14 +2,16 @@ package com.lumengaming.skillsaw.service;
 
 import com.google.gson.Gson;
 import com.lumengaming.skillsaw.ISkillsaw;
-import com.lumengaming.skillsaw.Options;
+import com.lumengaming.skillsaw.config.Options;
 import com.lumengaming.skillsaw.models.BooleanAnswer;
+import com.lumengaming.skillsaw.models.GlobalStatsView;
 import com.lumengaming.skillsaw.models.RepLogEntry;
 import com.lumengaming.skillsaw.models.RepType;
 import com.lumengaming.skillsaw.models.SkillType;
 import com.lumengaming.skillsaw.models.SlogSettings;
 import com.lumengaming.skillsaw.models.Title;
 import com.lumengaming.skillsaw.models.User;
+import com.lumengaming.skillsaw.models.UserStatsView;
 import com.lumengaming.skillsaw.models.XLocation;
 import com.lumengaming.skillsaw.spigot.STATIC;
 import java.io.BufferedReader;
@@ -33,11 +35,13 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.apache.commons.lang.ArrayUtils;
 
 /**
  *
@@ -96,6 +100,29 @@ public class MySqlDataRepository implements IDataRepository {
     @Override
     public boolean onDisable() {
         return this.disconnect();
+    }
+
+    @Override
+    public ArrayList<User> getUsersByIP(String ipv4) {
+    
+        ArrayList<User> output = new ArrayList<>();
+        String q = "SELECT * FROM `skillsaw_users` WHERE `ipv4` LIKE ? ORDER BY `last_played` DESC limit 1000";
+        try {
+            if (connect()) {
+                PreparedStatement ps = this.connection.prepareStatement(q);
+                ps.setString(1, ipv4);
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    User u = readUser(rs);
+                    if (u != null) {
+                        output.add(u);
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(MySqlDataRepository.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return output; 
     }
 
     //<editor-fold defaultstate="collapsed" desc="Script RUnner">
@@ -443,11 +470,13 @@ public class MySqlDataRepository implements IDataRepository {
                 String q = "INSERT INTO `skillsaw_users` "
                     + "(`uuid`, `username`,`display_name`, `ipv4`, `current_title`, `custom_titles`,"
                     + "	`chat_color`,`rep_level`,`natural_rep`,`staff_rep`,`last_played`,"
-                    + "	`first_played`,`speaking_channel`,`sticky_channels`,`ignored_players`,`activity_score`";
+                    + "	`first_played`,`speaking_channel`,`sticky_channels`,`ignored_players`,`activity_score`,"
+                    + "	`last_ping_time`, `last_ping_host`"
+                    ;
                 for (SkillType st : Options.Get().getSkillTypes()) {
                     q += ",`s_" + st.getKey() + "`";
                 }
-                q += ") VALUES (?,?,?,?,?,  ?,?,?,?,?    ,?,?,?,?,?,?";
+                q += ") VALUES (?,?,?,?,?,?   ,?,?,?,?,?    ,?,?,?,?,?    ,?,?";
                 for (SkillType st : Options.Get().getSkillTypes()) {
                     q += ",?";
                 }
@@ -475,6 +504,8 @@ public class MySqlDataRepository implements IDataRepository {
                 ps.setString(i++, String.join("\n", user.getStickyChannels()));
                 ps.setString(i++, String.join("\n", user.getIgnored()));
                 ps.setInt(i++, 0); // activityScore
+                ps.setLong(i++, 0); // lastPingTime
+                ps.setString(i++, null); // lastPingHost
 
                 for (SkillType st : Options.Get().getSkillTypes()) {
                     ps.setInt(i++, user.getSkill(st));
@@ -495,7 +526,7 @@ public class MySqlDataRepository implements IDataRepository {
             + "`natural_rep` = ?, `staff_rep`= ?,`last_played` = ?,"
             + "`first_played` = ?,`speaking_channel` = ?, `sticky_channels` = ?,"
             + "`ignored_players` = ?, is_staff = ?, is_instructor = ?, `activity_score` = ?,"
-            + "`tpalock` = ?, `slog_settings` = ?";
+            + "`tpalock` = ?, `slog_settings` = ?, `last_ping_host` = ?, `last_ping_time` = ?";
 
         for (SkillType st : Options.Get().getSkillTypes()) {
             q += ",`s_" + st.getKey() + "` = " + u.getSkill(st);
@@ -530,6 +561,8 @@ public class MySqlDataRepository implements IDataRepository {
                 ps.setInt(i++, u.getActivityScore());
                 ps.setString(i++, u.getTpaLockState().getShortLabel());
                 ps.setString(i++, new Gson().toJson(u.getSlogSettings()));
+                ps.setString(i++, u.getLastPingHost());
+                ps.setLong(i++, u.getLastPingTime());
 
                 ps.setString(i++, u.getUuid().toString());
                 return ps.executeUpdate() > 0;
@@ -661,6 +694,8 @@ public class MySqlDataRepository implements IDataRepository {
             CopyOnWriteArraySet<String> rsIgnored = new CopyOnWriteArraySet<>(readListFromString(rs.getString("ignored_players")));
             BooleanAnswer rsTpaLock = BooleanAnswer.fromArg(rs.getString("tpalock"));
             String rsSlogSettingsJson = rs.getString("slog_settings");
+            String rsLastPingHost = rs.getString("last_ping_host");
+            Long rsLastPingTime = rs.getLong("last_ping_time");
 
             SlogSettings rsSlogSettings = new SlogSettings();
             try {
@@ -671,17 +706,191 @@ public class MySqlDataRepository implements IDataRepository {
 
             u = new User(this.plugin, rsUuid, rsUsername, rsDispName, rsLPlayed, rsPlayed, rsNRep, rsSRep,
                 skills, customTitles, rsCurTitle, rsChatcolor, rsIpv4, rsSpeakingChannel,
-                rsStickie, rsIgnored, rsIsStaff, rsIsInstructor, rsActivityScore, rsTpaLock, rsSlogSettings);
+                rsStickie, rsIgnored, rsIsStaff, rsIsInstructor, rsActivityScore, rsTpaLock, rsSlogSettings,
+                rsLastPingTime, rsLastPingHost);
+            
+            u._dbKey = rs.getInt("user_id");
+            
         } catch (SQLException ex) {
             Logger.getLogger(MySqlDataRepository.class.getName()).log(Level.SEVERE, null, ex);
         }
         return u;
     }
 
+
+    @Override
+    public GlobalStatsView getGlobalStats() {
+        GlobalStatsView u = new GlobalStatsView();
+        if (connect()) {
+            try {
+                {
+                    String q = "SELECT SUM(`a`.minutes) as `c_minutes` FROM activity_log `a` where (`a`.`time_online` > cast((now() - interval 7 day) as datetime));";
+                    PreparedStatement ps = connection.prepareStatement(q);
+                    ResultSet rs = ps.executeQuery();
+                    if (rs.next()){
+                        u.G_ActivityPerWeek = rs.getInt("c_minutes") / 12;
+                    }
+                }
+                {
+                    String q = "SELECT SUM(`a`.minutes) as `c_minutes` FROM activity_log `a` where (`a`.`time_online` > cast((now() - interval 14 day) as datetime));";
+                    PreparedStatement ps = connection.prepareStatement(q);
+                    ResultSet rs = ps.executeQuery();
+                    if (rs.next()){
+                        u.G_ActivityPerTwoWeeks = rs.getInt("c_minutes") / 12;
+                    }
+                }
+                {
+                    String q = "SELECT SUM(`a`.minutes) as `c_minutes` FROM activity_log `a` where (`a`.`time_online` > cast((now() - interval 30 day) as datetime));";
+                    PreparedStatement ps = connection.prepareStatement(q);
+                    ResultSet rs = ps.executeQuery();
+                    if (rs.next()){
+                        u.G_ActivityPerMonth = rs.getInt("c_minutes") / 12;
+                    }
+                }
+                {
+                    String q = "SELECT COUNT(*) as `c_votes` FROM votes `a` where (`a`.`time` > cast((now() - interval 7 day) as datetime));";
+                    PreparedStatement ps = connection.prepareStatement(q);
+                    ResultSet rs = ps.executeQuery();
+                    if (rs.next()){
+                        u.G_VotesPerWeek = rs.getInt("c_votes");
+                    }
+                }
+                {
+                    String q = "SELECT COUNT(*) as `c_votes` FROM votes `a` where (`a`.`time` > cast((now() - interval 30 day) as datetime));";
+                    PreparedStatement ps = connection.prepareStatement(q);
+                    ResultSet rs = ps.executeQuery();
+                    if (rs.next()){
+                        u.G_VotesPerMonth = rs.getInt("c_votes");
+                    }
+                }
+                {
+                    String q = "SELECT COUNT(*) as `c_votes` FROM votes `a` where (`a`.`time` > cast((now() - interval 25 hour) as datetime));";
+                    PreparedStatement ps = connection.prepareStatement(q);
+                    ResultSet rs = ps.executeQuery();
+                    if (rs.next()){
+                        u.G_VotesPerDay = rs.getInt("c_votes");
+                    }
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(MySqlDataRepository.class.getName()).log(Level.SEVERE, null, ex);
+                return null;
+            }
+        }
+        return u;
+    }
+        
+    @Override
+    public UserStatsView getUserStats(UUID uuid) {
+        UserStatsView u = new UserStatsView();
+        if (connect()) {
+            try {
+                User user = this.getUser(uuid);
+                if (user == null) return null;
+                
+                u.uuid = uuid;
+                u.username = user.getName();
+                u.U_Redstone = user.getSkill(SkillType.Redstone);
+                u.U_Organics = user.getSkill(SkillType.Organics);
+                u.U_PixelArt = user.getSkill(SkillType.PixelArt);
+                u.U_Architecture = user.getSkill(SkillType.Architecture);
+                u.U_Terraforming = user.getSkill(SkillType.Terraforming);
+                u.U_Vehicles = user.getSkill(SkillType.Vehicles);
+                u.U_RepLevel = user.getRepLevel();
+                
+                int[] skills = new int[]{u.U_Redstone, u.U_Organics, u.U_PixelArt, u.U_Architecture, u.U_Terraforming, u.U_Vehicles};
+                for(int sn : skills){
+                    if (sn > u.U_MaxSkill) u.U_MaxSkill = sn;
+                    u.U_SkillSum += sn;
+                }
+                
+                u.U_StaffRep = user.getStaffRep();
+                u.U_NRep = user.getNaturalRep();
+                u.U_IsInstructor = user.isInstructor();
+                u.U_IsStaff = user.isStaff();
+                
+                // SELECT user_id, COUNT(*) as `c_votes`,CAST(a.`time` AS DATE) as `date` FROM votes `a` where (`a`.`time` > cast((now() - interval 25 hour) as datetime)) GROUP BY user_id, CAST(a.`time` AS DATE)
+                {
+                    int i = 1;
+                    String q = "SELECT SUM(`a`.minutes) as `c_minutes` FROM activity_log `a` where (`a`.`time_online` > cast((now() - interval 7 day) as datetime)) AND `user_id` = ?;";
+                    PreparedStatement ps = connection.prepareStatement(q);
+                    ps.setInt(i++, user._dbKey);
+                    ResultSet rs = ps.executeQuery();
+                    if (rs.next()){
+                        u.U_ActivityPerWeek = rs.getInt("c_minutes") / 12;
+                    }
+                }
+                
+                u.U_ActivityPerTwoWeeks= user.getActivityScore();
+//                {
+//                    int i = 1;
+//                    String q = "SELECT SUM(`a`.minutes) as `c_minutes` FROM activity_log `a` where (`a`.`time_online` > cast((now() - interval 14 day) as datetime)) AND `user_id` = ?;";
+//                    PreparedStatement ps = connection.prepareStatement(q);
+//                    ps.setInt(i++, user._dbKey);
+//                    ResultSet rs = ps.executeQuery();
+//                    if (rs.next()){
+//                        u.U_ActivityPerTwoWeeks = rs.getInt("c_minutes") / 12;
+//                    }
+//                }
+                {
+                    int i = 1;
+                    String q = "SELECT SUM(`a`.minutes) as `c_minutes` FROM activity_log `a` where (`a`.`time_online` > cast((now() - interval 30 day) as datetime)) AND `user_id` = ?;";
+                    PreparedStatement ps = connection.prepareStatement(q);
+                    ps.setInt(i++, user._dbKey);
+                    ResultSet rs = ps.executeQuery();
+                    if (rs.next()){
+                        u.U_ActivityPerMonth = rs.getInt("c_minutes") / 12;
+                    }
+                }
+                {
+                    int i = 1;
+                    String q = "SELECT SUM(`a`.minutes) as `c_minutes` FROM activity_log `a` where `user_id` = ?;";
+                    PreparedStatement ps = connection.prepareStatement(q);
+                    ps.setInt(i++, user._dbKey);
+                    ResultSet rs = ps.executeQuery();
+                    if (rs.next()){
+                        u.U_ActivityTotal = rs.getInt("c_minutes") / 12;
+                    }
+                }
+                {
+                    String q = "SELECT COUNT(*) as `c_votes` FROM votes `a` where (`a`.`time` > cast((now() - interval 7 day) as datetime)) AND `user_id` = ?;";
+                    PreparedStatement ps = connection.prepareStatement(q);
+                    ps.setInt(1, user._dbKey);
+                    ResultSet rs = ps.executeQuery();
+                    if (rs.next()){
+                        u.U_VotesPerWeek = rs.getInt("c_votes");
+                    }
+                }
+                {
+                    String q = "SELECT COUNT(*) as `c_votes` FROM votes `a` where (`a`.`time` > cast((now() - interval 30 day) as datetime)) AND `user_id` = ?;";
+                    PreparedStatement ps = connection.prepareStatement(q);
+                    ps.setInt(1, user._dbKey);
+                    ResultSet rs = ps.executeQuery();
+                    if (rs.next()){
+                        u.U_VotesPerMonth = rs.getInt("c_votes");
+                    }
+                }
+                {
+                    String q = "SELECT COUNT(*) as `c_votes` FROM votes `a` where (`a`.`time` > cast((now() - interval 25 hour) as datetime)) AND `user_id` = ?;";
+                    PreparedStatement ps = connection.prepareStatement(q);
+                    ps.setInt(1, user._dbKey);
+                    ResultSet rs = ps.executeQuery();
+                    if (rs.next()){
+                        u.U_VotesPerDay = rs.getInt("c_votes");
+                    }
+                }
+                
+            } catch (SQLException ex) {
+                Logger.getLogger(MySqlDataRepository.class.getName()).log(Level.SEVERE, null, ex);
+                return null;
+            }
+        }
+        return u;
+    }
+    
     @Override
     public void logVote(String username, String userIP, String serviceName) {
         String q = "INSERT INTO `votes` (`username`, `user_id`, `ipv4`, `service_name`) "
-            + "VALUES (?,(SELECT `user_id` FROM `skillsaw_users` WHERE `username` = ?), ? ,?);";
+            + "VALUES (?,(SELECT `user_id` FROM `skillsaw_users` WHERE `username` = ? limit 1), ? ,?);";
      if (connect() && !isReadOnly) {
             try {
                 PreparedStatement ps = connection.prepareStatement(q);
@@ -982,9 +1191,9 @@ public class MySqlDataRepository implements IDataRepository {
         if (set == null || set.isEmpty()) {
             return new HashMap<>();
         }
-        List<String> qMarks = set.stream().map(x -> "?").collect(Collectors.toList());
+        List<String> qMarks = set.stream().filter(x -> x != null).map(x -> "?").collect(Collectors.toList());
         String q = "SELECT `uuid`, `activity_score` FROM skillsaw_users WHERE `uuid` IN (" + String.join(",", qMarks) + ")";
-        if (connect() && !isReadOnly) {
+        if (connect()) {
             try {
                 PreparedStatement ps = connection.prepareStatement(q);
                 int i = 1;
@@ -1008,10 +1217,6 @@ public class MySqlDataRepository implements IDataRepository {
     }
 
     @Override
-    public boolean hasPlayedBefore(UUID uuid) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
     public void refreshActivityScoresCache() {
         String q = "UPDATE "
             + "`skillsaw_users` `u` LEFT JOIN "

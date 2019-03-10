@@ -6,7 +6,7 @@
 package com.lumengaming.skillsaw.bridge;
 
 import com.google.common.io.ByteArrayDataOutput;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.models.XLocation;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -22,7 +22,7 @@ public class SetPlayerLocationRequest extends IBridgePayload<SetPlayerLocationRe
 
     public SetPlayerLocationRequest(Long key, UUID uuid, XLocation loc) {
         this.Key = key;
-        this.SubChannel = Constants.CH_SetPlayerLocation;
+        this.SubChannel = C.CH_SetPlayerLocation;
         this.Loc = loc;
         this.UUID = uuid;
     }

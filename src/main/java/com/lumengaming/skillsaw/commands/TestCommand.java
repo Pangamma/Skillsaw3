@@ -5,8 +5,8 @@
  */
 package com.lumengaming.skillsaw.commands;
 
+import com.google.gson.Gson;
 import com.lumengaming.skillsaw.BungeeMain;
-import com.lumengaming.skillsaw.models.XLocation;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 
 /**
@@ -19,20 +19,12 @@ public class TestCommand extends BungeeCommand{
         super(plugin, "Test", null);
     }
 
-    private static XLocation xloc;
     @Override
     public void execute(BungeePlayer csw, String[] args) {
-        if (args.length > 0){
-            csw.sendMessage("args=1");
-            plugin.getSender().getPlayerLocation(csw.p(), (loc) -> {
-                csw.sendMessage(loc.toTeleportCommand());
-                xloc = loc;
-            });
-        }else{
-            plugin.getSender().setLocation(csw.p(), xloc, b -> {
-                csw.sendMessage("Teleported?"+b);
-            });
-        }
+        plugin.getApi().getGlobalStats(false, (s) -> {
+            String json = new Gson().toJson(s);
+            csw.sendMessage(json);
+        });
+        
     }
-    
 }

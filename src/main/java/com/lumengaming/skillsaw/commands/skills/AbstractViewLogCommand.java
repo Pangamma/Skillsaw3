@@ -7,7 +7,7 @@ import com.lumengaming.skillsaw.models.RepLogEntry;
 import com.lumengaming.skillsaw.models.RepType;
 import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.service.DataService;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
@@ -67,14 +67,14 @@ public abstract class AbstractViewLogCommand extends BungeeCommand {
 
         ds.getOfflineUser(targetName, true, (User target) -> {
             if (target == null) {
-                cs.sendMessage(Constants.ERROR_P_NOT_FOUND);
+                cs.sendMessage(C.ERROR_P_NOT_FOUND);
                 return;
             }
             ds.getLogEntriesByTarget(rt, target.getUuid(), 15, 0, (ArrayList<RepLogEntry> entries) -> {
                 boolean colorA = false;
-                cs.sendMessage(Constants.C_DIV_LINE);
-                cs.sendMessage(Constants.C_DIV_TITLE_PREFIX + rt.name() + " Log Entries for " + target.getName());
-                cs.sendMessage(Constants.C_DIV_LINE);
+                cs.sendMessage(C.C_DIV_LINE);
+                cs.sendMessage(C.C_DIV_TITLE_PREFIX + rt.name() + " Log Entries for " + target.getName());
+                cs.sendMessage(C.C_DIV_LINE);
                 for (RepLogEntry e : entries) {
                     colorA = !colorA;
                     String c1 = colorA ? "§7" : "§8";
@@ -83,7 +83,7 @@ public abstract class AbstractViewLogCommand extends BungeeCommand {
                     String name = e.getIssuerName();
                     cs.sendMessage(CText.hoverText(c1 + "[" + c2 + e.getAmount() + c1 + "] " + c2 + name + c1 + " -> " + c2 + reason, e.getTime().toString()));
                 }
-                cs.sendMessage(Constants.C_DIV_LINE);
+                cs.sendMessage(C.C_DIV_LINE);
             });
         });
         return true;
@@ -98,14 +98,14 @@ public abstract class AbstractViewLogCommand extends BungeeCommand {
 
         ds.getOfflineUser(targetName, true, (User target) -> {
             if (target == null) {
-                cs.sendMessage(Constants.ERROR_P_NOT_FOUND);
+                cs.sendMessage(C.ERROR_P_NOT_FOUND);
                 return;
             }
             ds.getLogEntriesByTarget(target.getUuid(), 15, 0, (ArrayList<RepLogEntry> entries) -> {
                 boolean colorA = false;
-                cs.sendMessage(Constants.C_DIV_LINE);
-                cs.sendMessage(Constants.C_DIV_TITLE_PREFIX + " * Log Entries for " + target.getName());
-                cs.sendMessage(Constants.C_DIV_LINE);
+                cs.sendMessage(C.C_DIV_LINE);
+                cs.sendMessage(C.C_DIV_TITLE_PREFIX + " * Log Entries for " + target.getName());
+                cs.sendMessage(C.C_DIV_LINE);
                 for (RepLogEntry e : entries) {
                     colorA = !colorA;
                     String c1 = colorA ? "§7" : "§8";
@@ -115,7 +115,7 @@ public abstract class AbstractViewLogCommand extends BungeeCommand {
                     Timestamp time = e.getTime();
                     cs.sendMessage(CText.hoverText(c1 + "[" + e.getType().name() + "][" + c2 + e.getAmount() + c1 + "] " + c2 + name + c1 + " -> " + c2 + reason, e.getTime().toString()));
                 }
-                cs.sendMessage(Constants.C_DIV_LINE);
+                cs.sendMessage(C.C_DIV_LINE);
             });
         });
         return true;

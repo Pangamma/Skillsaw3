@@ -13,7 +13,8 @@ import net.md_5.bungee.api.chat.BaseComponent;
  *
  * @author prota
  */
-public class Constants {
+public class C {
+    //<editor-fold defaultstate="collapsed" desc="Channels">
     public static final String CH_RootChannel = "BungeeCord";
     public static final String CH_CompositeEffect = "Skillsaw_CompositeEffect";
     public static final String CH_GetPlayerLocation = "Skillsaw_GetPlayerLocation";
@@ -21,7 +22,12 @@ public class Constants {
     public static final String CH_PlaySoundForPlayer = "Skillsaw_PlaySoundForPlayer";
     public static final String CHANNEL_CONSOLE_COMMAND = "Skillsaw_ConsoleCommand";
     public static final String SND_VILLAGER_HMMM = "ENTITY_VILLAGER_AMBIENT";
+    //</editor-fold>
     
+    //<editor-fold defaultstate="collapsed" desc="CacheKeys">
+    public static final String CK_GlobalStats = "GlobalStats";
+    public static final String CK_IndividualStats = "IndividualStats_";
+    //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="colors & formatting">
     /**
@@ -68,6 +74,8 @@ public class Constants {
     public static final String C_DIV_LINE = "§2=§a=§2=§a=§2=§a=§2=§a=§2=§a=§2=§a=§2=§a=§2=§a=§2=§a=§2=§a=§2=§a=§2=§a=§2=§a=§2=§a=§2=§a=§2=§a=§2=§a=§2=§a=§2=§a=§2=§a=§2=§a=§2=§a=§2=§a=§2=§a=§2=§a=§2=§a=§2=";
 
     //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="ERRORS">
     public static final String ERROR_NOT_YET_IMPLEMENTED = "§cThis feature isn't ready yet.";
     public static final String ERROR_FEATURE_REMOVED = "§cThis feature isn't available for your current version.";
     public static final String ERROR_P_NOT_FOUND = "§cThat player is not available.";
@@ -75,8 +83,8 @@ public class Constants {
     public static final String ERROR_DIRECTORY_NOT_FOUND = "Directory not found.";
     public static final String ERROR_PLAYERS_ONLY = "Only players may use this feature.";
     public static final String ERROR_IMPOSSIBLE = "§cNot sure what happened, but you shouldn't have reached this section of code. If you see this message, report it to Pangamma.";
-    public static final String ERROR_TRY_AGAIN_LATER_COMMAND = "§cSorry, the system wasn't prepared for what you just did. Can you please try that again?";
-    public static final String ERROR_TRY_AGAIN_LATER_CHAT = "§cHang on... try that chat message again.";
+    public static final String ERROR_TRY_AGAIN_LATER_COMMAND = "§cSorry, the system wasn't prepared for what you just did. Can you please try that again? Log in and out if the problem keeps happening.";
+    public static final String ERROR_TRY_AGAIN_LATER_CHAT = "§cHang on... try that chat message again. Log in and out if the problem keeps happening.";
     public static final String MSG_PROCESSING = "§7Processing...";
     public static final String ERROR_P_IGNORING_YOU = "§cThat message could not be sent because that player is ignoring you.";
     public static final String ERROR_P_YOU_ARE_IGNORING = "§cThat message could not be sent because you are ignoring that player right now.";
@@ -90,46 +98,5 @@ public class Constants {
     public static String ERROR_NOT_INSTRUCTOR_FOR_CATEGORY(String letter) {
         return "§cYou are not an instructor for this category! : " + letter;
     }
-    
-    
-    /**
-     * Expects input to be pre-prepared to § color code format. Goes through the
-     * input string and removes all the color codes as needed. Useful for doing
-     * stuff like checking if user has permissions to use certain color codes.
-     * Or maybe not for checking. But certainly for doing actions based on it. *
-     * @param input
-     * @param canUseFormatCodes
-     * @param canUseBasicColors
-     * @param canUseBlack
-     * @return 
-     */
-    public static String removeColorCodes(String input, boolean canUseFormatCodes, boolean canUseBasicColors, boolean canUseBlack) {
-        String output = input;
-        for (ChatColor cc : ChatColor.values()) {
-            boolean isFormat = false;
-            switch(cc){
-                case BOLD:
-                case ITALIC:
-                case UNDERLINE:
-                case STRIKETHROUGH:
-                case MAGIC:
-                case RESET:
-                    isFormat = true;
-                    break;
-                default: break;
-            }
-            
-            if (!isFormat && !canUseBasicColors) {
-                output = output.replace(cc.toString().toUpperCase(), cc.toString().toLowerCase());
-                output = output.replace(cc.toString().toLowerCase(), cc.toString().replace('§', '&'));
-            } else if (isFormat && !canUseFormatCodes) {
-                output = output.replace(cc.toString().toUpperCase(), cc.toString().toLowerCase());
-                output = output.replace(cc.toString().toLowerCase(), cc.toString().replace('§', '&'));
-            }
-        }
-        if (!canUseBlack) {
-            output = output.replace("§0", "&0");
-        }
-        return output;
-    }
+    //</editor-fold>
 }

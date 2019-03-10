@@ -1,14 +1,14 @@
 package com.lumengaming.skillsaw.commands.skills;
 
 import com.lumengaming.skillsaw.BungeeMain;
-import com.lumengaming.skillsaw.Options;
-import com.lumengaming.skillsaw.Options.StringOptions;
+import com.lumengaming.skillsaw.config.Options;
+import com.lumengaming.skillsaw.config.Options.StringOptions;
 import com.lumengaming.skillsaw.commands.IRepCommand;
 import com.lumengaming.skillsaw.models.RepLogEntry;
 import com.lumengaming.skillsaw.models.RepType;
 import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.service.DataService;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.utility.SharedUtility;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
@@ -26,13 +26,13 @@ public class NaturalRepCommand extends IRepCommand{
         StringOptions strings = Options.Get().Strings;
         
         if (!(cs.isPlayer())){
-            cs.sendMessage(Constants.ERROR_PLAYERS_ONLY);
+            cs.sendMessage(C.ERROR_PLAYERS_ONLY);
             return false;
         }
         
         final User issuer = ds.getUserBestOnlineMatch(cs.getName());
         if (issuer == null){
-            cs.sendMessage(Constants.ERROR_TRY_AGAIN_LATER_COMMAND);
+            cs.sendMessage(C.ERROR_TRY_AGAIN_LATER_COMMAND);
             return true;
         }
         

@@ -6,21 +6,25 @@
 package com.lumengaming.skillsaw.service;
 
 import com.lumengaming.skillsaw.ISkillsaw;
-import com.lumengaming.skillsaw.Options;
+import com.lumengaming.skillsaw.config.Options;
 import com.lumengaming.skillsaw.common.AsyncCallback;
 import com.lumengaming.skillsaw.common.AsyncEmptyCallback;
 import com.lumengaming.skillsaw.common.AsyncManyCallback;
+import com.lumengaming.skillsaw.models.GlobalStatsView;
 import com.lumengaming.skillsaw.models.MutedPlayer;
 import com.lumengaming.skillsaw.models.PromoLogEntry;
 import com.lumengaming.skillsaw.models.RepLogEntry;
 import com.lumengaming.skillsaw.models.RepType;
 import com.lumengaming.skillsaw.models.SkillType;
 import com.lumengaming.skillsaw.models.User;
+import com.lumengaming.skillsaw.models.UserStatsView;
 import com.lumengaming.skillsaw.models.XLocation;
-import com.lumengaming.skillsaw.models.XVote;
 import com.lumengaming.skillsaw.utility.CText;
+import com.lumengaming.skillsaw.utility.C;
+import com.lumengaming.skillsaw.utility.ExpireMap;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -41,7 +45,8 @@ import net.md_5.bungee.api.chat.BaseComponent;
 public class DataService {
     
 	//<editor-fold defaultstate="collapsed" desc="General">
-	private final MySqlDataRepository repo;
+	private final IDataRepository repo;
+    private final ExpireMap<String, Object> cache = new ExpireMap<>();
 	private final ConcurrentHashMap<UUID, User> onlineUsers = new ConcurrentHashMap<>();
 	private final ConcurrentHashMap<UUID, MutedPlayer> mutedUsers = new ConcurrentHashMap<>();
     private final ISkillsaw plugin;
@@ -269,11 +274,15 @@ public class DataService {
 	 * @param p *
 	 */
 	public void loginUser(final IPlayer p, AsyncCallback<User> callback) {
+        if (this.onlineUsers.containsKey(p.getUniqueId())){
+            
+        }
 		if (!this.onlineUsers.containsKey(p.getUniqueId())) {
 			final UUID uuid = p.getUniqueId();
 			final ArrayList<SkillType> sts = Options.Get().getSkillTypes();
 			this.getOfflineUser(uuid, false, (User u) -> {
-				User nU = null;
+                
+				final User nU;
 				if (u != null) {
 					nU = u;
 					nU.setName(p.getName());
@@ -284,8 +293,13 @@ public class DataService {
 						SkillType st = sts.get(i);
 						nU.getSkill(st);
 					}
-					onlineUsers.put(uuid, nU);
-					DataService.this.saveUser(nU, true);	// Update the user into the DB.
+                    plugin.runTaskAsynchronously(() -> {
+                        DataService.this.saveUser(nU, true);	// Update the user into the DB.
+                        plugin.runTask(() -> {
+                            onlineUsers.put(uuid, nU);
+                            callback.doCallback(nU);
+                        });
+                    });
 				} else {
 					nU = new User(this.plugin, p);
 					// Insert all the possible skill types if not already present.
@@ -293,10 +307,14 @@ public class DataService {
 						SkillType st = sts.get(i);
 						nU.getSkill(st);
 					}
-					onlineUsers.put(uuid, nU);
-					DataService.this.createUser(nU, true);	// Update the user into the DB.
+                    plugin.runTaskAsynchronously(() -> {
+                        DataService.this.createUser(nU, true);	// Update the user into the DB.
+                        plugin.runTask(() -> {
+                            onlineUsers.put(uuid, nU);
+                            callback.doCallback(nU);
+                        });
+                    });
 				}
-                callback.doCallback(nU);
 			});
 		} else {
 			throw new IllegalStateException("Logging in a user that was already logged in? Examine the code, or this could turn into a memory leak.");
@@ -566,6 +584,34 @@ public class DataService {
 		});
 	}
 
+	/**
+	 * IO heavy operation. Loads the user from the database. Run this
+	 * asynchronously. if useCache is true, users can be loaded from the online
+	 * users hashmap before being taken from the database.
+	 *
+	 * @param username
+	 * @param callback
+	 * @param useCache
+	 * @return *
+	 */
+	public void getOfflineUsersByIP(String ipv4, AsyncManyCallback<User> callback) {
+        if (ipv4 == null || ipv4.isEmpty()){ callback.doCallback(new ArrayList<>()); return; }
+		plugin.runTaskAsynchronously(() -> {
+			ArrayList<User> us = this.repo.getUsersByIP(ipv4);
+			plugin.runTask(() -> {
+                ArrayList<User> uss = new ArrayList<>();
+                for(User u : us){
+                    User online = this.onlineUsers.get(u.getUniqueId());
+                    if (online == null){
+                        uss.add(u);
+                    }else{
+                        uss.add(online);
+                    }
+                }
+				callback.doCallback(us);
+			});
+		});
+	}
 	//</editor-fold>
     
 	//<editor-fold defaultstate="collapsed" desc="Logging">
@@ -720,7 +766,38 @@ public class DataService {
         plugin.runTaskAsynchronously(() -> { 
             this.repo.purgeOldMessages(numToKeep);
         });
-        
     }
-
+    
+    public void getGlobalStats(boolean useCache, AsyncCallback<GlobalStatsView> callback){
+        if (useCache && this.cache.contains(C.CK_GlobalStats)){
+            GlobalStatsView ov = (GlobalStatsView) this.cache.get(C.CK_GlobalStats);
+            callback.doCallback(ov);
+            return;
+        }
+        
+        plugin.runTaskAsynchronously(() -> {
+            GlobalStatsView view = repo.getGlobalStats();
+            plugin.runTask(() -> { 
+                this.cache.put(C.CK_GlobalStats, view, Duration.ofMinutes(6));
+                callback.doCallback(view);
+            });
+        });
+    }
+    
+    public void getIndividualStats(UUID uuid, boolean useCache, AsyncCallback<UserStatsView> callback){
+        String key = C.CK_IndividualStats+uuid.toString();
+        if (useCache && this.cache.contains(key)){
+            UserStatsView ov = (UserStatsView) this.cache.get(key);
+            callback.doCallback(ov);
+            return;
+        }
+        
+        plugin.runTaskAsynchronously(() -> {
+            UserStatsView view = repo.getUserStats(uuid);
+            plugin.runTask(() -> { 
+                this.cache.put(key, view, Duration.ofMinutes(6));
+                callback.doCallback(view);
+            });
+        });
+    }
 }

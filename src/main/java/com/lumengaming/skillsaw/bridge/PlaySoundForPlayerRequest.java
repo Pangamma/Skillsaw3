@@ -6,7 +6,7 @@
 package com.lumengaming.skillsaw.bridge;
 
 import com.google.common.io.ByteArrayDataOutput;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.UUID;
@@ -21,7 +21,7 @@ public class PlaySoundForPlayerRequest extends IBridgePayload<PlaySoundForPlayer
 
     public PlaySoundForPlayerRequest(Long key, String uuid, String SoundName) {
         this.Key = key;
-        this.SubChannel = Constants.CH_PlaySoundForPlayer;
+        this.SubChannel = C.CH_PlaySoundForPlayer;
         this.UUID = java.util.UUID.fromString(uuid);
         this.SoundName = SoundName;
     }

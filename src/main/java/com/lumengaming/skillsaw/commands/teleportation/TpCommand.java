@@ -8,7 +8,8 @@ package com.lumengaming.skillsaw.commands.teleportation;
 import com.lumengaming.skillsaw.BungeeMain;
 import com.lumengaming.skillsaw.commands.BungeeCommand;
 import com.lumengaming.skillsaw.models.User;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.models.XLocation;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -32,11 +33,6 @@ public class TpCommand extends BungeeCommand{
             return;
         }
         
-        if (!cs.isPlayer()){
-            cs.sendMessage(Constants.ERROR_PLAYERS_ONLY);
-            return;
-        }
-        
         if (args.length == 0){
             printHelp2(cs);
             return;
@@ -46,8 +42,14 @@ public class TpCommand extends BungeeCommand{
         User _source = null;
         
         if (args.length == 1){
+            if (!cs.isPlayer()){
+                cs.sendMessage(C.ERROR_PLAYERS_ONLY);
+                return;
+            }
+            
             _source = plugin.getApi().getUser(cs.getUniqueId());
             _target = plugin.getApi().getUserBestOnlineMatch(args[0]);
+        
         }else if (args.length == 2){
             _source = plugin.getApi().getUserBestOnlineMatch(args[0]);
             _target = plugin.getApi().getUserBestOnlineMatch(args[1]);
@@ -60,17 +62,17 @@ public class TpCommand extends BungeeCommand{
         }
         
         if (_source == null){
-            cs.sendMessage(Constants.ERROR_TRY_AGAIN_LATER_COMMAND);
+            cs.sendMessage(C.ERROR_TRY_AGAIN_LATER_COMMAND);
             return;
         }
         
         if (_target == null){
-            cs.sendMessage(Constants.ERROR_P_NOT_FOUND);
+            cs.sendMessage(C.ERROR_P_NOT_FOUND);
             return;
         }
         //</editor-fold>
         
-        cs.sendMessage(Constants.MSG_PROCESSING);
+        cs.sendMessage(C.MSG_PROCESSING);
         final User target = _target;
         final User source = _source;
         plugin.getSender().getPlayerLocation((ProxiedPlayer) target.getRawPlayer(), (loc) -> {

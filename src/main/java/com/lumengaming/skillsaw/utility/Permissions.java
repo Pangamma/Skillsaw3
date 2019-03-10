@@ -106,7 +106,8 @@ public enum Permissions {
     TELEPORT_OTHERS("skillsaw.teleport.tphere"),
     TPA_TO("skillsaw.teleport.tpa"),
     TPA_HERE("skillsaw.teleport.tpahere"),
-    SLOG("skillsaw.slog"),
+    SLOG("skillsaw.slog"), 
+    PVPMODE("Skillsaw.pvpmode")
     ;
     
     //<editor-fold defaultstate="collapsed" desc="methods">

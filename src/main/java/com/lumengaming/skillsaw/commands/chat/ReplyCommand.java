@@ -4,7 +4,7 @@ import com.lumengaming.skillsaw.BungeeMain;
 import com.lumengaming.skillsaw.commands.BungeeCommand;
 import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.utility.CText;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import java.util.UUID;
 
@@ -22,7 +22,7 @@ public class ReplyCommand extends BungeeCommand {
     public void execute(BungeePlayer cs, String[] args) {
 
         if (!cs.isPlayer()) {
-            cs.sendMessage(Constants.ERROR_PLAYERS_ONLY);
+            cs.sendMessage(C.ERROR_PLAYERS_ONLY);
             return;
         }
 
@@ -41,12 +41,12 @@ public class ReplyCommand extends BungeeCommand {
             }
 
             if (cTarget.isIgnoringPlayer(cSender.getName())) {
-                cs.sendMessage(Constants.ERROR_P_IGNORING_YOU);
+                cs.sendMessage(C.ERROR_P_IGNORING_YOU);
                 return;
             }
 
             if (cSender.isIgnoringPlayer(cTarget.getName())) {
-                cs.sendMessage(Constants.ERROR_P_YOU_ARE_IGNORING);
+                cs.sendMessage(C.ERROR_P_YOU_ARE_IGNORING);
                 return;
             }
 

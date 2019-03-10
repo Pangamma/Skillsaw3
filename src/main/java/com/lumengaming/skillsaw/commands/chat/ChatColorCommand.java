@@ -3,7 +3,7 @@ package com.lumengaming.skillsaw.commands.chat;
 import com.lumengaming.skillsaw.BungeeMain;
 import com.lumengaming.skillsaw.commands.BungeeCommand;
 import com.lumengaming.skillsaw.models.User;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.utility.SharedUtility;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
@@ -39,13 +39,13 @@ public class ChatColorCommand extends BungeeCommand {
         }
 
         if (!cs.isPlayer()) {
-            cs.sendMessage(Constants.ERROR_PLAYERS_ONLY);
+            cs.sendMessage(C.ERROR_PLAYERS_ONLY);
             return;
         }
 
         User user = plugin.getDataService().getUser(cs.getUniqueId());
         if (user == null) {
-            cs.sendMessage(Constants.ERROR_TRY_AGAIN_LATER_COMMAND);
+            cs.sendMessage(C.ERROR_TRY_AGAIN_LATER_COMMAND);
             return;
         }
 

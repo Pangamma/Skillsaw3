@@ -7,6 +7,7 @@ package com.lumengaming.skillsaw;
 
 import com.lumengaming.skillsaw.wrappers.IPlayer;
 import java.util.UUID;
+import me.lucko.luckperms.api.LuckPermsApi;
 
 
 /**
@@ -28,4 +29,6 @@ public interface ISkillsaw {
     public void broadcast(String legacyText);
 
     public IPlayer getPlayer(UUID uuid);
+    
+    public LuckPermsApi getLuckPermsAPI();
 }

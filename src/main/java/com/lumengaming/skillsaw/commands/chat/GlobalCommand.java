@@ -3,7 +3,7 @@ package com.lumengaming.skillsaw.commands.chat;
 import com.lumengaming.skillsaw.BungeeMain;
 import com.lumengaming.skillsaw.commands.BungeeCommand;
 import com.lumengaming.skillsaw.models.User;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 
@@ -24,7 +24,7 @@ public class GlobalCommand extends BungeeCommand {
             if (cs.isPlayer()) {
                 User u = plugin.getDataService().getUser(cs.getUniqueId());
                 if (u == null) {
-                    cs.sendMessage(Constants.ERROR_TRY_AGAIN_LATER_COMMAND);
+                    cs.sendMessage(C.ERROR_TRY_AGAIN_LATER_COMMAND);
                     return;
                 }
                 plugin.broadcast("§f[§eglobal§f][" + u.getDisplayName() + "§f]:§7 " + u.getChatColor() + msg);

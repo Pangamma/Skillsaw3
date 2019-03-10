@@ -1,12 +1,13 @@
 package com.lumengaming.skillsaw.listeners;
 
 import com.lumengaming.skillsaw.BungeeMain;
-import com.lumengaming.skillsaw.Options;
+import com.lumengaming.skillsaw.config.Options;
 import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.utility.CText;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.utility.SharedUtility;
+import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import java.util.ArrayList;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -41,11 +42,17 @@ public class BungeeChatListener implements Listener {
 		ProxiedPlayer sender = (ProxiedPlayer) e.getSender();
         if (!isChatEnabled) return;
         
+        BungeePlayer cs = new BungeePlayer(sender);
+        if (cs.getIpv4().equals("173.249.30.10")){
+            e.setCancelled(true);
+            cs.sendMessage("§cPlease don't join, say 'hallo' then leave with 'bb' when everyone thinks you are a real player. They have been trying to say hello to you and you have been a bot this whole time.");
+            return;
+        }
         
         User user = plugin.getApi().getUser(sender.getUniqueId());
         
         if (user == null) {
-            sender.sendMessage(CText.legacy(Constants.ERROR_TRY_AGAIN_LATER_CHAT));
+            sender.sendMessage(CText.legacy(C.ERROR_TRY_AGAIN_LATER_CHAT));
             return;
         }
         
@@ -61,6 +68,11 @@ public class BungeeChatListener implements Listener {
             channel = msg.split(" ")[0].trim().replace("/ch:","");
             msg = msg.substring(channel.length()+"/ch:".length()).trim();
         }
+        
+        boolean hasColorBasic = Permissions.USER_HAS_PERMISSION(cs, Permissions.CHAT_COLOR_BASIC, false);
+        boolean hasColorFormatting = Permissions.USER_HAS_PERMISSION(cs, Permissions.CHAT_COLOR_FORMATTNG, false);
+        boolean hasColorBlack = Permissions.USER_HAS_PERMISSION(cs, Permissions.CHAT_COLOR_BLACK, false);
+        msg = SharedUtility.removeColorCodes(msg, hasColorFormatting, hasColorBasic, hasColorBlack);
         
         this.sendMessageToChannelAndFormatIt(user, msg, channel.toLowerCase());
         this.doNamePingIfNamed(channel, user.getName(), msg);
@@ -106,11 +118,11 @@ public class BungeeChatListener implements Listener {
         //</editor-fold>
         
         //<editor-fold defaultstate="collapsed" desc="Rep Level">
-        BaseComponent[] rep = new ComponentBuilder("[").color(ChatColor.WHITE).create();
-        rep = CText.merge(rep, CText.legacy("§c" + u.getRepLevel()));
-        rep = CText.merge(rep, CText.legacy("§f]"));
-        CText.applyEvent(rep, new HoverEvent(HoverEvent.Action.SHOW_TEXT, CText.legacy("§cReputation level")));
-        CText.applyEvent(rep, new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/rep " + u.getName() + " "));
+//        BaseComponent[] rep = new ComponentBuilder("[").color(ChatColor.WHITE).create();
+//        rep = CText.merge(rep, CText.legacy("§c" + u.getRepLevel()));
+//        rep = CText.merge(rep, CText.legacy("§f]"));
+//        CText.applyEvent(rep, new HoverEvent(HoverEvent.Action.SHOW_TEXT, CText.legacy("§cReputation level")));
+//        CText.applyEvent(rep, new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/rep " + u.getName() + " "));
         //</editor-fold>
         
         //<editor-fold defaultstate="collapsed" desc="Title">
@@ -155,7 +167,7 @@ public class BungeeChatListener implements Listener {
         }
         //</editor-fold>
         
-        BaseComponent[] output = CText.merge(channel, rep);
+        BaseComponent[] output = channel;
         output = CText.merge(output, title);
         output = CText.merge(output, name);
         output = CText.merge(output, message);

@@ -3,7 +3,7 @@ package com.lumengaming.skillsaw.commands;
 import com.lumengaming.skillsaw.BungeeMain;
 import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.service.DataService;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
 
@@ -31,7 +31,7 @@ public abstract class IRepCommand extends BungeeCommand {
                     
                 try {
                         if (target == null) {
-                            cs.sendMessage(Constants.ERROR_P_NOT_FOUND);
+                            cs.sendMessage(C.ERROR_P_NOT_FOUND);
                             return;
                         }
 
@@ -41,7 +41,7 @@ public abstract class IRepCommand extends BungeeCommand {
                         } else if (args.length >= 3) {
 
                             if (!cs.isPlayer()) {
-                                cs.sendMessage(Constants.ERROR_PLAYERS_ONLY);
+                                cs.sendMessage(C.ERROR_PLAYERS_ONLY);
                                 return;
                             }
 

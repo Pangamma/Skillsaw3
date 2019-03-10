@@ -2,12 +2,12 @@ package com.lumengaming.skillsaw.commands.chat;
 
 import com.lumengaming.skillsaw.utility.CText;
 import com.lumengaming.skillsaw.BungeeMain;
-import com.lumengaming.skillsaw.Options;
+import com.lumengaming.skillsaw.config.Options;
 import com.lumengaming.skillsaw.commands.BungeeCommand;
 import com.lumengaming.skillsaw.models.Title;
 import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.service.DataService;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
@@ -136,7 +136,7 @@ public class TitleCommand extends BungeeCommand {
 
     private void doSetTitle(final BungeePlayer cs, final User target, String titleNeedle) {
         if (target == null) {
-            cs.sendMessage(Constants.ERROR_P_NOT_FOUND);
+            cs.sendMessage(C.ERROR_P_NOT_FOUND);
             return;
         }
 
@@ -172,20 +172,20 @@ public class TitleCommand extends BungeeCommand {
 
     private void doListTitles(final BungeePlayer cs, final User target) {
         if (target == null) {
-            cs.sendMessage(Constants.ERROR_P_NOT_FOUND);
+            cs.sendMessage(C.ERROR_P_NOT_FOUND);
             return;
         }
 
-        cs.sendMessage(Constants.C_DIV_LINE);
-        cs.sendMessage(Constants.C_DIV_TITLE_PREFIX + "Titles for " + target.getName());
-        cs.sendMessage(Constants.C_DIV_LINE);
+        cs.sendMessage(C.C_DIV_LINE);
+        cs.sendMessage(C.C_DIV_TITLE_PREFIX + "Titles for " + target.getName());
+        cs.sendMessage(C.C_DIV_LINE);
 
         boolean isSelf = target.getName().equalsIgnoreCase(cs.getName());
         boolean canSetSelf = Permissions.USER_HAS_PERMISSION(cs, Permissions.TITLE_SET_SELF, false);
         boolean canSetOthers = Permissions.USER_HAS_PERMISSION(cs, Permissions.TITLE_SET_OTHERS, false);
 
         for (Title title : target.getAllTitles()) {
-            BaseComponent[] txt = CText.legacy(Constants.C_MENU_CONTENT);
+            BaseComponent[] txt = CText.legacy(C.C_MENU_CONTENT);
             BaseComponent[] sTitle = CText.legacy(title.getLongTitle());
 
             if ((canSetSelf && isSelf) || (canSetOthers && !isSelf)) {
@@ -196,12 +196,12 @@ public class TitleCommand extends BungeeCommand {
             txt = CText.merge(txt, sTitle);
             cs.sendMessage(txt);
         }
-        cs.sendMessage(Constants.C_DIV_LINE);
+        cs.sendMessage(C.C_DIV_LINE);
     }
 
     private void doRemoveTitle(final BungeePlayer cs, final User target, String titleNeedle) {
         if (target == null) {
-            cs.sendMessage(Constants.ERROR_P_NOT_FOUND);
+            cs.sendMessage(C.ERROR_P_NOT_FOUND);
             return;
         }
 

@@ -7,7 +7,7 @@ package com.lumengaming.skillsaw.listeners;
 
 import com.lumengaming.skillsaw.utility.CText;
 import com.lumengaming.skillsaw.SpigotMain;
-import com.lumengaming.skillsaw.SpigotOptions;
+import com.lumengaming.skillsaw.config.SpigotOptions;
 import java.util.ArrayList;
 import java.util.HashMap;
 import net.md_5.bungee.api.ChatColor;

@@ -12,7 +12,7 @@ import com.lumengaming.skillsaw.models.TPRequest;
 import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.models.XLocation;
 import com.lumengaming.skillsaw.utility.CText;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import java.time.Duration;
@@ -37,7 +37,7 @@ public class TpaCommand extends BungeeCommand {
         }
         
         if (!cs.isPlayer()){
-            cs.sendMessage(Constants.ERROR_PLAYERS_ONLY);
+            cs.sendMessage(C.ERROR_PLAYERS_ONLY);
             return;
         }
         
@@ -48,13 +48,13 @@ public class TpaCommand extends BungeeCommand {
         
         User from =  plugin.getApi().getUser(cs.getUniqueId());
         if (from == null){
-            cs.sendMessage(Constants.ERROR_TRY_AGAIN_LATER_COMMAND);
+            cs.sendMessage(C.ERROR_TRY_AGAIN_LATER_COMMAND);
             return;
         }
         
         final User to = plugin.getApi().getUserBestOnlineMatch(args[0]);
         if (to == null){
-            cs.sendMessage(Constants.ERROR_P_NOT_FOUND);
+            cs.sendMessage(C.ERROR_P_NOT_FOUND);
             return;
         }
         
@@ -88,8 +88,8 @@ public class TpaCommand extends BungeeCommand {
         TPRequest req = new TPRequest(from.p(), to.p(), new XLocation(), TPRequest.TpaType.TPA);
         if (!plugin.getTeleportRequests().contains(req.getKey())){
             plugin.getTeleportRequests().put(req.getKey(), req, Duration.ofMinutes(1), (expired) -> {
-                cs.sendMessage("§cYour teleport request to "+to.getName()+" has expired.");
-                to.sendMessage("§cYour teleport request from "+cs.getName()+" has expired.");
+                cs.sendMessage("§cYour teleport request to §4"+to.getName()+"§c has expired.");
+                to.sendMessage("§cYour teleport request from §4"+cs.getName()+"§c has expired.");
             });
             to.sendMessage(promptForFromUser);
         }

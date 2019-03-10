@@ -1,12 +1,15 @@
 package com.lumengaming.skillsaw.listeners;
 
 import com.lumengaming.skillsaw.BungeeMain;
+import com.lumengaming.skillsaw.common.AsyncEmptyCallback;
+import com.lumengaming.skillsaw.config.Options;
+import com.lumengaming.skillsaw.config.Options.ForcedHostOption;
 import com.lumengaming.skillsaw.models.ActivityRecord;
+import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.utility.CText;
 import com.lumengaming.skillsaw.utility.SharedUtility;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import java.util.Collection;
-import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -29,7 +32,7 @@ public class BungeePlayerActivityListener implements Listener {
 
     private final BungeeMain plugin;
     private final TreeSet<ActivityRecord> records = new TreeSet<>();
-    private final TreeMap<UUID, String> userStates = new TreeMap<>();
+    private final TreeMap<UUID, AsyncEmptyCallback> userWelcomes = new TreeMap<>();
     private ScheduledTask activityLogTask;
 
     public BungeePlayerActivityListener(BungeeMain plug) {
@@ -65,6 +68,7 @@ public class BungeePlayerActivityListener implements Listener {
         }
     }
     
+    
     @EventHandler(priority = -32)
     public void onAnyPlayerMessage(final ChatEvent e) {
         
@@ -73,14 +77,9 @@ public class BungeePlayerActivityListener implements Listener {
 		}
         
         ProxiedPlayer p = (ProxiedPlayer) e.getSender();
-        
         this.plugin.getApi().logMessage(p.getName(),p.getUniqueId(),p.getServer().getInfo().getName(), e.getMessage(), e.isCommand());
         
         synchronized (records) {
-            if (e.getMessage().equals("/lumencloud debug")) {
-                p.sendMessage("recordSize:" + records.size());
-                p.sendMessage("statesSize:" + this.userStates.size());
-            }
             for (ActivityRecord r : records) {
                 if (r.getPlayerUUID().equals(p.getUniqueId())) {
                     r.setIsAfk(false);
@@ -92,7 +91,43 @@ public class BungeePlayerActivityListener implements Listener {
 
     @EventHandler
     public void onLogin(final PostLoginEvent e) {
+        ProxiedPlayer p = e.getPlayer();
+        String hostName = p.getPendingConnection().getVirtualHost().getHostString();
 		plugin.getDataService().loginUser(new BungeePlayer(e.getPlayer()), (u) -> {
+
+            synchronized(userWelcomes){
+                userWelcomes.put(e.getPlayer().getUniqueId(), () -> {
+                
+                    if (u == null){
+                        ProxyServer.getInstance().broadcast(CText.legacy("§7[§a+§7] §f" + p.getName()));
+                        return;
+                    }
+
+                    boolean hasPlayed = (u.getFirstPlayed() + 20000 < System.currentTimeMillis());          
+                    long prevPlayed = u.getPreviouslyPlayed() == Long.MAX_VALUE ? u.getFirstPlayed() : u.getPreviouslyPlayed();            
+                    String msg = "§7[§a+§7] §f" + u.getName() + " §ajoined the game §afor §athe §afirst §atime! §fHost: §f"+hostName;
+
+                    long deltaPlayed = System.currentTimeMillis() - prevPlayed;
+                    long[] timeParts = SharedUtility.getTimeParts(deltaPlayed);
+
+                    if (!hasPlayed || timeParts[0] > 365){
+                        plugin.getSender().doTitle(p, "§9Welcome to Woolcity!", "§7Hope you love it!", null);
+                        ProxyServer.getInstance().broadcast(CText.legacy(msg));
+                        return;
+                    }
+
+                    if (timeParts[0] > 30){
+                        msg = "§7[§a+§7] §f" + u.getName() + " §dhas returned from their travels. It has been "+timeParts[0]+" days since they last appeared on the server!§d("+p.getServer().getInfo().getName()+")";
+                        plugin.getSender().doTitle(p, "§9Welcome Back!", "§7We missed you.", null);
+                        ProxyServer.getInstance().broadcast(CText.legacy(msg));
+                        return;
+                    }
+
+                    plugin.getSender().doTitle(p, CText.colorize("c6ea95", "Welcome to WoolCity!"), "Have fun!", null);
+                    msg = "§7[§a+§7] §f" + u.getName();
+                    ProxyServer.getInstance().broadcast(CText.legacy(msg));
+                });
+            }
         });
     }
 
@@ -101,15 +136,24 @@ public class BungeePlayerActivityListener implements Listener {
     public void onProxyQuit(final net.md_5.bungee.api.event.PlayerDisconnectEvent e) {
         if (e.getPlayer() != null) {
             ProxiedPlayer p = e.getPlayer();
-            synchronized (this.userStates) {
-                if (this.userStates.containsKey(p.getUniqueId())) {
-                    this.userStates.remove(p.getUniqueId());
+            
+            synchronized (this.userWelcomes) {
+                if (this.userWelcomes.containsKey(p.getUniqueId())) {
+                    this.userWelcomes.remove(p.getUniqueId());
+                }else{
+                    User user = plugin.getApi().getUser(p.getUniqueId());
+                    if (user != null){
+                        BungeePlayer bp = new BungeePlayer(p);
+                        plugin.getApi().logoutUser(bp);
+                        
+                        if (bp.getIpv4().equals("173.249.30.10")){ return;}
+
+                        BaseComponent[] txt = CText.legacy("§7[§c-§7] §f" + p.getName());
+                        for (ProxiedPlayer plr : plugin.getProxy().getPlayers()) {
+                            plr.sendMessage(txt);
+                        }
+                    }
                 }
-            }
-            plugin.getApi().logoutUser(new BungeePlayer(p));
-            BaseComponent[] txt = CText.legacy("§e" + e.getPlayer().getName() + " §eleft §ethe §egame.");
-            for (ProxiedPlayer plr : plugin.getProxy().getPlayers()) {
-                plr.sendMessage(txt);
             }
         }
     }
@@ -131,9 +175,18 @@ public class BungeePlayerActivityListener implements Listener {
             }
         }
 
-        synchronized (this.userStates) {
-            if (!this.userStates.containsKey(p.getUniqueId())) {
-                this.userStates.put(p.getUniqueId(), "Joining->");
+        
+        
+        synchronized (this.userWelcomes) {
+            if (this.userWelcomes.containsKey(p.getUniqueId())) {
+                AsyncEmptyCallback cb = this.userWelcomes.remove(p.getUniqueId());
+                
+                String ipv4 = new BungeePlayer(p).getIpv4();
+                if (ipv4.equals("173.249.30.10")){ return;}
+                
+                if (cb != null){
+                    cb.doCallback();
+                }
             }
         }
     }
@@ -141,43 +194,6 @@ public class BungeePlayerActivityListener implements Listener {
     @EventHandler
     public void onServerSwitch(final net.md_5.bungee.api.event.ServerSwitchEvent e) {
         ProxiedPlayer p = e.getPlayer();
-        synchronized (this.userStates) {
-            if (this.userStates.containsKey(p.getUniqueId())) {
-                if ("Joining->".equals(this.userStates.get(p.getUniqueId()))) {
-                    this.userStates.put(p.getUniqueId(), "joined");
-					
-					plugin.getApi().getOfflineUser(p.getUniqueId(), true, (u) -> {
-                        boolean hasPlayed = u != null && (u.getFirstPlayed() + 20000 < System.currentTimeMillis());                      
-                        String msg = "§a" + p.getName() + " §ajoined §athe §agame §afor §athe §afirst §atime! §a("+p.getServer().getInfo().getName()+")";
-
-                        if (u != null){
-                            long prevPlayed = u.getPreviouslyPlayed() == Long.MAX_VALUE ? u.getFirstPlayed() : u.getPreviouslyPlayed();
-                            if (hasPlayed){
-                                long deltaPlayed = System.currentTimeMillis() - prevPlayed;
-                                long[] timeParts = SharedUtility.getTimeParts(deltaPlayed);
-                                
-                                if (timeParts[0] > 365){
-                                    msg = "§d" + p.getName() + " §dhas come back from the dead. It has been "+timeParts[0]+" days since they last appeared on the server! §d("+p.getServer().getInfo().getName()+")";
-                                    plugin.getSender().doTitle(p, "§bWelcome Back!", "§7It has been too long!", null);
-                                }else if (timeParts[0] > 30){
-                                    msg = "§d" + p.getName() + " §dhas returned from their travels. It has been "+timeParts[0]+" days since they last appeared on the server!§d("+p.getServer().getInfo().getName()+")";
-                                    plugin.getSender().doTitle(p, "§2Welcome Back!", "§7We missed you.", null);
-                                }else{
-                                    msg = "§e" + p.getName() + " §ejoined §ethe §egame §e("+p.getServer().getInfo().getName()+")";
-                                }
-                            }
-                        }
-                        
-                        Collection<ProxiedPlayer> players = ProxyServer.getInstance().getPlayers();
-                        for (ProxiedPlayer plr : players) {
-                            plr.sendMessage(CText.legacy(msg));
-                        }
-                    });
-                }
-            }
-        }
-
-        String destServerName = p.getServer().getInfo().getName();
         String srcServerName = "?";
 
         synchronized (records) {
@@ -189,27 +205,6 @@ public class BungeePlayerActivityListener implements Listener {
                 }
             }
         }
-        
-//        Map<String, ServerInfo> servers = ProxyServer.getInstance().getServers();
-//        if (!"?".equals(srcServerName) && !"?".equals(destServerName)) {
-//            BaseComponent[] txt = CText.legacy("§e" + p.getName() + " §eswitched §eto §ethe §e'" + destServerName + "' §eserver with §6/server §6" + destServerName);
-//            BaseComponent[] txt2 = CText.legacy("§e" + p.getName() + " §ejoined §efrom §ethe §e'" + srcServerName + "' §eserver");
-//            for (ServerInfo si : servers.values()) {
-//                if (si.getName().equals(srcServerName)) {
-//                    Collection<ProxiedPlayer> players = si.getPlayers();
-//                    for (ProxiedPlayer plr : players) {
-//                        if (!plr.getName().equals(p.getName())) {
-//                            plr.sendMessage(txt);
-//                        }
-//                    }
-//                } else if (si.getName().equals(destServerName)) {
-//                    Collection<ProxiedPlayer> players = si.getPlayers();
-//                    for (ProxiedPlayer plr : players) {
-//                        plr.sendMessage(txt2);
-//                    }
-//                }
-//            }
-//        }
     }
 
 }

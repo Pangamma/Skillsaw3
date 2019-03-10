@@ -6,9 +6,9 @@
 package com.lumengaming.skillsaw.models;
 
 import com.lumengaming.skillsaw.ISkillsaw;
-import com.lumengaming.skillsaw.Options;
+import com.lumengaming.skillsaw.config.Options;
 import com.lumengaming.skillsaw.utility.CText;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -29,6 +29,12 @@ public class User {
     
     //<editor-fold defaultstate="collapsed" desc="Fields / Constructors">
 //    protected IPlayer p;
+    
+    /**
+     * @deprecated Only use with mysql repository
+     */
+    @Deprecated
+    public int _dbKey;
     private final ISkillsaw plugin;
     protected String ipv4 = "127.0.0.7";
     protected UUID uuid;
@@ -42,6 +48,8 @@ public class User {
     protected double nRep = 0;
     protected long lastPlayed = 0;
     protected long firstPlayed = 0;
+    protected long lastPingTime = 0;
+    protected String lastPingHost = null;
     protected String chatColor = "";
     protected int LEVEL = 0;
     protected boolean isStaff = false;
@@ -53,8 +61,9 @@ public class User {
     private IPlayer p;
     private int activityScore = 0;
     private UUID lastWhisperedUuid;
-    private BooleanAnswer tpaLockState = BooleanAnswer.Ask;
+    private BooleanAnswer tpaLockState = BooleanAnswer.Yes;
     private SlogSettings slogSettings = new SlogSettings();
+    private String p_lastPingHost;
 
     /**
      * Use only for creating a new default user object when one can't be pulled
@@ -110,6 +119,8 @@ public class User {
         this.p = orig.p;
         this.tpaLockState = orig.tpaLockState;
         this.slogSettings = orig.slogSettings;
+        this.lastPingHost = orig.lastPingHost;
+        this.lastPingTime = orig.lastPingTime;
     }
 
     /**
@@ -132,8 +143,10 @@ public class User {
      * @param p_ignored
      * @param p_isStaff
      * @param p_isInstructor
-     * @param tpaLockState
+     * @param p_activityScore
      * @param p_tpaLockState
+     * @param p_lastPingTime
+     * @param p_lastPingHost
      * @param p_slog
      */
     public User(ISkillsaw p_plugin, UUID p_uuid, String p_username, String p_displayName, long p_lastPlayed,
@@ -141,7 +154,7 @@ public class User {
             ArrayList<Title> p_customTitles, Title p_curTitle, String p_chatColor, String p_ipv4,
             String p_speakingChannel, CopyOnWriteArraySet<String> p_stickyChannels,
             CopyOnWriteArraySet<String> p_ignored, boolean p_isStaff, boolean p_isInstructor, int p_activityScore, 
-            BooleanAnswer p_tpaLockState, SlogSettings p_slog) {
+            BooleanAnswer p_tpaLockState, SlogSettings p_slog, long p_lastPingTime, String p_lastPingHost) {
         this.plugin = p_plugin;
         this.uuid = p_uuid;
         this.name = p_username;
@@ -163,6 +176,8 @@ public class User {
         this.isStaff = p_isStaff;
         this.activityScore = p_activityScore;
         this.tpaLockState = p_tpaLockState;
+        this.lastPingHost = p_lastPingHost;
+        this.lastPingTime = p_lastPingTime;
 
         ArrayList<Title> allTitles = this.getAllTitles();
         this.title = Title.getMatchedTitle(p_curTitle, allTitles);
@@ -174,6 +189,7 @@ public class User {
             p().setDisplayName(this.displayName);
         }
         this.slogSettings = p_slog;
+        this.p_lastPingHost = p_lastPingHost;
     }
     //</editor-fold>
 
@@ -302,8 +318,20 @@ public class User {
      */
     public synchronized BaseComponent[] getNameForChat() {
         BaseComponent[] txt = CText.legacy("§e" + this.getDisplayName());
-        CText.applyEvent(txt, new HoverEvent(HoverEvent.Action.SHOW_TEXT, CText.legacy("Username: " + this.getName())));
-        CText.applyEvent(txt, new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/msg " + this.getName() + " "));
+        String hoverTextStr 
+            = "§7Username : §e" + this.getName() +"\n"
+            + "§7Rep Level : §c"+this.getRepLevel()+"\n"
+            + "§7Chat Channel : §b"+this.speakingChannel+"\n"
+            ;
+        
+            if (this.isInstructor){
+                
+            }
+            hoverTextStr += ""
+            + "§5Click for more info"
+            ;
+        CText.applyEvent(txt, new HoverEvent(HoverEvent.Action.SHOW_TEXT, CText.legacy(hoverTextStr)));
+        CText.applyEvent(txt, new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/rep " + this.getName()));
         return txt;
     }
 
@@ -580,32 +608,32 @@ public class User {
         //lPlayed.get(Calendar.DAY_OF_MONTH);
         String firstPlayedStr = (fPlayed.get(Calendar.MONTH) + 1) + "/" + fPlayed.get((Calendar.DAY_OF_MONTH)) + "/" + fPlayed.get(Calendar.YEAR);
         String lastPlayedStr = (lPlayed.get(Calendar.MONTH) + 1) + "/" + lPlayed.get((Calendar.DAY_OF_MONTH)) + "/" + lPlayed.get(Calendar.YEAR);
-        p.sendMessage(Constants.C_DIV_LINE);
-        p.sendMessage(Constants.C_DIV_TITLE_PREFIX + "Info for " + usr.getName());
-        p.sendMessage(Constants.C_DIV_LINE);
+        p.sendMessage(C.C_DIV_LINE);
+        p.sendMessage(C.C_DIV_TITLE_PREFIX + "Info for " + usr.getName());
+        p.sendMessage(C.C_DIV_LINE);
         if (usr.getFirstPlayed() == 0) {
-            p.sendMessage(Constants.C_MENU_CONTENT + "first joined = §eUnknown");
+            p.sendMessage(C.C_MENU_CONTENT + "first joined = §eUnknown");
         } else {
-            p.sendMessage(Constants.C_MENU_CONTENT + "first joined = §e" + firstPlayedStr);
+            p.sendMessage(C.C_MENU_CONTENT + "first joined = §e" + firstPlayedStr);
         }
-        p.sendMessage(Constants.C_MENU_CONTENT + "last online = §e" + lastPlayedStr);
+        p.sendMessage(C.C_MENU_CONTENT + "last online = §e" + lastPlayedStr);
         
         if (isChatEnabled)  {
-            p.sendMessage(Constants.C_MENU_CONTENT + "nickname = §e" + usr.getDisplayName());
-            p.sendMessage(CText.hoverTextSuggest(Constants.C_MENU_CONTENT + "title = §e" + usr.getCurrentTitle().getLongTitle(), usr.getCurrentTitle().getShortTitle(), "/title " + usr.getName() + " list"));
+            p.sendMessage(C.C_MENU_CONTENT + "nickname = §e" + usr.getDisplayName());
+            p.sendMessage(CText.hoverTextSuggest(C.C_MENU_CONTENT + "title = §e" + usr.getCurrentTitle().getLongTitle(), usr.getCurrentTitle().getShortTitle(), "/title " + usr.getName() + " list"));
         }
         
         if (usr.isStaff) {
-            p.sendMessage(Constants.C_MENU_CONTENT + "Staff = " + (usr.isStaff() ? "§2yes" : "§eno"));
+            p.sendMessage(C.C_MENU_CONTENT + "Staff = " + (usr.isStaff() ? "§2yes" : "§eno"));
         }
         if (usr.isInstructor) {
-            p.sendMessage(Constants.C_MENU_CONTENT + "Instructor = " + (usr.isInstructor() ? "§2yes" : "§eno"));
+            p.sendMessage(C.C_MENU_CONTENT + "Instructor = " + (usr.isInstructor() ? "§2yes" : "§eno"));
         }
-        p.sendMessage(CText.hoverTextSuggest(Constants.C_MENU_CONTENT + "UUID = §e" + usr.getUniqueId(), "Click to get the UUID", usr.getUniqueId().toString()));
-        p.sendMessage(Constants.C_MENU_CONTENT + "Normal Rep = §e" + usr.getNaturalRep());
-        p.sendMessage(Constants.C_MENU_CONTENT + "Staff Rep = §e" + usr.getStaffRep());
-        p.sendMessage(Constants.C_MENU_CONTENT + "Total Rep Level = §e" + usr.getRepLevel());
-        p.sendMessage(Constants.C_MENU_CONTENT + "Repping Power = §e" + usr.getRepPower());
+        p.sendMessage(CText.hoverTextSuggest(C.C_MENU_CONTENT + "UUID = §e" + usr.getUniqueId(), "Click to get the UUID", usr.getUniqueId().toString()));
+        p.sendMessage(C.C_MENU_CONTENT + "Normal Rep = §e" + usr.getNaturalRep());
+        p.sendMessage(C.C_MENU_CONTENT + "Staff Rep = §e" + usr.getStaffRep());
+        p.sendMessage(C.C_MENU_CONTENT + "Total Rep Level = §e" + usr.getRepLevel());
+        p.sendMessage(C.C_MENU_CONTENT + "Repping Power = §e" + usr.getRepPower());
         
         {
             int score = usr.getActivityScore();
@@ -615,7 +643,7 @@ public class User {
             else if (score > 70) scoreStr = "§a"+score;
             else if (score >= 0 && (usr.isStaff || usr.isInstructor)) scoreStr = "§c"+score;
             else scoreStr = "§e"+score;
-            BaseComponent[] legacy = CText.legacy(Constants.C_MENU_CONTENT + "Activity Score = " + scoreStr);
+            BaseComponent[] legacy = CText.legacy(C.C_MENU_CONTENT + "Activity Score = " + scoreStr);
             CText.applyEvent(legacy, new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, score+""));
             p.sendMessage(legacy);
         }
@@ -623,13 +651,13 @@ public class User {
         double upperLim = User.getMinimumRepRequiredToBeAtLevel(usr.getRepLevel() + 1);
         double lowerLim = User.getMinimumRepRequiredToBeAtLevel(usr.getRepLevel());
         double curRep = usr.getNaturalRep();
-        p.sendMessage(Constants.C_MENU_CONTENT + "Rep towards next level = (§e" + User.round(curRep - lowerLim) + "§7/§e" + User.round(upperLim - lowerLim) + "§7)");
+        p.sendMessage(C.C_MENU_CONTENT + "Rep towards next level = (§e" + User.round(curRep - lowerLim) + "§7/§e" + User.round(upperLim - lowerLim) + "§7)");
 
 //		ArrayList<SkillType> skillTypes = plugin.getConfigHandler().getSkillTypes();
         for (SkillType st : skills.keySet()) {
-            p.sendMessage(Constants.C_MENU_CONTENT + st.getListName() + " Tier = §e" + skills.get(st));
+            p.sendMessage(C.C_MENU_CONTENT + st.getListName() + " Tier = §e" + skills.get(st));
         }
-        p.sendMessage(Constants.C_DIV_LINE);
+        p.sendMessage(C.C_DIV_LINE);
     }
     //</editor-fold>
 
@@ -781,4 +809,19 @@ public class User {
         this.activityScore = score;
     }
 
+    public long getLastPingTime() {
+        return lastPingTime;
+    }
+
+    public void setLastPingTime(long lastPingTime) {
+        this.lastPingTime = lastPingTime;
+    }
+
+    public String getLastPingHost() {
+        return lastPingHost;
+    }
+
+    public void setLastPingHost(String lastPingHost) {
+        this.lastPingHost = lastPingHost;
+    }
 }

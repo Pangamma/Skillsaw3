@@ -3,7 +3,7 @@ package com.lumengaming.skillsaw.commands.skills;
 import com.lumengaming.skillsaw.utility.CText;
 import com.lumengaming.skillsaw.BungeeMain;
 import com.lumengaming.skillsaw.commands.BungeeCommand;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 
@@ -28,17 +28,17 @@ public class SkillSawCommand extends BungeeCommand {
                 cs.sendMessage("loading configs.");
                 return;
             } else if (args[0].equalsIgnoreCase("perms")) {
-                cs.sendMessage(Constants.C_DIV_LINE);
-                cs.sendMessage(Constants.C_DIV_TITLE_PREFIX + "Permissions");
-                cs.sendMessage(Constants.C_DIV_LINE);
+                cs.sendMessage(C.C_DIV_LINE);
+                cs.sendMessage(C.C_DIV_TITLE_PREFIX + "Permissions");
+                cs.sendMessage(C.C_DIV_LINE);
                 for (Permissions s : Permissions.values()) {
                     if (Permissions.USER_HAS_PERMISSION(cs, s, false)){
-                        cs.sendMessage(CText.hoverTextSuggest(Constants.C_MENU_CONTENT + s.node, "Click to copy", s.node));
+                        cs.sendMessage(CText.hoverTextSuggest(C.C_MENU_CONTENT + s.node, "Click to copy", s.node));
                     }else{
-                        cs.sendMessage(CText.hoverTextSuggest(Constants.C_MENU_CONTENT +"§c"+ s.node, "Click to copy", s.node));
+                        cs.sendMessage(CText.hoverTextSuggest(C.C_MENU_CONTENT +"§c"+ s.node, "Click to copy", s.node));
                     }
                 }
-                cs.sendMessage(Constants.C_DIV_LINE);
+                cs.sendMessage(C.C_DIV_LINE);
                 return;
             } else {
                 plugin.printHelp(cs);

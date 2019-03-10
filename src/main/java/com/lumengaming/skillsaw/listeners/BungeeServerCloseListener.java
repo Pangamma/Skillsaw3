@@ -6,15 +6,18 @@
 package com.lumengaming.skillsaw.listeners;
 
 import com.lumengaming.skillsaw.BungeeMain;
-import com.lumengaming.skillsaw.Options;
-import com.lumengaming.skillsaw.utility.BH;
+import com.lumengaming.skillsaw.config.Options;
+import com.lumengaming.skillsaw.utility.CText;
+import java.util.HashSet;
+import java.util.UUID;
 import net.md_5.bungee.api.AbstractReconnectHandler;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
-import net.md_5.bungee.api.event.ServerKickEvent;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 
@@ -33,9 +36,21 @@ public class BungeeServerCloseListener implements Listener{
     public void onServerKickEvent(final ServerKickEvent ev) {
         final String reason = BaseComponent.toLegacyText(ev.getKickReasonComponent());
         for(String kickReason : Options.Get().ServerClosePlayerMover.KickReasonBlacklist){
-            if (reason.contains(kickReason)){
+            if (reason.toLowerCase().contains(kickReason.toLowerCase())){
                 return;
             }
+        }
+        
+        boolean isWhiteListed = false;
+        for(String kickReason : Options.Get().ServerClosePlayerMover.KickReasonWhitelist){
+            if (reason.toLowerCase().contains(kickReason.toLowerCase())){
+                isWhiteListed = true;
+                break;
+            }
+        }
+        
+        if (isWhiteListed == false && !Options.Get().ServerClosePlayerMover.KickReasonWhitelist.isEmpty()){
+            return;
         }
         
         //<editor-fold defaultstate="collapsed" desc="KickedFROM">

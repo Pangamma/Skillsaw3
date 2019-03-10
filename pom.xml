@@ -36,16 +36,17 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <!-- https://oss.sonatype.org/content/repositories/snapshots/net/md-5/bungeecord-api/maven-metadata.xml -->
             <groupId>net.md-5</groupId>
             <artifactId>bungeecord-api</artifactId>
-            <version>1.12-SNAPSHOT</version>
+            <version>1.13-SNAPSHOT</version>
             <type>jar</type>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>net.md-5</groupId>
             <artifactId>bungeecord-api</artifactId>
-            <version>1.12-SNAPSHOT</version>
+            <version>1.13-SNAPSHOT</version>
             <type>javadoc</type>
             <scope>provided</scope>
         </dependency>
@@ -58,7 +59,7 @@
         <dependency>
             <groupId>me.lucko.luckperms</groupId>
             <artifactId>luckperms-api</artifactId>
-            <version>4.3</version>
+            <version>4.4-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

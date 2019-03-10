@@ -120,4 +120,19 @@ public class CText{
         CText.applyEvent(txt, new ClickEvent(ClickEvent.Action.RUN_COMMAND, commandText));
         return txt;
     }
+
+    public static String colorize(String colorCodes, String input){
+		if (colorCodes == null || colorCodes.isEmpty()){ return input; }
+		if (input == null || input.isEmpty()){ return input; }
+		
+		StringBuilder sb = new StringBuilder();
+		int i = 0;
+		for(char c : input.toCharArray()){
+			i++;
+			i %= colorCodes.length();
+			char cc = colorCodes.charAt(i);
+			sb.append("§").append(cc).append(c);
+		}
+		return sb.toString();
+	}
 }

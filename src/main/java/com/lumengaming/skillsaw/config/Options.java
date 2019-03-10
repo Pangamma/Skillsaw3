@@ -3,11 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.lumengaming.skillsaw;
+package com.lumengaming.skillsaw.config;
 
 import com.google.gson.Gson;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
+import com.lumengaming.skillsaw.models.BooleanAnswer;
 import com.lumengaming.skillsaw.models.SkillType;
 import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.utility.ColorCodeAdapter;
@@ -45,90 +46,21 @@ public class Options
     @SerializedName("server-close-player-mover")
     public ServerClosingPlayerMoverOptions ServerClosePlayerMover = new ServerClosingPlayerMoverOptions();
     
+    @SerializedName("discord")
+    public DiscordOptions Discord = new DiscordOptions();
     
-    @SerializedName("discord-invite-link")
-    public String DiscordInviteLink = "https://discord.gg/QrvqAv2";
-    
-    
-//    
-//    
-//    public DataService dataService;
-//    public boolean enableMysql;
-//    public boolean enableSqlite;
-//    public String dataStorageFormat;
-//    public ArrayList<SkillType> skillTypes;
-//    public boolean isChatEnabled;
-//	public boolean isPermissionSystemEnabled;
+    public ArrayList<ForcedHostOption> ForcedHosts = new ArrayList<>();
     
     //</editor-fold>
 
     public ArrayList<SkillType> getSkillTypes() {
         ArrayList<SkillType> skillTypes = new ArrayList<>();
-        skillTypes.add(new SkillType(
-            "redstone", // key (for DB) 
-            "Redstone", // list-name
-            0, // default-level
-            0, // min-level
-            10,// max-level
-            5, // min-instruct-level
-            "&cR"+SkillType.LEVEL_VAR_STR, // title-format-short
-            "&cRedstonerT"+SkillType.LEVEL_VAR_STR // title-format-long
-            ));
-        
-        skillTypes.add(new SkillType(
-            "organics", // key (for DB) 
-            "Organics", // list-name
-            0, // default-level
-            0, // min-level
-            10,// max-level
-            5, // min-instruct-level
-            "&9O"+SkillType.LEVEL_VAR_STR, // title-format-short
-            "&9OrganicsT"+SkillType.LEVEL_VAR_STR // title-format-long
-            ));
-        
-        skillTypes.add(new SkillType(
-            "pixelart", // key (for DB) 
-            "PixelArt", // list-name
-            0, // default-level
-            0, // min-level
-            10,// max-level
-            5, // min-instruct-level
-            "&aP"+SkillType.LEVEL_VAR_STR, // title-format-short
-            "&aPixelArtistT"+SkillType.LEVEL_VAR_STR // title-format-long
-            ));
-        
-        skillTypes.add(new SkillType(
-            "architecture", // key (for DB) 
-            "Architecture", // list-name
-            0, // default-level
-            0, // min-level
-            10,// max-level
-            5, // min-instruct-level
-            "&2A"+SkillType.LEVEL_VAR_STR, // title-format-short
-            "&2ArchitectT"+SkillType.LEVEL_VAR_STR // title-format-long
-            ));
-        
-        skillTypes.add(new SkillType(
-            "terraforming", // key (for DB) 
-            "Terraforming", // list-name
-            0, // default-level
-            0, // min-level
-            10,// max-level
-            5, // min-instruct-level
-            "&dT"+SkillType.LEVEL_VAR_STR, // title-format-short
-            "&dTerraformerT"+SkillType.LEVEL_VAR_STR // title-format-long
-            ));
-            
-        skillTypes.add(new SkillType(
-            "vehicles", // key (for DB) 
-            "Vehicles", // list-name
-            0, // default-level
-            0, // min-level
-            10,// max-level
-            5, // min-instruct-level
-            "&3N"+SkillType.LEVEL_VAR_STR, // title-format-short
-            "&3NavigatorT"+SkillType.LEVEL_VAR_STR // title-format-long
-            ));
+        skillTypes.add(SkillType.Redstone);
+        skillTypes.add(SkillType.Organics);
+        skillTypes.add(SkillType.PixelArt);
+        skillTypes.add(SkillType.Architecture);
+        skillTypes.add(SkillType.Terraforming);
+        skillTypes.add(SkillType.Vehicles);
         
 //        skillTypes.add(new SkillType(
 //            "decoration", // key (for DB) 
@@ -147,6 +79,33 @@ public class Options
     
     //<editor-fold defaultstate="collapsed" desc="SubClasses">
     
+    public static class ForcedHostOption{
+        
+        @SerializedName("host")
+        public String Host = "*";
+        
+        @SerializedName("message-to-player-on-join")
+        public String MessageToPlayerOnJoin = "";
+        
+        @SerializedName("server-to-connect-to")
+        public String ServerToConnectTo = "";
+        
+        @JsonAdapter(ColorCodeAdapter.class)
+        @SerializedName("custom-motd")
+        public String MOTD = "Hello human!\ntry a snack!";
+        
+        @SerializedName("enable-custom-motd")
+        public boolean IsCustomMotdEnabled = false;
+    }
+    
+    public static class DiscordOptions{
+        @SerializedName("enabled")
+        public boolean IsEnabled = true;
+        
+        @SerializedName("invite-link")
+        public String InviteLink = "https://discord.gg/QrvqAv2";
+    }
+    
     public static class ServerClosingPlayerMoverOptions{
         @SerializedName("enabled")
         public boolean IsEnabled = true;
@@ -156,6 +115,8 @@ public class Options
         
         @SerializedName("blacklisted-kick-reasons")
         public ArrayList<String> KickReasonBlacklist = new ArrayList<>();
+        @SerializedName("whitelisted-kick-reasons")
+        public ArrayList<String> KickReasonWhitelist = new ArrayList<>();
     }
     
     public static class ReputationOptions{
@@ -172,6 +133,9 @@ public class Options
     public static class TeleportOptions{
         @SerializedName("enabled")
         public boolean IsEnabled = true;
+        
+        @SerializedName("default-tpalock-value")
+        public BooleanAnswer DefaultTpaLockValue = BooleanAnswer.Yes;
     }
     
     public static class ReviewListOptions{
@@ -310,6 +274,20 @@ public class Options
 
 
     public Options() {
+        {
+            ForcedHostOption fho = new ForcedHostOption();
+            fho.Host = "*";
+            fho.MessageToPlayerOnJoin = "&4Hey! You're using the wrong server IP. You should switch to using &cplay.woolcity.net:25565&4.";
+            fho.ServerToConnectTo = "hub";
+            this.ForcedHosts.add(fho);
+        }
+        {
+            ForcedHostOption fho = new ForcedHostOption();
+            fho.Host = "play.woolcity.net";
+            fho.MessageToPlayerOnJoin = null;
+            fho.ServerToConnectTo = "hub";
+            this.ForcedHosts.add(fho);
+        }
     }
     //</editor-fold>
 

@@ -1,8 +1,10 @@
 package com.lumengaming.skillsaw.service;
+import com.lumengaming.skillsaw.models.GlobalStatsView;
 import com.lumengaming.skillsaw.models.RepLogEntry;
 import com.lumengaming.skillsaw.models.RepType;
 import com.lumengaming.skillsaw.models.SkillType;
 import com.lumengaming.skillsaw.models.User;
+import com.lumengaming.skillsaw.models.UserStatsView;
 import com.lumengaming.skillsaw.models.XLocation;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,10 +27,6 @@ public interface IDataRepository {
 	
 	//<editor-fold defaultstate="collapsed" desc="Users">
 	
-    @Deprecated // ("Do we really need it?")
-	public boolean hasPlayedBefore(UUID uuid);
-    
-    
 	public User getUser(UUID uniqueId);
 	
 	public boolean saveUser(User user);
@@ -71,5 +69,11 @@ public interface IDataRepository {
     public HashMap<UUID, Integer> getUpdatedActivityScores(Set<UUID> keySet);
 
     public void refreshActivityScoresCache();
+
+    public GlobalStatsView getGlobalStats();
+    
+    public UserStatsView getUserStats(UUID uuid);
+
+    public ArrayList<User> getUsersByIP(String ipv4);
 
 }

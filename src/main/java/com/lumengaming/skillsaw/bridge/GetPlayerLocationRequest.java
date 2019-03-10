@@ -6,7 +6,7 @@
 package com.lumengaming.skillsaw.bridge;
 
 import com.google.common.io.ByteArrayDataOutput;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.UUID;
@@ -21,7 +21,7 @@ public class GetPlayerLocationRequest extends IBridgePayload<GetPlayerLocationRe
 
     public GetPlayerLocationRequest(Long key, String uuid, String serverName) {
         this.Key = key;
-        this.SubChannel = Constants.CH_GetPlayerLocation;
+        this.SubChannel = C.CH_GetPlayerLocation;
         this.UUID = UUID.fromString(uuid);
         this.ServerName = serverName;
     }

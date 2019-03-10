@@ -6,7 +6,7 @@
 package com.lumengaming.skillsaw.bridge;
 
 import com.google.common.io.ByteArrayDataOutput;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.UUID;
@@ -21,7 +21,7 @@ public class PlayCompositeEffectRequest extends IBridgePayload<PlayCompositeEffe
 
     public PlayCompositeEffectRequest(Long key, UUID uuid, CompositeEffectType type) {
         this.Key = key;
-        this.SubChannel = Constants.CH_CompositeEffect;
+        this.SubChannel = C.CH_CompositeEffect;
         this.UUID = uuid;
         this.Type = type;
     }

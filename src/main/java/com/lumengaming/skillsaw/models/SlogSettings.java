@@ -21,9 +21,13 @@ public class SlogSettings {
     @SerializedName("filter-out-activity-above")
     public short ShowOnlyIfActivityBelow = Short.MAX_VALUE;
     
+    @SerializedName("ping-spy")
+    public int PingSpy = 0;
+    
     public SlogSettings reset(){
         this.IsEnabled = false;
         this.IsGlobal = true;
+        this.PingSpy = 0;
         this.ShowOnlyIfActivityBelow = Short.MAX_VALUE;
         return this;
     }

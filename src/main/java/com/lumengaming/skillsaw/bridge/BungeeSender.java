@@ -11,7 +11,7 @@ import com.lumengaming.skillsaw.common.AsyncEmptyCallback;
 import com.lumengaming.skillsaw.common.AsyncCallback;
 import com.lumengaming.skillsaw.utility.BagMap;
 import com.lumengaming.skillsaw.utility.CText;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.models.XLocation;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -41,23 +41,23 @@ public class BungeeSender implements Listener {
 
     @EventHandler
     public void onMessageEvent(PluginMessageEvent e) throws IOException {
-        if (!e.getTag().equals(Constants.CH_RootChannel)) {
+        if (!e.getTag().equals(C.CH_RootChannel)) {
             return;
         }
         DataInputStream in = new DataInputStream(new ByteArrayInputStream(e.getData()));
         String subchannel = in.readUTF();
         in = new DataInputStream(new ByteArrayInputStream(e.getData()));
         switch (subchannel) {
-            case Constants.CH_GetPlayerLocation:
+            case C.CH_GetPlayerLocation:
                 _getPlayerLocation(in);
                 break;
-            case Constants.CH_SetPlayerLocation:
+            case C.CH_SetPlayerLocation:
                 _setLocation(in);
                 break;
-            case Constants.CH_PlaySoundForPlayer:
+            case C.CH_PlaySoundForPlayer:
                 _playSoundForPlayer(in);
                 break;
-            case Constants.CH_CompositeEffect:
+            case C.CH_CompositeEffect:
                 _booleanResponse(subchannel, in);
                 break;
             default:
@@ -69,11 +69,12 @@ public class BungeeSender implements Listener {
     public void getPlayerLocation(ProxiedPlayer p, AsyncCallback<XLocation> callback) {
         long key = 0;
         try {
+            if (p == null || p.getServer() == null) return;
             ServerInfo info = p.getServer().getInfo();
             String serverId = info.getName();
             key = this.map.push(callback);
             byte[] data = new GetPlayerLocationRequest(key, p.getUniqueId().toString(), serverId).ToBytes();
-            p.getServer().sendData(Constants.CH_RootChannel, data);
+            p.getServer().sendData(C.CH_RootChannel, data);
         } catch (IOException ex) {
             Logger.getLogger(BungeeSender.class.getName()).log(Level.SEVERE, null, ex);
             AsyncCallback<XLocation> pop = (AsyncCallback<XLocation>) this.map.pop(key);
@@ -95,7 +96,21 @@ public class BungeeSender implements Listener {
         if (loc == null) return;
         if (p == null) return;
         String serverName = p.getServer().getInfo().getName();
-        ServerInfo si = ProxyServer.getInstance().getServers().get(loc.Server);
+        final ServerInfo si;
+        
+        {
+            ServerInfo siTmp = ProxyServer.getInstance().getServers().get(loc.Server);
+            if (siTmp == null){
+                for(ServerInfo si2: ProxyServer.getInstance().getServers().values()){
+                    if (si2.getName().equalsIgnoreCase(serverName)){
+                        siTmp = si2;
+                        break;
+                    }
+                }
+            }
+            si = siTmp;
+        }
+        
         if (si == null) {
             plugin.getLogger().log(Level.WARNING, "Requested server ({0}) does not exist.", loc.Server);
             callback.doCallback(false);
@@ -109,7 +124,7 @@ public class BungeeSender implements Listener {
                         try {
                             long key = this.map.push(callback);
                             byte[] data = new SetPlayerLocationRequest(key, p.getUniqueId(), loc).ToBytes();
-                            si.sendData(Constants.CH_RootChannel, data);
+                            si.sendData(C.CH_RootChannel, data);
                         } catch (IOException ex) {
                             Logger.getLogger(BungeeSender.class.getName()).log(Level.SEVERE, null, ex);
                         }
@@ -122,7 +137,7 @@ public class BungeeSender implements Listener {
             try {
                 long key = this.map.push(callback);
                 byte[] data = new SetPlayerLocationRequest(key, p.getUniqueId(), loc).ToBytes();
-                si.sendData(Constants.CH_RootChannel, data);
+                si.sendData(C.CH_RootChannel, data);
             } catch (IOException ex) {
                 Logger.getLogger(BungeeSender.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -146,7 +161,7 @@ public class BungeeSender implements Listener {
             String serverName = p.getServer().getInfo().getName();
             long key = this.map.push(callback);
             byte[] data = new PlaySoundForPlayerRequest(key, p.getUniqueId().toString(), soundName).ToBytes();
-            p.getServer().sendData(Constants.CH_RootChannel, data);
+            p.getServer().sendData(C.CH_RootChannel, data);
         } catch (IOException ex) {
             Logger.getLogger(BungeeSender.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -221,7 +236,7 @@ public class BungeeSender implements Listener {
         try {
             long key = this.map.push(c);
             byte[] data = new PlayCompositeEffectRequest(key, p.getUniqueId(), t).ToBytes();
-            p.getServer().sendData(Constants.CH_RootChannel, data);
+            p.getServer().sendData(C.CH_RootChannel, data);
         } catch (IOException ex) {
             Logger.getLogger(BungeeSender.class.getName()).log(Level.SEVERE, "Composite effect failed.", ex);
             c.doCallback(false);
@@ -235,7 +250,7 @@ public class BungeeSender implements Listener {
         try {
             for (ProxiedPlayer p : players) {
                 byte[] data = new PlayCompositeEffectRequest(key, p.getUniqueId(), CompositeEffectType.ReviewListUpdated).ToBytes();
-                p.getServer().sendData(Constants.CH_RootChannel, data);
+                p.getServer().sendData(C.CH_RootChannel, data);
             }
         } catch (IOException ex) {
             Logger.getLogger(BungeeSender.class.getName()).log(Level.SEVERE, null, ex);

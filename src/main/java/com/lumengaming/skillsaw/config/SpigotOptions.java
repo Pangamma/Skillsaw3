@@ -3,11 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.lumengaming.skillsaw;
+package com.lumengaming.skillsaw.config;
 
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
+import com.lumengaming.skillsaw.models.Hyperlink;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
@@ -26,9 +28,35 @@ public class SpigotOptions
     
     //<editor-fold defaultstate="collapsed" desc="SubClasses">
   
+    public static class DynmapOption{
+        
+        @SerializedName("enabled")
+        public boolean IsEnabled = false;
+        
+        @SerializedName("links")
+        public ArrayList<Hyperlink> Links = new ArrayList<>();
+        
+        public DynmapOption(){
+            Links.add(new Hyperlink("&f&nClick to view Dynmap", "https://maps.yoursite.net:8123", "Click to open."));
+        }
+    }
+    
+    public static class ChatSystemOptions {
+
+        @SerializedName("enabled")
+        public boolean IsEnabled = true;
+        
+        @SerializedName("ignore-list-limit")
+        public int MaxIgnoreListSize = 10;
+        
+        @SerializedName("allow-me-on-main-channel")
+        public boolean IsMeAllowedOnMainChannel = true;
+        
+        public ChatSystemOptions() {
+        }
+    }
+    
     //</editor-fold>
-    
-    
     
     //<editor-fold defaultstate="collapsed" desc="CORE methods">
     public static File DATA_FOLDER = 
@@ -77,19 +105,4 @@ public class SpigotOptions
     }
     //</editor-fold>
 
-    public static class ChatSystemOptions {
-
-        @SerializedName("enabled")
-        public boolean IsEnabled = true;
-        
-        @SerializedName("ignore-list-limit")
-        public int MaxIgnoreListSize = 10;
-        
-        @SerializedName("allow-me-on-main-channel")
-        public boolean IsMeAllowedOnMainChannel = true;
-        
-        public ChatSystemOptions() {
-        }
-    }
-    
 }

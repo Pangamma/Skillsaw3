@@ -42,8 +42,6 @@ public class BagMap <T> {
             for(int i = 0; i < lis.size(); i++){
                 map.remove(lis.get(i));
             }
-            
-            ProxyServer.getInstance().broadcast("Uhmmm"+map.size());
         }
     }
     

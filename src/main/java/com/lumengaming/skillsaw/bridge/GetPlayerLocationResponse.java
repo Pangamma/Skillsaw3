@@ -6,7 +6,7 @@
 package com.lumengaming.skillsaw.bridge;
 
 import com.google.common.io.ByteArrayDataOutput;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.models.XLocation;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -20,7 +20,7 @@ public class GetPlayerLocationResponse extends IBridgePayload<GetPlayerLocationR
 
     public GetPlayerLocationResponse(Long key, XLocation loc) {
         this.Key = key;
-        this.SubChannel = Constants.CH_GetPlayerLocation;
+        this.SubChannel = C.CH_GetPlayerLocation;
         this.Loc = loc;
     }
 

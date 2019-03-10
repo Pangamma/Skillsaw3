@@ -2,10 +2,10 @@ package com.lumengaming.skillsaw.commands;
 
 import com.lumengaming.skillsaw.utility.CText;
 import com.lumengaming.skillsaw.BungeeMain;
-import com.lumengaming.skillsaw.Options;
+import com.lumengaming.skillsaw.config.Options;
 import com.lumengaming.skillsaw.models.SkillType;
 import com.lumengaming.skillsaw.models.User;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.utility.SharedUtility;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
@@ -45,7 +45,7 @@ public class InstructorCommand extends BungeeCommand {
                             cs.sendMessage("§c" + u.getName() + " is already a instructor member.");
                         }
                     } else {
-                        cs.sendMessage(Constants.ERROR_P_NOT_FOUND);
+                        cs.sendMessage(C.ERROR_P_NOT_FOUND);
                     }
                 });
             } else if (args[0].equals("-") || args[0].equalsIgnoreCase("del") || args[0].equalsIgnoreCase("remove")) {
@@ -66,7 +66,7 @@ public class InstructorCommand extends BungeeCommand {
                             cs.sendMessage("§c" + u.getName() + " is not a instructor member.");
                         }
                     } else {
-                        cs.sendMessage(Constants.ERROR_P_NOT_FOUND);
+                        cs.sendMessage(C.ERROR_P_NOT_FOUND);
                     }
                 });
             } else if (args[0].equalsIgnoreCase("l") || args[0].equalsIgnoreCase("list")) {
@@ -74,11 +74,11 @@ public class InstructorCommand extends BungeeCommand {
                     return;
                 }
                 this.plugin.getDataService().getOfflineInstructors((ArrayList<User> us) -> {
-                    cs.sendMessage(Constants.C_DIV_LINE);
-                    cs.sendMessage(Constants.C_DIV_TITLE_PREFIX + "Instructors List");
-                    cs.sendMessage(Constants.C_DIV_SUBTITLE_PREFIX + "Sorted by last login date.");
-                    cs.sendMessage(Constants.C_DIV_SUBTITLE_PREFIX + "Hover over the instructors to see their skills.");
-                    cs.sendMessage(Constants.C_DIV_LINE);
+                    cs.sendMessage(C.C_DIV_LINE);
+                    cs.sendMessage(C.C_DIV_TITLE_PREFIX + "Instructors List");
+                    cs.sendMessage(C.C_DIV_SUBTITLE_PREFIX + "Sorted by last login date.");
+                    cs.sendMessage(C.C_DIV_SUBTITLE_PREFIX + "Hover over the instructors to see their skills.");
+                    cs.sendMessage(C.C_DIV_LINE);
                     boolean altColor = false;
                     ArrayList<SkillType> skillTypes = Options.Get().getSkillTypes();
 
@@ -110,24 +110,24 @@ public class InstructorCommand extends BungeeCommand {
                         for (int i = 0; i < skillTypes.size(); i++) {
                             SkillType st = skillTypes.get(i);
                             if (st.getMinInstructLevel() <= u.getSkill(st)) {
-                                hoverText += "\n" + (Constants.C_MENU_CONTENT + "§a" + st.getListName() + " Tier = §2" + u.getSkill(st));
+                                hoverText += "\n" + (C.C_MENU_CONTENT + "§a" + st.getListName() + " Tier = §2" + u.getSkill(st));
                             } else {
-                                hoverText += "\n" + (Constants.C_MENU_CONTENT + st.getListName() + " Tier = §e" + u.getSkill(st));
+                                hoverText += "\n" + (C.C_MENU_CONTENT + st.getListName() + " Tier = §e" + u.getSkill(st));
                             }
                         }
 
                         altColor = !altColor;
                         if (altColor) {
-                            cs.sendMessage(CText.hoverText(Constants.C_MENU_CONTENT
+                            cs.sendMessage(CText.hoverText(C.C_MENU_CONTENT
                                 + SharedUtility.getTimePartsString(System.currentTimeMillis() - u.getLastPlayed())
                                 + " - " + u.getName(), hoverText));
                         } else {
-                            cs.sendMessage(CText.hoverText(Constants.C_MENU_CONTENT2
+                            cs.sendMessage(CText.hoverText(C.C_MENU_CONTENT2
                                 + SharedUtility.getTimePartsString(System.currentTimeMillis() - u.getLastPlayed())
                                 + " - " + u.getName(), hoverText));
                         }
                     }
-                    cs.sendMessage(Constants.C_DIV_LINE);
+                    cs.sendMessage(C.C_DIV_LINE);
                 });
             } else {
                 printHelp(cs);

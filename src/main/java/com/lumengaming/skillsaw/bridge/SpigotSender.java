@@ -8,7 +8,9 @@ package com.lumengaming.skillsaw.bridge;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.gson.Gson;
 import com.lumengaming.skillsaw.SpigotMain;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.common.AsyncCallback;
+import com.lumengaming.skillsaw.models.User;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.models.XLocation;
 import com.lumengaming.skillsaw.utility.ExpireMap;
 import com.lumengaming.skillsaw.utility.SH;
@@ -17,7 +19,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,19 +41,19 @@ import org.bukkit.inventory.meta.FireworkMeta;
  *
  * @author prota
  */
-public class SpigotMessageListener implements org.bukkit.plugin.messaging.PluginMessageListener, Listener {
+public class SpigotSender implements org.bukkit.plugin.messaging.PluginMessageListener, Listener {
 
     private final SpigotMain plugin;
     private final Gson gson;
 
-    public SpigotMessageListener(SpigotMain p) {
+    public SpigotSender(SpigotMain p) {
         this.plugin = p;
         this.gson = new Gson();
     }
     
     @Override
     public void onPluginMessageReceived(String channel, Player player, byte[] message) {
-        if (!channel.equals(Constants.CH_RootChannel)) {
+        if (!channel.equals(C.CH_RootChannel)) {
             return;
         }
         try {
@@ -60,16 +61,16 @@ public class SpigotMessageListener implements org.bukkit.plugin.messaging.Plugin
             String subchannel = in.readUTF(); 
             in = new DataInputStream(new ByteArrayInputStream(message));
             switch (subchannel) {
-                case Constants.CH_GetPlayerLocation:
+                case C.CH_GetPlayerLocation:
                     onGetLocation(player, in);
                     break;
-                case Constants.CH_SetPlayerLocation:
+                case C.CH_SetPlayerLocation:
                     onSetLocation(player, in);
                     break;
-                case Constants.CH_PlaySoundForPlayer:
+                case C.CH_PlaySoundForPlayer:
                     onPlaySoundForPlayer(player, in);
                     break;
-                case Constants.CH_CompositeEffect:
+                case C.CH_CompositeEffect:
                     onCompositeEffectForPlayer(player, in);
                     break;
             }
@@ -78,6 +79,11 @@ public class SpigotMessageListener implements org.bukkit.plugin.messaging.Plugin
         }
     }
 
+    public void getUser(UUID uuid, AsyncCallback<User> callback){
+        
+    }
+    
+    
     //<editor-fold defaultstate="collapsed" desc="GetLocation">
     private void onGetLocation(Player player, DataInputStream in) throws IOException {
         GetPlayerLocationRequest req = new GetPlayerLocationRequest().FromBytes(in);
@@ -99,7 +105,7 @@ public class SpigotMessageListener implements org.bukkit.plugin.messaging.Plugin
 
         SH.broadcast("§d"+xLoc.toJson());
         byte[] data = new GetPlayerLocationResponse(req.Key, xLoc).ToBytes();
-        player.sendPluginMessage(plugin, Constants.CH_RootChannel, data);
+        player.sendPluginMessage(plugin, C.CH_RootChannel, data);
     }
     //</editor-fold>
 
@@ -130,22 +136,22 @@ public class SpigotMessageListener implements org.bukkit.plugin.messaging.Plugin
         pendingLocationMap.put(req.UUID, req.Loc, Duration.ofMinutes(3));
 
         if (p == null) {
-            byte[] data = new BooleanResponse(Constants.CH_SetPlayerLocation, req.Key, false).ToBytes();
-            player.sendPluginMessage(plugin, Constants.CH_RootChannel, data);
+            byte[] data = new BooleanResponse(C.CH_SetPlayerLocation, req.Key, false).ToBytes();
+            player.sendPluginMessage(plugin, C.CH_RootChannel, data);
             return;
         }
         
         if (req.Loc == null) {
-            byte[] data = new BooleanResponse(Constants.CH_SetPlayerLocation, req.Key, false).ToBytes();
-            player.sendPluginMessage(plugin, Constants.CH_RootChannel, data);
+            byte[] data = new BooleanResponse(C.CH_SetPlayerLocation, req.Key, false).ToBytes();
+            player.sendPluginMessage(plugin, C.CH_RootChannel, data);
             Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Location passed to set location method was null.");
             return;
         }
         
         World w = Bukkit.getWorld(req.Loc.World);
         if (w == null) {
-            byte[] data = new BooleanResponse(Constants.CH_SetPlayerLocation, req.Key, false).ToBytes();
-            player.sendPluginMessage(plugin, Constants.CH_RootChannel, data);
+            byte[] data = new BooleanResponse(C.CH_SetPlayerLocation, req.Key, false).ToBytes();
+            player.sendPluginMessage(plugin, C.CH_RootChannel, data);
             return;
         }
 
@@ -156,8 +162,8 @@ public class SpigotMessageListener implements org.bukkit.plugin.messaging.Plugin
             pendingLocationMap.remove(req.UUID);
         }
 
-        byte[] data = new BooleanResponse(Constants.CH_SetPlayerLocation, req.Key, true).ToBytes();
-        player.sendPluginMessage(plugin, Constants.CH_RootChannel, data);
+        byte[] data = new BooleanResponse(C.CH_SetPlayerLocation, req.Key, true).ToBytes();
+        player.sendPluginMessage(plugin, C.CH_RootChannel, data);
     }
     //</editor-fold>
 
@@ -169,8 +175,8 @@ public class SpigotMessageListener implements org.bukkit.plugin.messaging.Plugin
         String soundName = in.readUTF();
 
         if (p == null) {
-            byte[] data = new BooleanResponse(Constants.CH_PlaySoundForPlayer, key, false).ToBytes();
-            player.sendPluginMessage(plugin, Constants.CH_RootChannel, data);
+            byte[] data = new BooleanResponse(C.CH_PlaySoundForPlayer, key, false).ToBytes();
+            player.sendPluginMessage(plugin, C.CH_RootChannel, data);
             return;
         }
 
@@ -189,18 +195,19 @@ public class SpigotMessageListener implements org.bukkit.plugin.messaging.Plugin
             p.playSound(p.getLocation(), sound, SoundCategory.BLOCKS, 1, 1);
         }
 
-        byte[] data = new BooleanResponse(Constants.CH_PlaySoundForPlayer, key, true).ToBytes();
-        player.sendPluginMessage(plugin, Constants.CH_RootChannel, data);
+        byte[] data = new BooleanResponse(C.CH_PlaySoundForPlayer, key, true).ToBytes();
+        player.sendPluginMessage(plugin, C.CH_RootChannel, data);
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Effects">
     private void onPlayEffect(Player player, DataInputStream in, ByteArrayDataOutput out) throws IOException {
         Player p = Bukkit.getPlayer(UUID.fromString(in.readUTF()));
         if (p == null) {
             return;
         }
         Location loc = p.getLocation();
-        out.writeUTF(Constants.CH_GetPlayerLocation);
+        out.writeUTF(C.CH_GetPlayerLocation);
         out.writeUTF(String.valueOf(p.getUniqueId()));
         out.writeUTF(loc.getWorld().getName());
         out.writeDouble(loc.getX());
@@ -208,7 +215,7 @@ public class SpigotMessageListener implements org.bukkit.plugin.messaging.Plugin
         out.writeDouble(loc.getZ());
         out.writeFloat(loc.getYaw());
         out.writeFloat(loc.getPitch());
-        player.sendPluginMessage(plugin, Constants.CH_RootChannel, out.toByteArray());
+        player.sendPluginMessage(plugin, C.CH_RootChannel, out.toByteArray());
     }
 
     private void onCompositeEffectForPlayer(Player player, DataInputStream in) throws IOException {
@@ -221,45 +228,46 @@ public class SpigotMessageListener implements org.bukkit.plugin.messaging.Plugin
         switch (req.Type) {
             case Hmmm:
                 p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_AMBIENT, SoundCategory.NEUTRAL, 1, 1);
-                data = new BooleanResponse(Constants.CH_CompositeEffect, req.Key, true).ToBytes();
-                player.sendPluginMessage(plugin, Constants.CH_RootChannel, data);
+                data = new BooleanResponse(C.CH_CompositeEffect, req.Key, true).ToBytes();
+                player.sendPluginMessage(plugin, C.CH_RootChannel, data);
                 break;
             case Scold:
             case LevelDown:
-                p.playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1, 1);
-                data = new BooleanResponse(Constants.CH_CompositeEffect, req.Key, true).ToBytes();
-                player.sendPluginMessage(plugin, Constants.CH_RootChannel, data);
+                p.playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 0.5F, 1);
+                data = new BooleanResponse(C.CH_CompositeEffect, req.Key, true).ToBytes();
+                player.sendPluginMessage(plugin, C.CH_RootChannel, data);
                 break;
             case LevelUp:
-                p.playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_DEATH, 1F, 1F);
+                p.playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_DEATH, 0.5F, 1F);
                 FireworkEffect fwe = org.bukkit.FireworkEffect.builder().withColor(Color.SILVER).withColor(Color.RED).withColor(Color.RED).with(FireworkEffect.Type.BALL_LARGE).withColor(Color.YELLOW).build();
                 ArrayList<Firework> fwList = new ArrayList<>();
-                fwList.add(p.getWorld().spawn(p.getLocation(), Firework.class));
-                fwList.add(p.getWorld().spawn(p.getLocation().subtract(1, 0, -1), Firework.class));
-                fwList.add(p.getWorld().spawn(p.getLocation().subtract(1, 0, 1), Firework.class));
-                fwList.add(p.getWorld().spawn(p.getLocation().subtract(-1, 0, 1), Firework.class));
-                fwList.add(p.getWorld().spawn(p.getLocation().subtract(-1, 0, -1), Firework.class));
-                fwList.add(p.getWorld().spawn(p.getLocation().subtract(0, 1, 0), Firework.class));
+//                fwList.add(p.getWorld().spawn(p.getLocation(), Firework.class));
+                fwList.add(p.getWorld().spawn(p.getLocation().subtract(2, 0, -2), Firework.class));
+                fwList.add(p.getWorld().spawn(p.getLocation().subtract(2, 0, 2), Firework.class));
+                fwList.add(p.getWorld().spawn(p.getLocation().subtract(-2, 0, 2), Firework.class));
+                fwList.add(p.getWorld().spawn(p.getLocation().subtract(-2, 0, -2), Firework.class));
+//                fwList.add(p.getWorld().spawn(p.getLocation().subtract(0, 1, 0), Firework.class));
                 for (Firework fw : fwList) {
                     FireworkMeta fwdata = (FireworkMeta) fw.getFireworkMeta();
                     fwdata.addEffects(fwe);
                     fwdata.setPower(0);
                     fw.setFireworkMeta(fwdata);
-                    fw.setCustomName(Constants.CH_CompositeEffect);
+                    fw.setCustomName(C.CH_CompositeEffect);
                 }
-                data = new BooleanResponse(Constants.CH_CompositeEffect, req.Key, true).ToBytes();
-                player.sendPluginMessage(plugin, Constants.CH_RootChannel, data);
+                data = new BooleanResponse(C.CH_CompositeEffect, req.Key, true).ToBytes();
+                player.sendPluginMessage(plugin, C.CH_RootChannel, data);
                 break;
             case NamePling:
                 p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1f);
-                data = new BooleanResponse(Constants.CH_CompositeEffect, req.Key, true).ToBytes();
-                player.sendPluginMessage(plugin, Constants.CH_RootChannel, data);
+                data = new BooleanResponse(C.CH_CompositeEffect, req.Key, true).ToBytes();
+                player.sendPluginMessage(plugin, C.CH_RootChannel, data);
                 break;
             case ReviewListUpdated:
                 p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
-                data = new BooleanResponse(Constants.CH_CompositeEffect, req.Key, true).ToBytes();
-                player.sendPluginMessage(plugin, Constants.CH_RootChannel, data);
+                data = new BooleanResponse(C.CH_CompositeEffect, req.Key, true).ToBytes();
+                player.sendPluginMessage(plugin, C.CH_RootChannel, data);
                 break;
         }
     }
+    //</editor-fold>
 }

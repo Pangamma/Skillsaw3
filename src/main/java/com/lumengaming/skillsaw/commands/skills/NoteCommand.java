@@ -4,7 +4,7 @@ import com.lumengaming.skillsaw.BungeeMain;
 import com.lumengaming.skillsaw.commands.BungeeCommand;
 import com.lumengaming.skillsaw.models.RepType;
 import com.lumengaming.skillsaw.models.User;
-import com.lumengaming.skillsaw.utility.Constants;
+import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
@@ -25,21 +25,21 @@ public class NoteCommand extends BungeeCommand {
         try {
             if (Permissions.USER_HAS_PERMISSION(cs, Permissions.REP_NOTE, true)) {
                 if (cs.isPlayer() == false) {
-                    cs.sendMessage(Constants.ERROR_PLAYERS_ONLY);
+                    cs.sendMessage(C.ERROR_PLAYERS_ONLY);
                     return;
                 }
 
                 String targName = args[0];
                 plugin.getApi().getOfflineUserByNameOrDisplayName(targName, (target) -> {
                     if (target == null) {
-                        cs.sendMessage(Constants.ERROR_P_NOT_FOUND);
+                        cs.sendMessage(C.ERROR_P_NOT_FOUND);
                         return;
                     }
 
                     final User issuer = plugin.getApi().getUser(cs.p().getUniqueId());
 
                     if (issuer == null) {
-                        cs.sendMessage(Constants.ERROR_TRY_AGAIN_LATER_COMMAND);
+                        cs.sendMessage(C.ERROR_TRY_AGAIN_LATER_COMMAND);
                         return;
                     }
 

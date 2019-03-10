@@ -3,7 +3,7 @@ package com.lumengaming.skillsaw.listeners;
 
 import com.google.gson.Gson;
 import com.lumengaming.skillsaw.BungeeMain;
-import com.lumengaming.skillsaw.Options;
+import com.lumengaming.skillsaw.config.Options;
 import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.utility.BH;
 import com.lumengaming.skillsaw.utility.SharedUtility;

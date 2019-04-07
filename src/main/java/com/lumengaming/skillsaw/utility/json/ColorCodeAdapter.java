@@ -3,12 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.lumengaming.skillsaw.utility;
+package com.lumengaming.skillsaw.utility.json;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
+import com.lumengaming.skillsaw.utility.SharedUtility;
 import java.io.IOException;
 
 /**

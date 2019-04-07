@@ -7,8 +7,11 @@ import com.lumengaming.skillsaw.utility.CText;
 import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.utility.SharedUtility;
+import com.lumengaming.skillsaw.utility.SimRef;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.UUID;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -33,49 +36,83 @@ public class BungeeChatListener implements Listener {
         this.isChatEnabled = Options.Get().ChatSystem.IsEnabled;
 	}
 
-	@EventHandler
-	public void onChat(final ChatEvent e){
-        if (e.isCancelled()) return;
+    private boolean _onChatHelper(final ChatEvent e, SimRef<String> outChannel, SimRef<String> outMessage){
+        
+        if (e.isCancelled()) return false;
 		if (!(e.getSender() instanceof ProxiedPlayer)){
-			return;
+			return false;
 		}
+        
 		ProxiedPlayer sender = (ProxiedPlayer) e.getSender();
-        if (!isChatEnabled) return;
+        if (!isChatEnabled) return false;
         
         BungeePlayer cs = new BungeePlayer(sender);
         if (cs.getIpv4().equals("173.249.30.10")){
             e.setCancelled(true);
             cs.sendMessage("§cPlease don't join, say 'hallo' then leave with 'bb' when everyone thinks you are a real player. They have been trying to say hello to you and you have been a bot this whole time.");
-            return;
+            return false;
         }
         
         User user = plugin.getApi().getUser(sender.getUniqueId());
         
         if (user == null) {
             sender.sendMessage(CText.legacy(C.ERROR_TRY_AGAIN_LATER_CHAT));
-            return;
+            return false;
         }
         
-        String msg = e.getMessage();
-        String channel = user.getSpeakingChannel();
+        outMessage.val(e.getMessage());
+        outChannel.val(user.getSpeakingChannel());
         
-        if (e.isCommand() && !msg.toLowerCase().startsWith("/ch:")){
-            return;
+        if (e.isCommand() && !outMessage.val().toLowerCase().startsWith("/ch:")){
+            return false;
         }
         
         e.setCancelled(true);
-        if (msg.toLowerCase().startsWith("/ch:")){
-            channel = msg.split(" ")[0].trim().replace("/ch:","");
-            msg = msg.substring(channel.length()+"/ch:".length()).trim();
+        if (outMessage.val().toLowerCase().startsWith("/ch:")){
+            outChannel.val(outMessage.val().split(" ")[0].trim().replace("/ch:",""));
+            outMessage.val(outMessage.val().substring(outChannel.val().length()+"/ch:".length()).trim());
         }
         
         boolean hasColorBasic = Permissions.USER_HAS_PERMISSION(cs, Permissions.CHAT_COLOR_BASIC, false);
         boolean hasColorFormatting = Permissions.USER_HAS_PERMISSION(cs, Permissions.CHAT_COLOR_FORMATTNG, false);
         boolean hasColorBlack = Permissions.USER_HAS_PERMISSION(cs, Permissions.CHAT_COLOR_BLACK, false);
-        msg = SharedUtility.removeColorCodes(msg, hasColorFormatting, hasColorBasic, hasColorBlack);
+        outMessage.val(SharedUtility.removeColorCodes(outMessage.val(), hasColorFormatting, hasColorBasic, hasColorBlack));
         
-        this.sendMessageToChannelAndFormatIt(user, msg, channel.toLowerCase());
-        this.doNamePingIfNamed(channel, user.getName(), msg);
+        this.doNamePingIfNamed(outChannel.val(), user.getName(), outMessage.val());
+        
+        HashSet<String> locales = plugin.getApi().getOnlineUsersLocales(outChannel.val());
+        this.sendMessageToChannelAndFormatIt(user, null, null, outMessage.val(), outChannel.val().toLowerCase());
+        
+        if (!locales.isEmpty()){
+            final String outMsg = outMessage.val();
+            final String outCh = outChannel.val();
+            plugin.runTaskAsynchronously(() -> {
+                for(String locale : locales){
+                    SharedUtility.translateToLocale(outMsg, locale,  (txt) -> {
+                        plugin.runTask(()->{
+                            this.sendMessageToChannelAndFormatIt(user, locale, outMsg, txt, outCh.toLowerCase());
+                        });
+                    });
+                }
+            });
+        }
+        
+        return true;
+    }
+    
+	@EventHandler
+	public void onChat(final ChatEvent e){
+        SimRef<String> channel = new SimRef("1");
+        SimRef<String> message = new SimRef(e.getMessage());
+        boolean wasCancelled = _onChatHelper(e, channel, message);
+		if (e.getSender() instanceof ProxiedPlayer){
+            ProxiedPlayer p = (ProxiedPlayer) e.getSender();
+            boolean isCommand = e.isCommand() && !message.val().startsWith("/ch:");
+            this.plugin.getApi().logMessage(p.getName(),p.getUniqueId(),p.getServer().getInfo().getName(), channel.val(), message.val(), isCommand);
+		}else{
+            boolean isCommand = e.isCommand() && !message.val().startsWith("/ch:");
+            this.plugin.getApi().logMessage("Console", UUID.fromString("db42fed2-5dbe-46ab-9f37-b8339baad38c") ,"Proxy", channel.val(), message.val(), isCommand);
+        }
     }
     
     private void doNamePingIfNamed(String ch, String senderName, String rawMessage) {
@@ -99,7 +136,7 @@ public class BungeeChatListener implements Listener {
         }
     }
     
-    private void sendMessageToChannelAndFormatIt(final User u, String msg, final String p_channel) {
+    private void sendMessageToChannelAndFormatIt(final User u, String locale, String originalMessage, String msg, final String p_channel) {
         if (u == null) return;
         if (msg == null || msg.isEmpty()) return;
         if (p_channel == null || p_channel.isEmpty()) return;
@@ -134,7 +171,8 @@ public class BungeeChatListener implements Listener {
         //</editor-fold>
         
         //<editor-fold defaultstate="collapsed" desc="Nickname">
-        BaseComponent[] name = CText.merge(u.getNameForChat(), CText.legacy("§f : "));
+        BaseComponent[] msgSep =  originalMessage == null ? CText.legacy("§f : ") : CText.hoverText("§f : ", originalMessage);
+        BaseComponent[] name = CText.merge(u.getNameForChat(), msgSep);
         //</editor-fold>
         
         // NEEDS MUCH WORK.
@@ -193,7 +231,7 @@ public class BungeeChatListener implements Listener {
         }
         //</editor-fold>
         
-        plugin.getDataService().sendMessageToChannel(u.getName(), p_channel, output);
+        plugin.getDataService().sendMessageToChannel(u.getName(), locale, p_channel, output);
     }
 	
 	

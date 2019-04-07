@@ -73,6 +73,7 @@ public class ConfigHelper {
         return new GsonBuilder()
             .setPrettyPrinting()
             .serializeNulls()
+            .disableHtmlEscaping()
             .setExclusionStrategies(new ExclusionStrategy() {
             @Override
             public boolean shouldSkipField(FieldAttributes fa) {

@@ -135,4 +135,8 @@ public class CText{
 		}
 		return sb.toString();
 	}
+
+    public static String stripColors(String input) {
+        return ChatColor.stripColor(input);
+    }
 }

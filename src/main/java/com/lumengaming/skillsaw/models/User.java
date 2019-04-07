@@ -63,6 +63,7 @@ public class User {
     private UUID lastWhisperedUuid;
     private BooleanAnswer tpaLockState = BooleanAnswer.Yes;
     private SlogSettings slogSettings = new SlogSettings();
+    private String preferredLocale = null;
     private String p_lastPingHost;
 
     /**
@@ -121,6 +122,7 @@ public class User {
         this.slogSettings = orig.slogSettings;
         this.lastPingHost = orig.lastPingHost;
         this.lastPingTime = orig.lastPingTime;
+        this.preferredLocale = orig.preferredLocale;
     }
 
     /**
@@ -666,6 +668,18 @@ public class User {
         return this.slogSettings.IsEnabled;
     }
     
+    public boolean isLocalizationEnabled(){
+        return this.preferredLocale != null;
+    }   
+    
+    public void setLocale(String string) {
+        this.preferredLocale = string == null ? null : string.toLowerCase();
+    }
+    
+    public String getLocale(){
+        return this.preferredLocale;
+    }
+    
     public SlogSettings getSlogSettings() {
         return slogSettings;
     }
@@ -823,5 +837,10 @@ public class User {
 
     public void setLastPingHost(String lastPingHost) {
         this.lastPingHost = lastPingHost;
+    }
+    
+    @Override
+    public String toString(){
+        return this.name;
     }
 }

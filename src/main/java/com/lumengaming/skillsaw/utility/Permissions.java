@@ -44,6 +44,10 @@ public enum Permissions {
     REVIEW_THIS("Skillsaw.review.this"),
     REVIEW_REMOVE_SELF("Skillsaw.review.remove.self"),
     REVIEW_REMOVE_OTHERS("Skillsaw.review.remove.others"),
+    
+    
+    TRANSLATE_SELF("Skillsaw.translate.self"),
+    TRANSLATE_OTHERS("Skillsaw.translate.others"),
     /**
      * Allows someone to instruct in categories they have level 5 or higher in.
      */

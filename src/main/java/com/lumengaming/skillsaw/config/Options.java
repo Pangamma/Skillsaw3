@@ -11,10 +11,16 @@ import com.google.gson.annotations.SerializedName;
 import com.lumengaming.skillsaw.models.BooleanAnswer;
 import com.lumengaming.skillsaw.models.SkillType;
 import com.lumengaming.skillsaw.models.User;
-import com.lumengaming.skillsaw.utility.ColorCodeAdapter;
+import com.lumengaming.skillsaw.utility.CText;
+import com.lumengaming.skillsaw.utility.SimRef;
+import com.lumengaming.skillsaw.utility.json.ColorCodeAdapter;
+import com.lumengaming.skillsaw.utility.json.ToLowerCaseStringAdapter;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Idk. Sometimes I just disagree with Java's naming conventions. Properties are great, alright? C# is bae.
@@ -78,6 +84,83 @@ public class Options
     
     
     //<editor-fold defaultstate="collapsed" desc="SubClasses">
+    
+    public static class SwearFilter{
+        
+        @JsonAdapter(ToLowerCaseStringAdapter.class)
+        @SerializedName("find")
+        public String Find = "swearword";
+        
+        @SerializedName("replace")
+        public String Replace = "****";
+        
+        @SerializedName("commands-on-match")
+        public ArrayList<String> CommandsToRunOnMatch = new ArrayList<>();
+        
+        @SerializedName("is-regex")
+        public boolean IsRegex = false;
+        private Pattern regex = null;
+        
+        public boolean IsValidFilter(){
+            for(int i = 0; i < CommandsToRunOnMatch.size();i++){
+                String cmd = CommandsToRunOnMatch.get(i);
+                if (cmd.startsWith("/")) cmd = cmd.substring(1);
+                CommandsToRunOnMatch.set(i, cmd);
+            }
+            
+            if (Find == null || Find.trim().isEmpty()) return false;
+            if (Replace == null || Replace.trim().isEmpty()) return false;
+            
+            if (IsRegex){
+                try{
+                    this.regex = Pattern.compile(Find, Pattern.CASE_INSENSITIVE);
+                }catch(PatternSyntaxException ex){
+                    Logger.getLogger(ConfigHelper.class.getName()).log(Level.WARNING, "Invalid Swear Filter. Bad Regex. '"+Find+"'", ex);
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        public boolean IsMatch(String input){
+            if (this.IsRegex){
+                if (this.regex.matcher(input).matches()){
+                    return true;
+                }
+            }else{
+                if (input.toLowerCase().contains(Find)){
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        public boolean IsMatchTakeAction(SimRef<String> refInput){
+            String input = refInput.val();
+            String plainInput = CText.stripColors(input);
+            String replacedInput;
+            String output = "";
+            if (this.IsRegex){
+                Matcher matcher = this.regex.matcher(plainInput);
+                if (matcher.matches()){
+                    replacedInput = matcher.replaceAll(Replace);
+                    
+//                    refIsMatchFound.val(true);
+                    return true;
+                }
+            }else{
+                if (input.toLowerCase().contains(Find)){
+//                    refIsMatchFound.val(true);
+                      return true;
+                }
+            }
+            
+//            refIsMatchFound.val(false);
+            return false;
+        }
+        
+    }
     
     public static class ForcedHostOption{
         
@@ -175,6 +258,12 @@ public class Options
         @SerializedName("max-short-title-length")
         public int MaxShortTitleLength = 8;
         
+        @SerializedName("translator-api-key")
+        public String ApiKeyForTranslator = "";
+        
+        @SerializedName("translator-enabled")
+        public boolean IsTranslatorEnabled = false;
+        
         public ChatSystemOptions() {
         }
     }
@@ -231,8 +320,6 @@ public class Options
     }
     
     //</editor-fold>
-    
-    
     
     //<editor-fold defaultstate="collapsed" desc="CORE methods">
     private static final String fileName = "config.json";

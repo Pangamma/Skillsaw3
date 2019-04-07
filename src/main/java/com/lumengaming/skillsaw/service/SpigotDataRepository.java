@@ -84,7 +84,7 @@ public class SpigotDataRepository implements IDataRepository{
     }
 
     @Override
-    public void logMessage(UUID uuid, String username, String serverName, String message, boolean isCommand) {
+    public void logMessage(UUID uuid, String username, String serverName, String channel, String message, boolean isCommand) {
         throw new UnsupportedOperationException("Not supported yet."); 
     }
 

@@ -6,10 +6,29 @@
  */
 package com.lumengaming.skillsaw.utility;
 
-import com.lumengaming.skillsaw.common.TextReplacer;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.lumengaming.skillsaw.common.AsyncCallback;
+import com.lumengaming.skillsaw.config.Options;
+import com.lumengaming.skillsaw.models.User;
+import com.lumengaming.skillsaw.wrappers.IPlayer;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.BaseComponent;
 
 /**
  *
@@ -125,21 +144,81 @@ public class SharedUtility {
         return output;
     }
     
-//    public static BaseComponent[] toBaseComponent(String haystack, String find, TextReplacer match, TextReplacer nonMatch){
-//        if (haystack == null || haystack.length() > 0) return new BaseComponent[0];
-//        if (find == null || find.length() > 0) return new BaseComponent[0];
-//        
-//        BaseComponent[] output = new BaseComponent[0];
-//        StringBuilder nonMatchSrc = new StringBuilder();
-//        for(int i = 0; i < haystack.length(); i++){
-//            output[0].toPlainText()
-//            if (haystack.startsWith(find, i)){
-//                match
-//            }else{
-//                nonMatchSrc.append(haystack.charAt(i));
-//            }
-//        }
-//    
-//        return null;
-//    }
+    public static void sendToUsers(IPlayer commandSender, User target, String msgIfSelf, String msgToCs, String msgToTarget){
+        boolean isSelf = commandSender.isPlayer() && commandSender.getUniqueId().equals(target.getUniqueId());
+        if (isSelf){
+            commandSender.sendMessage(msgIfSelf);
+            return;
+        }
+        
+        target.sendMessage(msgToTarget);
+        commandSender.sendMessage(msgToCs);
+        
+    }
+    
+    
+    public static void translateToLocale(String sourceText, String targetLang, AsyncCallback<String> callback){
+        try {
+            String sourceLang = "auto";
+               String encodedSourceText = URLEncoder.encode(sourceText, StandardCharsets.UTF_8.toString());
+               
+                String url = "https://translation.googleapis.com/language/translate/v2"
+                    + "?key="+Options.Get().ChatSystem.ApiKeyForTranslator;
+
+                String urlParameters = "&q=" + (encodedSourceText)
+                    + "&target="+targetLang
+                    + "&format=text"
+                    ;
+//
+            URL urll = new URL(url);
+            HttpURLConnection con = (HttpURLConnection) urll.openConnection();
+            
+            //add reuqest header
+            con.setRequestMethod("GET");
+            con.setRequestProperty("User-Agent", "Skillsaw3");
+            con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+            
+            con.setDoOutput(true);
+            DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+            wr.writeBytes(urlParameters);
+            wr.flush();
+            wr.close();
+            
+            int responseCode = con.getResponseCode();
+            System.out.println("\nSending 'POST' request to URL : " + url);
+            System.out.println("Response Code : " + responseCode);
+            
+            BufferedReader in = new BufferedReader(
+                new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+            
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+            
+            //print result
+            System.out.println(response.toString());
+            String reply = response.toString();
+            
+            JsonObject arr = new Gson().fromJson(reply, JsonObject.class);
+            String translated = arr.get("data").getAsJsonObject()
+                .get("translations").getAsJsonArray().get(0).getAsJsonObject()
+                .get("translatedText").getAsString();
+            callback.doCallback(translated);
+            return;
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(SharedUtility.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ProtocolException ex) {
+            Logger.getLogger(SharedUtility.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(SharedUtility.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(SharedUtility.class.getName()).log(Level.SEVERE, null, ex);
+        } catch(Exception ex){
+            Logger.getLogger(SharedUtility.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        callback.doCallback(sourceText);
+    }
 }

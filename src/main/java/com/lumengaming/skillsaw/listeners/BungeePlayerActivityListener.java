@@ -77,7 +77,6 @@ public class BungeePlayerActivityListener implements Listener {
 		}
         
         ProxiedPlayer p = (ProxiedPlayer) e.getSender();
-        this.plugin.getApi().logMessage(p.getName(),p.getUniqueId(),p.getServer().getInfo().getName(), e.getMessage(), e.isCommand());
         
         synchronized (records) {
             for (ActivityRecord r : records) {
@@ -97,7 +96,6 @@ public class BungeePlayerActivityListener implements Listener {
 
             synchronized(userWelcomes){
                 userWelcomes.put(e.getPlayer().getUniqueId(), () -> {
-                
                     if (u == null){
                         ProxyServer.getInstance().broadcast(CText.legacy("§7[§a+§7] §f" + p.getName()));
                         return;

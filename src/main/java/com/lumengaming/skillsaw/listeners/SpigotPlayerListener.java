@@ -1,16 +1,26 @@
 package com.lumengaming.skillsaw.listeners;
 
 import com.lumengaming.skillsaw.SpigotMain;
+import com.lumengaming.skillsaw.config.SpigotOptions;
 import com.lumengaming.skillsaw.models.PvpModeSaveState;
 import com.lumengaming.skillsaw.utility.C;
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public class SpigotPlayerListener implements Listener{
     private final SpigotMain plugin;
@@ -38,6 +48,40 @@ public class SpigotPlayerListener implements Listener{
             }
         }
     }
+    
+        @EventHandler
+    public void onSneakHideShowItemNBT(PlayerToggleSneakEvent e){
+        if (e.isSneaking()) return;
+        
+        Player p = e.getPlayer();
+        PlayerInventory inv = p.getInventory();
+        ItemStack is = inv.getItemInMainHand();
+        if (is == null || is.getType() == Material.AIR) return;
+        if (p.getGameMode() != GameMode.CREATIVE) return;
+        if (!inv.contains(Material.EMERALD_ORE)) return;
+        
+        if (!is.hasItemMeta()) return;
+        ItemMeta meta = is.getItemMeta();
+        boolean areAttrsHidden = meta.hasItemFlag(ItemFlag.HIDE_ATTRIBUTES);
+        if (meta instanceof Damageable){
+            Damageable dmg = (Damageable) meta;
+            if (dmg.getDamage() != 0){
+                p.sendMessage(dmg.getDamage()+" = damage");
+            }
+        }
+        if (areAttrsHidden){
+            meta.removeItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+            p.sendMessage("§aShowing item attributes for item in hand.");
+        }else{
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+            p.sendMessage("§aHiding item attributes for item in hand.");
+        }
+        
+        is.setItemMeta(meta);
+        inv.setItemInMainHand(is);
+        
+    }
+    
     
     //<editor-fold defaultstate="collapsed" desc="PVP MODE">
 //    
@@ -71,6 +115,7 @@ public class SpigotPlayerListener implements Listener{
         if (!(e.getDamager() instanceof Player)) return;
         if (e.getEntity()== null) return;
         if (!(e.getEntity() instanceof Player)) return;
+        if (SpigotOptions.Get().PvpMode.IsEnabled == false) return;
         
         if (!plugin.isPvpModeEnabled(e.getDamager().getUniqueId())){ 
             e.getDamager().sendMessage("§cYou must enable /pvpmode before you can PVP.");
@@ -93,6 +138,7 @@ public class SpigotPlayerListener implements Listener{
         
         if (e.getHitEntity()== null) return;
         if (!(e.getHitEntity() instanceof Player)) return;
+        if (SpigotOptions.Get().PvpMode.IsEnabled == false) return;
 //        
 //        if (!plugin.isPvpModeEnabled(((Player)e.getEntity().getShooter()).getUniqueId())){ 
 //            ((Player)e.getEntity().getShooter()).sendMessage("§cYou must enable /pvpmode before you can PVP.");

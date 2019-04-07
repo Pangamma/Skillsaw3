@@ -11,6 +11,7 @@ import com.lumengaming.skillsaw.common.AsyncCallback;
 import com.lumengaming.skillsaw.common.AsyncEmptyCallback;
 import com.lumengaming.skillsaw.common.AsyncManyCallback;
 import com.lumengaming.skillsaw.models.GlobalStatsView;
+import com.lumengaming.skillsaw.models.LocalizationSettings;
 import com.lumengaming.skillsaw.models.MutedPlayer;
 import com.lumengaming.skillsaw.models.PromoLogEntry;
 import com.lumengaming.skillsaw.models.RepLogEntry;
@@ -30,6 +31,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.TreeSet;
@@ -206,6 +208,38 @@ public class DataService {
 	//<editor-fold defaultstate="collapsed" desc="Chat">
 
 	/**
+	 * The list is read only.
+	 * @deprecated Specify a channel as well.
+	 * @return
+	 */
+	public synchronized HashSet<String> getOnlineUsersLocales() {
+		ArrayList<User> users = new ArrayList<>(this.onlineUsers.values());
+        HashSet<String> hs = new HashSet<>();
+        for(User u : users){
+            if (u.isLocalizationEnabled() && u.getLocale() != null){
+                hs.add(u.getLocale());
+            }
+        }
+		return hs;
+	}
+    
+	/**
+	 * The list is read only.
+	 *
+	 * @return
+	 */
+	public synchronized HashSet<String> getOnlineUsersLocales(String channel) {
+		ArrayList<User> users = new ArrayList<>(this.onlineUsers.values());
+        HashSet<String> hs = new HashSet<>();
+        for(User u : users){
+            if (u.isLocalizationEnabled() && u.getLocale() != null && u.isListeningOnChannel(channel)){
+                hs.add(u.getLocale());
+            }
+        }
+		return hs;
+	}
+
+	/**
 	 * The list is read only. The users can be edited... in theory. Try to avoid
 	 * editing any users within this list if you can. Concurrency is a tricky
 	 * thing that creates hard to find bugs if you aren't careful. To be safe,
@@ -264,6 +298,52 @@ public class DataService {
 		}
 	}
 
+	/**
+	 * Sends message to all ChatPlayers listening to the channel. Respects the
+	 * ignored sender lists of each chat player. *
+	 */
+	public synchronized void sendMessageToChannel(String p_senderName, String locale, String channelName, BaseComponent[] message) {
+		MutedPlayer mp = this.getMutedPlayer(p_senderName);
+		if (mp != null) {
+			if (!mp.isExpired()) {
+				if (mp.isSoftMute()) {
+					for (User cp : this.onlineUsers.values()) {
+						if (cp.getName().equalsIgnoreCase(p_senderName)) {
+							cp.sendMessage(message);
+						}
+					}
+				}
+				return;
+			} else {
+				this.removeExpiredMutedPlayers();
+			}
+		}
+        
+        
+		BaseComponent[] grayMessage = null;
+		for (User cp : this.onlineUsers.values()) {
+			if (!cp.isIgnoringPlayer(p_senderName)) {
+                if (cp.getLocale() != null && cp.getLocale().equalsIgnoreCase(locale)){
+                    // Pass for all listeners
+                }else if (cp.getLocale() == null && locale == null){
+                    
+                }else{
+                    continue;
+                }
+                
+				if (cp.isSpeakingOnChannel(channelName)) {
+					cp.sendMessage(message);
+				} else if (cp.isListeningOnChannel(channelName)) {
+					if (grayMessage == null){
+						grayMessage = CText.clone(message);
+						CText.applyColor(grayMessage,ChatColor.GRAY);
+					}
+					cp.sendMessage(grayMessage);
+				}
+			}
+		}
+	}
+    
 	//</editor-fold>
 
 	//<editor-fold defaultstate="collapsed" desc="Login">
@@ -627,9 +707,9 @@ public class DataService {
         
     }
     
-    public void logMessage(String username, UUID uuid, String server, String message, boolean command) {
+    public void logMessage(String username, UUID uuid, String server, String channel, String message, boolean command) {
         this.plugin.runTaskAsynchronously(() -> { 
-            repo.logMessage(uuid, username, server, message, command);
+            repo.logMessage(uuid, username, server, channel, message, command);
         });
     }
     

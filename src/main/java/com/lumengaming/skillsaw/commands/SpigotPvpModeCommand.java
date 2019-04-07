@@ -6,6 +6,7 @@
 package com.lumengaming.skillsaw.commands;
 
 import com.lumengaming.skillsaw.SpigotMain;
+import com.lumengaming.skillsaw.config.SpigotOptions;
 import com.lumengaming.skillsaw.models.PvpModeSaveState;
 import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.SH;
@@ -32,6 +33,7 @@ public class SpigotPvpModeCommand extends SpigotCommand{
     
     @Override
     public void execute(SpigotPlayer cs, String[] args) {
+        if (SpigotOptions.Get().PvpMode.IsEnabled == false) return;
         if (cs.isPlayer() == false) { cs.sendMessage(C.ERROR_PLAYERS_ONLY); return; }
         Player p = (Player) cs.getRaw();
         

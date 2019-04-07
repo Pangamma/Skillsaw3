@@ -96,11 +96,11 @@ public class SetSkillCommand extends BungeeCommand {
                     return;
                 }
                 
-                if (nLevel > 3 && issuer.getSkill(st) < st.getMinInstructLevel() && !Permissions.USER_HAS_PERMISSION(cs, Permissions.INSTRUCT_OVERRIDE)) {
-                    cs.sendMessage("§cYou cannot promote people in §4" + st.getListName() + "§c until your skill level in that "
-                        + "category is §4" + st.getMinInstructLevel() + "§c or higher.");
-                    return;
-                }
+//                if (nLevel > Math.max(3, issuer.getSkill(st)) && issuer.getSkill(st) < st.getMinInstructLevel() && !Permissions.USER_HAS_PERMISSION(cs, Permissions.INSTRUCT_OVERRIDE)) {
+//                    cs.sendMessage("§cYou cannot promote people in §4" + st.getListName() + "§c until your skill level in that "
+//                        + "category is §4" + st.getMinInstructLevel() + "§c or higher.");
+//                    return;
+//                }
 
                 //<editor-fold defaultstate="collapsed" desc="user">
                 cs.sendMessage(C.MSG_PROCESSING);

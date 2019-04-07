@@ -1141,16 +1141,17 @@ public class MySqlDataRepository implements IDataRepository {
     }
 
     @Override
-    public void logMessage(UUID uuid, String p_username, String serverName, String message, boolean isCommand) {
+    public void logMessage(UUID uuid, String p_username, String serverName, String channel, String message, boolean isCommand) {
 
         if (connect() && !isReadOnly) {
             try {
-                String q = "INSERT INTO `messages` (`server`, `username`,`uuid`, `message`,`is_command`) VALUES (?,?,?,?,?);";
+                String q = "INSERT INTO `messages` (`server`, `username`,`uuid`,`channel`, `message`,`is_command`) VALUES (?,?,?,?,?,?);";
                 PreparedStatement ps = connection.prepareStatement(q);
                 int i = 1;
                 ps.setString(i++, serverName);
                 ps.setString(i++, p_username);
                 ps.setString(i++, uuid.toString());
+                ps.setString(i++, channel);
                 ps.setString(i++, message);
                 ps.setInt(i++, isCommand ? 1 : 0);
                 ps.execute();

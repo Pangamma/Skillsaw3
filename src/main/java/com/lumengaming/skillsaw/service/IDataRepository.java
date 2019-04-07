@@ -49,7 +49,7 @@ public interface IDataRepository {
     
     public void logActivity(UUID uuid, String serverName,boolean isAfk);
     public void purgeOldMessages(int numToKeep);
-	public void logMessage(UUID uuid, String username, String serverName, String message, boolean isCommand);
+	public void logMessage(UUID uuid, String username, String serverName, String channel, String message, boolean isCommand);
     
 	public void logRep(User issuer, User target, double amount, RepType repType, String reason);
 	

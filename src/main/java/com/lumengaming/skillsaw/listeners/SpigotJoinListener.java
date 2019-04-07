@@ -10,6 +10,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -35,8 +36,9 @@ public class SpigotJoinListener implements Listener {
         e.setQuitMessage("");
     }
     
-    @EventHandler
+    @EventHandler()
     public void onKickTooManyItems(PlayerKickEvent e){
+        
         String reason = e.getReason();
         if (reason.toLowerCase().contains("is larger than protocol maximum")){
             if (reason.toLowerCase().contains("compressed packet")){

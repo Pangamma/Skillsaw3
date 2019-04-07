@@ -23,6 +23,9 @@ public class SpigotOptions
     //<editor-fold defaultstate="collapsed" desc="Properties">
     @SerializedName("is-enhanced-plugin-list-enabled")
     public boolean IsEnhancedPluginListEnabled = true;
+    
+    @SerializedName("pvp-mode")
+    public PvpModeOption PvpMode = new PvpModeOption();
     //</editor-fold>
 
     
@@ -38,6 +41,18 @@ public class SpigotOptions
         
         public DynmapOption(){
             Links.add(new Hyperlink("&f&nClick to view Dynmap", "https://maps.yoursite.net:8123", "Click to open."));
+        }
+    }    
+    
+    public static class PvpModeOption{
+        
+        @SerializedName("enabled")
+        public boolean IsEnabled = true;
+        
+        @SerializedName("enable-glow")
+        public boolean IsGlowEffectEnabled = false;
+        
+        public PvpModeOption(){
         }
     }
     

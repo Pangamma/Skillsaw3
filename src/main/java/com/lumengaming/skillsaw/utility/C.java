@@ -90,6 +90,10 @@ public class C {
     public static final String ERROR_P_YOU_ARE_IGNORING = "§cThat message could not be sent because you are ignoring that player right now.";
     public static final String C_ERROR = "§c";
     public static final String ERROR_DOING_IT_WRONG = "§cYou're DOING it wrong! D:";
+    public static final String ERROR_INVALID_LOCALE = "§cInvalid locale. Please try something else.";
+    public static final String MSG_TRANSLATE_ENABLED = "§aTranslations §aenabled!";
+    public static final String MSG_TRANSLATE_DISABLED = "§aTranslations §cdisabled!";
+    public static final String MSG_TRANSLATE_UPDATED = "§aTranslation settings updated to use the new locale. ";
 
     public static String ERROR_REPORT_THIS_TO_PANGAMMA(int errIdentifier) {
         return "§cYou shouldn't be seeing this. Report this number to Pangamma: '" + errIdentifier + "'.";

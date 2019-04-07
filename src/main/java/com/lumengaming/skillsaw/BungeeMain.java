@@ -40,6 +40,7 @@ import com.lumengaming.skillsaw.config.Options.MysqlOptions;
 import com.lumengaming.skillsaw.bridge.BungeeSender;
 import com.lumengaming.skillsaw.commands.*;
 import com.lumengaming.skillsaw.commands.admin.SlogCommand;
+import com.lumengaming.skillsaw.commands.chat.LanguageTranslateCommand;
 import com.lumengaming.skillsaw.listeners.BungeeChatListener;
 import com.lumengaming.skillsaw.listeners.BungeeSlogListener;
 import com.lumengaming.skillsaw.listeners.BungeePlayerActivityListener;
@@ -131,20 +132,23 @@ public class BungeeMain extends Plugin implements ISkillsaw {
 
         //<editor-fold defaultstate="collapsed" desc="Chat">
         if (Options.Get().ChatSystem.IsEnabled) {
+//            this.getProxy().getPluginManager().registerCommand(this, new UnmuteCommand(this));
+//            this.getProxy().getPluginManager().registerCommand(this, new SoftMuteCommand(this));
+//            this.getProxy().getPluginManager().registerCommand(this, new MuteCommand(this));
+//            this.getProxy().getPluginManager().registerCommand(this, new MuteListCommand(this));
             this.getProxy().getPluginManager().registerListener(this, new BungeeChatListener(this));
             this.getProxy().getPluginManager().registerCommand(this, new ChannelCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new ChatColorCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new GlobalCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new IgnoreCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new MeeCommand(this));
-//            this.getProxy().getPluginManager().registerCommand(this, new UnmuteCommand(this));
-//            this.getProxy().getPluginManager().registerCommand(this, new SoftMuteCommand(this));
-//            this.getProxy().getPluginManager().registerCommand(this, new MuteCommand(this));
-//            this.getProxy().getPluginManager().registerCommand(this, new MuteListCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new NickCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new WhisperCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new ReplyCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new TitleCommand(this));
+            if (Options.Get().ChatSystem.IsTranslatorEnabled) {
+                this.getProxy().getPluginManager().registerCommand(this, new LanguageTranslateCommand(this));
+            }
         }
         //</editor-fold>
 

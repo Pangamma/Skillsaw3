@@ -6,7 +6,7 @@
 package com.lumengaming.skillsaw.models;
 
 import com.google.gson.annotations.JsonAdapter;
-import com.lumengaming.skillsaw.utility.UUIDAdapter;
+import com.lumengaming.skillsaw.utility.json.UUIDAdapter;
 import java.util.HashMap;
 import java.util.UUID;
 

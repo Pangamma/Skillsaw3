@@ -183,7 +183,14 @@ public class SpigotMain extends JavaPlugin implements ISkillsaw{
             state.originalMode = p.getGameMode();
             state.uuid = p.getUniqueId();
             pvpModeSaveStates.put(p.getUniqueId(), state);
-            SH.setGlowColor(ChatColor.DARK_RED, p);
+            
+            if (SpigotOptions.Get().PvpMode.IsEnabled){
+                SH.setGlowColor(ChatColor.DARK_RED, p); // Sets the team as well.
+                if (!SpigotOptions.Get().PvpMode.IsGlowEffectEnabled){
+                    p.setGlowing(false);
+                }
+            }
+            
             p.setGameMode(GameMode.SURVIVAL);
             for(Player p2 : p.getWorld().getPlayers()){
                 if (p2.isValid()){

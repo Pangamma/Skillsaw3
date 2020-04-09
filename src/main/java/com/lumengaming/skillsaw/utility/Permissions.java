@@ -5,7 +5,6 @@
  */
 package com.lumengaming.skillsaw.utility;
 
-import com.lumengaming.skillsaw.common.ICommandSender;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
 import net.md_5.bungee.api.ChatColor;
 
@@ -96,6 +95,7 @@ public enum Permissions {
     INSTRUCTORS_MODIFY("Skillsaw.instructors.modify"),
     INSTRUCTORS_LIST("Skillsaw.instructors.list"),
     TEST_LOCK("Skillsaw.test.lock"),
+    TRACK_DONATION("Skillsaw.donation.track"),
     TITLE_SET_SELF("Skillsaw.title.set.self"),
     TITLE_SET_OTHERS("Skillsaw.title.set.others"),
     TITLE_EDIT_ANY("SkillSaw.title.edit.*"),

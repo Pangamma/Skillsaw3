@@ -19,12 +19,11 @@ import com.lumengaming.skillsaw.utility.SH;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
 import com.lumengaming.skillsaw.wrappers.SpigotPlayer;
 import java.util.HashMap;
-import java.util.Random;
 import java.util.UUID;
-import me.lucko.luckperms.api.LuckPermsApi;
+import net.luckperms.api.LuckPerms;
+import net.luckperms.api.LuckPermsProvider;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
@@ -32,7 +31,6 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
-import org.bukkit.util.noise.SimplexOctaveGenerator;
 
 /**
  *
@@ -207,10 +205,12 @@ public class SpigotMain extends JavaPlugin implements ISkillsaw{
     //</editor-fold>
 
     @Override
-    public LuckPermsApi getLuckPermsAPI() {
-        RegisteredServiceProvider<LuckPermsApi> provider = Bukkit.getServicesManager().getRegistration(LuckPermsApi.class);
+    public LuckPerms getLuckPermsAPI() {
+      LuckPermsProvider.get();
+        RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
+        
         if (provider != null) {
-            LuckPermsApi api = provider.getProvider();
+            LuckPerms api = provider.getProvider();
             return api;
         }
         return null;

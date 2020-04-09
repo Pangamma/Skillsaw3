@@ -13,10 +13,13 @@ import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashSet;
+import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.plugin.TabExecutor;
 
-public abstract class AbstractViewLogCommand extends BungeeCommand {
+public abstract class AbstractViewLogCommand extends BungeeCommand implements TabExecutor {
 
     public AbstractViewLogCommand(BungeeMain plugin, String commandName, String... aliases) {
         super(plugin, commandName, null, aliases);
@@ -121,6 +124,16 @@ public abstract class AbstractViewLogCommand extends BungeeCommand {
         return true;
     }
 
+    @Override
+    public Iterable<String> onTabCompleteBeforeFiltering(CommandSender cs, String[] args) {
+      HashSet<String> set = new HashSet<>();
+      if (args.length == 1){
+        set.addAll(this.getOnlinePlayerNames());
+      }
+      return set;
+    }
+    
+  
     private void printHelp(IPlayer cs) {
         BaseComponent[] txt = CText.hoverText("§c/replog [target]", "§cView " + RepType.NaturalRep.name() + "(s) given to a player.");
         CText.applyEvent(txt, new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/replog "));

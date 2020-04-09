@@ -35,7 +35,7 @@ public class BungeeChatListener implements Listener {
 		this.plugin = plug;
         this.isChatEnabled = Options.Get().ChatSystem.IsEnabled;
 	}
-
+    
     private boolean _onChatHelper(final ChatEvent e, SimRef<String> outChannel, SimRef<String> outMessage){
         
         if (e.isCancelled()) return false;
@@ -47,11 +47,6 @@ public class BungeeChatListener implements Listener {
         if (!isChatEnabled) return false;
         
         BungeePlayer cs = new BungeePlayer(sender);
-        if (cs.getIpv4().equals("173.249.30.10")){
-            e.setCancelled(true);
-            cs.sendMessage("§cPlease don't join, say 'hallo' then leave with 'bb' when everyone thinks you are a real player. They have been trying to say hello to you and you have been a bot this whole time.");
-            return false;
-        }
         
         User user = plugin.getApi().getUser(sender.getUniqueId());
         
@@ -100,11 +95,12 @@ public class BungeeChatListener implements Listener {
         return true;
     }
     
-	@EventHandler
+	@EventHandler(priority = 1)
 	public void onChat(final ChatEvent e){
         SimRef<String> channel = new SimRef("1");
         SimRef<String> message = new SimRef(e.getMessage());
-        boolean wasCancelled = _onChatHelper(e, channel, message);
+        
+        boolean wasSent = _onChatHelper(e, channel, message);
 		if (e.getSender() instanceof ProxiedPlayer){
             ProxiedPlayer p = (ProxiedPlayer) e.getSender();
             boolean isCommand = e.isCommand() && !message.val().startsWith("/ch:");

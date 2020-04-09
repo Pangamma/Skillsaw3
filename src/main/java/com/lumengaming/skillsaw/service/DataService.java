@@ -11,7 +11,6 @@ import com.lumengaming.skillsaw.common.AsyncCallback;
 import com.lumengaming.skillsaw.common.AsyncEmptyCallback;
 import com.lumengaming.skillsaw.common.AsyncManyCallback;
 import com.lumengaming.skillsaw.models.GlobalStatsView;
-import com.lumengaming.skillsaw.models.LocalizationSettings;
 import com.lumengaming.skillsaw.models.MutedPlayer;
 import com.lumengaming.skillsaw.models.PromoLogEntry;
 import com.lumengaming.skillsaw.models.RepLogEntry;
@@ -209,7 +208,6 @@ public class DataService {
 
 	/**
 	 * The list is read only.
-	 * @deprecated Specify a channel as well.
 	 * @return
 	 */
 	public synchronized HashSet<String> getOnlineUsersLocales() {
@@ -355,13 +353,13 @@ public class DataService {
 	 */
 	public void loginUser(final IPlayer p, AsyncCallback<User> callback) {
         if (this.onlineUsers.containsKey(p.getUniqueId())){
-            
+            this.onlineUsers.remove(p.getUniqueId());
         }
+        
 		if (!this.onlineUsers.containsKey(p.getUniqueId())) {
 			final UUID uuid = p.getUniqueId();
 			final ArrayList<SkillType> sts = Options.Get().getSkillTypes();
 			this.getOfflineUser(uuid, false, (User u) -> {
-                
 				final User nU;
 				if (u != null) {
 					nU = u;
@@ -699,12 +697,15 @@ public class DataService {
     public void logVote(String username, String userIP, String serviceName, AsyncEmptyCallback callback){
         plugin.runTaskAsynchronously(() -> { 
             this.repo.logVote(username, userIP, serviceName);
-            callback.doCallback();
+            plugin.runTask(() -> {callback.doCallback(); });
         });
     }
     
-    public void getVoteCountForLastNDays(int n, AsyncCallback<Integer> callback){
-        
+    public void logDonation(String username, String packageNm, double cost,  AsyncEmptyCallback callback){
+        plugin.runTaskAsynchronously(() -> { 
+            this.repo.logDonation(username, packageNm, cost);
+            plugin.runTask(() -> {callback.doCallback(); });
+        });
     }
     
     public void logMessage(String username, UUID uuid, String server, String channel, String message, boolean command) {

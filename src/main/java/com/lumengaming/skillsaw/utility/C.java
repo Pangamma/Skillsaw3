@@ -93,7 +93,9 @@ public class C {
     public static final String ERROR_INVALID_LOCALE = "§cInvalid locale. Please try something else.";
     public static final String MSG_TRANSLATE_ENABLED = "§aTranslations §aenabled!";
     public static final String MSG_TRANSLATE_DISABLED = "§aTranslations §cdisabled!";
-    public static final String MSG_TRANSLATE_UPDATED = "§aTranslation settings updated to use the new locale. ";
+    public static final String MSG_TRANSLATE_UPDATED_0_1 = "§aTranslation settings updated to use the §2%1$s§a locale. (%2$s)";
+    public static final String MSG_TRANSLATE_ENABLED_FOR_0_1_2 = "§2%1$s §atranslation §2enabled§a for §f%2$s§a. (%3$s)";
+    public static final String MSG_TRANSLATE_ENABLED_BY_0_1_2 = "§2%1$s §atranslation §2enabled§a by §f%2$s§a. (%3$s)";
 
     public static String ERROR_REPORT_THIS_TO_PANGAMMA(int errIdentifier) {
         return "§cYou shouldn't be seeing this. Report this number to Pangamma: '" + errIdentifier + "'.";

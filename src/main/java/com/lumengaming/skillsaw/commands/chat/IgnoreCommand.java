@@ -10,122 +10,153 @@ import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
+import java.util.HashSet;
 import java.util.concurrent.CopyOnWriteArraySet;
+import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 public class IgnoreCommand extends BungeeCommand {
 
-    private final int maxIgnore;
+  private final int maxIgnore;
 
-    public IgnoreCommand(BungeeMain plugin) {
-        super(plugin, "ignore", null);
-        this.maxIgnore = Options.Get().ChatSystem.MaxIgnoreListSize;
+  public IgnoreCommand(BungeeMain plugin) {
+    super(plugin, "ignore", null);
+    this.maxIgnore = Options.Get().ChatSystem.MaxIgnoreListSize;
+  }
+
+  @Override
+  public Iterable<String> onTabCompleteBeforeFiltering(CommandSender cs, String[] args) {
+    HashSet<String> set = new HashSet<>();
+    switch (args.length) {
+      case 1:
+        set.add("+");
+        set.add("-");
+        set.add("*");
+        set.add("!*");
+        set.add("?");
+        break;
+      case 2:
+        if (args[0].equals("+")) {
+          set.addAll(this.getOnlinePlayerNames());
+        }
+        else if (args[0].equals("-")) {
+          if (cs instanceof ProxiedPlayer) {
+            ProxiedPlayer p = (ProxiedPlayer) cs;
+            User u = this.plugin.getApi().getUser(p.getUniqueId());
+            set.addAll(u.getIgnored());
+          }
+        }
+        break;
+      default:
+        break;
+    }
+    return set;
+  }
+
+  private void printHelp(IPlayer p) {
+    p.sendMessage(CText.hoverText("§c/ignore + <player>", "Add player name to\nyour ignore list."));
+    p.sendMessage(CText.hoverText("§c/ignore - <player>", "Remove player name from\nyour ignore list."));
+    p.sendMessage(CText.hoverText("§c/ignore *", "Ignore everyone."));
+    p.sendMessage(CText.hoverText("§c/ignore !*", "Clear your ignore list.\n(Ignore no one)"));
+    p.sendMessage(CText.hoverText("§c/ignore ?", "Show the people in\nyour ignore list."));
+  }
+
+  @Override
+  public void execute(BungeePlayer cs, String[] args) {
+    if (!Permissions.USER_HAS_PERMISSION(cs, Permissions.IGNORE, true)) {
+      return;
     }
 
-    private void printHelp(IPlayer p) {
-        p.sendMessage(CText.hoverText("§c/ignore + <player>", "Add player name to\nyour ignore list."));
-        p.sendMessage(CText.hoverText("§c/ignore - <player>", "Remove player name from\nyour ignore list."));
-        p.sendMessage(CText.hoverText("§c/ignore *", "Ignore everyone."));
-        p.sendMessage(CText.hoverText("§c/ignore !*", "Clear your ignore list.\n(Ignore no one)"));
-        p.sendMessage(CText.hoverText("§c/ignore ?", "Show the people in\nyour ignore list."));
+    if (!cs.isPlayer()) {
+      cs.sendMessage(C.ERROR_PLAYERS_ONLY);
+      return;
     }
 
-    @Override
-    public void execute(BungeePlayer cs, String[] args) {
+    try {
+      DataService system = plugin.getDataService();
+      User cp = system.getUser(cs.getUniqueId());
+      if (cp == null) {
+        cs.sendMessage(C.ERROR_TRY_AGAIN_LATER_COMMAND);
+        return;
+      }
 
-        if (!Permissions.USER_HAS_PERMISSION(cs, Permissions.IGNORE, true)) {
-            return;
-        }
-
-        if (!cs.isPlayer()) {
-            cs.sendMessage(C.ERROR_PLAYERS_ONLY);
-            return;
-        }
-
-        try {
-            DataService system = plugin.getDataService();
-            User cp = system.getUser(cs.getUniqueId());
-            if (cp == null) {
-                cs.sendMessage(C.ERROR_TRY_AGAIN_LATER_COMMAND);
-                return;
-            }
-
-            if ("+".equals(args[0])) {
-                int size = cp.getIgnored().size();
-                if (size >= this.maxIgnore) {
-                    cs.sendMessage("§cMax of " + this.maxIgnore + " ignored players at a time unless you have the '" + Permissions.IGNORE_INF + "' permission node. Consider removing some names from your ignore list.");
-                    return;
-                } else {
-                    if (args[1].equals("*")) {
-                        cp.getIgnored().add("*");
-                        cs.sendMessage("§aAdded everyone (*) to your ignore list.");
-                        plugin.getDataService().saveUser(cp);
-                    } else {
-                        plugin.getApi().getOfflineUserByNameOrDisplayName(args[1], (target) -> {
-                            if (target != null) {
-                                cp.getIgnored().add(target.getName().toLowerCase());
-                                cs.sendMessage("§aAdded " + target.getName().toLowerCase() + " to your ignore list.");
-                                plugin.getDataService().saveUser(cp);
-                            } else {
-                                cp.getIgnored().add(args[1].toLowerCase());
-                                cs.sendMessage("§aAdded " + args[1].toLowerCase() + " to your ignore list.");
-                                plugin.getDataService().saveUser(cp);
-                            }
-                        });
-                    }
-                }
-            } else if ("-".equals(args[0])) {
-                CopyOnWriteArraySet<String> ignored = cp.getIgnored();
-                String toRemove = null;
-                for (String nm : ignored) {
-                    if (nm.equalsIgnoreCase(args[1])) {
-                        toRemove = nm;
-                        break;
-                    }
-                }
-                if (toRemove == null) {
-                    for (String nm : ignored) {
-                        if (nm.startsWith(args[1].toLowerCase())) {
-                            if (toRemove == null || nm.length() < toRemove.length()) {
-                                toRemove = nm;
-                            }
-                        }
-                    }
-                }
-                if (toRemove != null) {
-                    cp.getIgnored().remove(toRemove.toLowerCase());
-                    cs.sendMessage("§aRemoved " + toRemove.toLowerCase() + " from your ignore list.");
-                    plugin.getDataService().saveUser(cp);
-                } else {
-                    cp.sendMessage("§cYou're not ignoring '" + args[1] + "' right now.");
-                }
-            } else if ("*".equals(args[0])) {
-                cp.getIgnored().add("*");
-                cs.sendMessage("§aIgnoring all players now.");
+      if ("+".equals(args[0])) {
+        int size = cp.getIgnored().size();
+        if (size >= this.maxIgnore) {
+          cs.sendMessage("§cMax of " + this.maxIgnore + " ignored players at a time unless you have the '" + Permissions.IGNORE_INF + "' permission node. Consider removing some names from your ignore list.");
+          return;
+        } else {
+          if (args[1].equals("*")) {
+            cp.getIgnored().add("*");
+            cs.sendMessage("§aAdded everyone (*) to your ignore list.");
+            plugin.getDataService().saveUser(cp);
+          } else {
+            plugin.getApi().getOfflineUserByNameOrDisplayName(args[1], (target) -> {
+              if (target != null) {
+                cp.getIgnored().add(target.getName().toLowerCase());
+                cs.sendMessage("§aAdded " + target.getName().toLowerCase() + " to your ignore list.");
                 plugin.getDataService().saveUser(cp);
-            } else if ("!*".equals(args[0])) {
-                cp.getIgnored().clear();
-                cs.sendMessage("§aNo longer ignoring anyone.");
+              } else {
+                cp.getIgnored().add(args[1].toLowerCase());
+                cs.sendMessage("§aAdded " + args[1].toLowerCase() + " to your ignore list.");
                 plugin.getDataService().saveUser(cp);
-            } else if ("?".equals(args[0])) {
-                cs.sendMessage(C.C_DIV_LINE);
-                cs.sendMessage(C.C_DIV_TITLE_PREFIX + " Ignore List");
-                cs.sendMessage(C.C_DIV_LINE);
-                for (String name : cp.getIgnored()) {
-                    BaseComponent[] txt = CText.legacy(C.C_MENU_CONTENT + name);
-                    CText.applyEvent(txt, new HoverEvent(HoverEvent.Action.SHOW_TEXT, CText.legacy("Click to remove.")));
-                    CText.applyEvent(txt, new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/ignore - " + name));
-                    cs.sendMessage(txt);
-                }
-                cs.sendMessage(C.C_DIV_LINE);
-            } else {
-                printHelp(cs);
-            }
-        } catch (ArrayIndexOutOfBoundsException ex) {
-            printHelp(cs);
+              }
+            });
+          }
         }
+      } else if ("-".equals(args[0])) {
+        CopyOnWriteArraySet<String> ignored = cp.getIgnored();
+        String toRemove = null;
+        for (String nm : ignored) {
+          if (nm.equalsIgnoreCase(args[1])) {
+            toRemove = nm;
+            break;
+          }
+        }
+        if (toRemove == null) {
+          for (String nm : ignored) {
+            if (nm.startsWith(args[1].toLowerCase())) {
+              if (toRemove == null || nm.length() < toRemove.length()) {
+                toRemove = nm;
+              }
+            }
+          }
+        }
+        if (toRemove != null) {
+          cp.getIgnored().remove(toRemove.toLowerCase());
+          cs.sendMessage("§aRemoved " + toRemove.toLowerCase() + " from your ignore list.");
+          plugin.getDataService().saveUser(cp);
+        } else {
+          cp.sendMessage("§cYou're not ignoring '" + args[1] + "' right now.");
+        }
+      } else if ("*".equals(args[0])) {
+        cp.getIgnored().add("*");
+        cs.sendMessage("§aIgnoring all players now.");
+        plugin.getDataService().saveUser(cp);
+      } else if ("!*".equals(args[0])) {
+        cp.getIgnored().clear();
+        cs.sendMessage("§aNo longer ignoring anyone.");
+        plugin.getDataService().saveUser(cp);
+      } else if ("?".equals(args[0])) {
+        cs.sendMessage(C.C_DIV_LINE);
+        cs.sendMessage(C.C_DIV_TITLE_PREFIX + " Ignore List");
+        cs.sendMessage(C.C_DIV_LINE);
+        for (String name : cp.getIgnored()) {
+          BaseComponent[] txt = CText.legacy(C.C_MENU_CONTENT + name);
+          CText.applyEvent(txt, new HoverEvent(HoverEvent.Action.SHOW_TEXT, CText.legacy("Click to remove.")));
+          CText.applyEvent(txt, new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/ignore - " + name));
+          cs.sendMessage(txt);
+        }
+        cs.sendMessage(C.C_DIV_LINE);
+      } else {
+        printHelp(cs);
+      }
+    } catch (ArrayIndexOutOfBoundsException ex) {
+      printHelp(cs);
     }
+  }
 
 }

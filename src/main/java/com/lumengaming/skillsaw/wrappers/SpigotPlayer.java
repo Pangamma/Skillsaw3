@@ -93,4 +93,10 @@ public class SpigotPlayer implements IPlayer {
     public Object getRaw() {
         return this.cs;
     }
+
+    @Override
+    public String getLocale() {
+        if (isPlayer()) return ((Player)cs).getLocale().substring(0,2);
+        return null;
+    }
 }

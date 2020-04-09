@@ -9,7 +9,6 @@ import com.lumengaming.skillsaw.utility.CText;
 import com.lumengaming.skillsaw.SpigotMain;
 import com.lumengaming.skillsaw.config.SpigotOptions;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -18,9 +17,7 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
-import org.bukkit.advancement.Advancement;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -39,7 +36,7 @@ public class SpigotCommandListener implements Listener{
     public SpigotCommandListener(SpigotMain plug) {
         this.plugin = plug;
     }
-	
+    
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlugins(final PlayerCommandPreprocessEvent e) {
         if (SpigotOptions.Get().IsEnhancedPluginListEnabled){

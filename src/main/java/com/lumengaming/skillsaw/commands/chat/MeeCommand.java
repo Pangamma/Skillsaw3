@@ -8,6 +8,8 @@ import com.lumengaming.skillsaw.models.User;
 import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
+import java.util.HashSet;
+import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.BaseComponent;
 
 public class MeeCommand extends BungeeCommand {
@@ -16,6 +18,11 @@ public class MeeCommand extends BungeeCommand {
         super(plugin, "mee", null, "me");
     }
 
+    @Override
+    public Iterable<String> onTabCompleteBeforeFiltering(CommandSender arg0, String[] arg1) {
+      return new HashSet<>();
+    }
+  
     @Override
     public void execute(BungeePlayer cs, String[] args) {
 

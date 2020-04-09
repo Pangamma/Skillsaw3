@@ -142,4 +142,9 @@ public class SpigotDataRepository implements IDataRepository{
     public ArrayList<User> getUsersByIP(String ipv4) {
         throw new UnsupportedOperationException("Not supported yet."); 
     }
+
+    @Override
+    public void logDonation(String username, String packageName, double cost) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

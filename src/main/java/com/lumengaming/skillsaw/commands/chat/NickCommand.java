@@ -9,7 +9,9 @@ import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.utility.SharedUtility;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
+import java.util.HashSet;
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.CommandSender;
 
 /**
  * TODO: make the level 4 thing configurable.
@@ -25,6 +27,15 @@ public class NickCommand extends BungeeCommand {
         super(p_plugin, "nickname", null, "nick");
         this.dh = plugin.getDataService();
     }
+    
+    
+  @Override
+  public Iterable<String> onTabCompleteBeforeFiltering(CommandSender arg0, String[] args) {
+    HashSet<String> set = new HashSet<>();
+    set.add("<nickname>");
+    return set;
+  }
+
 
     @Override
     public void execute(BungeePlayer cs, final String[] args) {

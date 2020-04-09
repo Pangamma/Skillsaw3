@@ -45,4 +45,10 @@ public interface IPlayer {
      * @return 
      */
     public Object getRaw();
+
+    /**
+     * Returns client locale in form of en-US or something.
+     * @return 
+     */
+    public String getLocale();
 }

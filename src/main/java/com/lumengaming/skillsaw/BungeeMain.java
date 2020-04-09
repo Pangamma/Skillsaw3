@@ -16,10 +16,6 @@ import com.lumengaming.skillsaw.commands.skills.XRepLogCommand;
 import com.lumengaming.skillsaw.commands.skills.RepLogCommand;
 import com.lumengaming.skillsaw.commands.skills.XRepCommand;
 import com.lumengaming.skillsaw.commands.skills.StaffRepCommand;
-import com.lumengaming.skillsaw.commands.discipline.SoftMuteCommand;
-import com.lumengaming.skillsaw.commands.discipline.MuteCommand;
-import com.lumengaming.skillsaw.commands.discipline.MuteListCommand;
-import com.lumengaming.skillsaw.commands.discipline.UnmuteCommand;
 import com.lumengaming.skillsaw.commands.chat.NickCommand;
 import com.lumengaming.skillsaw.commands.chat.ChannelCommand;
 import com.lumengaming.skillsaw.commands.chat.MeeCommand;
@@ -40,8 +36,10 @@ import com.lumengaming.skillsaw.config.Options.MysqlOptions;
 import com.lumengaming.skillsaw.bridge.BungeeSender;
 import com.lumengaming.skillsaw.commands.*;
 import com.lumengaming.skillsaw.commands.admin.SlogCommand;
+import com.lumengaming.skillsaw.commands.admin.TrackDonateCommand;
 import com.lumengaming.skillsaw.commands.chat.LanguageTranslateCommand;
 import com.lumengaming.skillsaw.listeners.BungeeChatListener;
+import com.lumengaming.skillsaw.listeners.BungeeCommandListener;
 import com.lumengaming.skillsaw.listeners.BungeeSlogListener;
 import com.lumengaming.skillsaw.listeners.BungeePlayerActivityListener;
 import com.lumengaming.skillsaw.listeners.BungeeServerCloseListener;
@@ -60,8 +58,8 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import me.lucko.luckperms.LuckPerms;
-import me.lucko.luckperms.api.LuckPermsApi;
+import net.luckperms.api.LuckPerms;
+import net.luckperms.api.LuckPermsProvider;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -114,8 +112,10 @@ public class BungeeMain extends Plugin implements ISkillsaw {
 
         this.getProxy().getPluginManager().registerCommand(this, new SlogCommand(this));
         this.getProxy().getPluginManager().registerListener(this, new BungeeSlogListener(this));
+        this.getProxy().getPluginManager().registerListener(this, new BungeeCommandListener(this));
 
         this.getProxy().getPluginManager().registerCommand(this, new TestCommand(this));
+        this.getProxy().getPluginManager().registerCommand(this, new TrackDonateCommand(this));
 
         if (Options.Get().Discord.IsEnabled){
             this.getProxy().getPluginManager().registerCommand(this, new DiscordCommand(this));
@@ -373,9 +373,9 @@ public class BungeeMain extends Plugin implements ISkillsaw {
     }
 
     @Override
-    public LuckPermsApi getLuckPermsAPI() {
+    public LuckPerms getLuckPermsAPI() {
         try {
-            LuckPermsApi api = LuckPerms.getApi();
+            LuckPerms api = LuckPermsProvider.get();
             return api;
         } catch (IllegalStateException ex) {
             Logger.getLogger("Skillsaw3").log(Level.WARNING, "Luckperms API is not available yet, but something tried to get an instance of it.");

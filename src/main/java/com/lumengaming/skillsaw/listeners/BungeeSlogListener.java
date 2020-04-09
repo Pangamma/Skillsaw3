@@ -12,9 +12,7 @@ import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.UUID;
 import net.md_5.bungee.api.ServerPing;
-import net.md_5.bungee.api.config.ListenerInfo;
 import net.md_5.bungee.api.connection.PendingConnection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.ChatEvent;
@@ -185,7 +183,7 @@ public class BungeeSlogListener implements Listener {
         
     }
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.NORMAL)
 	public void onChat(final ChatEvent e){
         if (e.isCancelled()) return;
 		if (!(e.getSender() instanceof ProxiedPlayer)){
@@ -196,6 +194,9 @@ public class BungeeSlogListener implements Listener {
             return;
         
 		User chatter = plugin.getApi().getUser(((ProxiedPlayer) e.getSender()).getUniqueId());
+        if (chatter.getSlogSettings().IsSilent && !e.getMessage().startsWith("/ ")) { // note the space!
+          return;
+        }
         
 		ProxiedPlayer sender = (ProxiedPlayer) e.getSender();
         ArrayList<User> users = plugin.getApi().getOnlineUsersReadOnly();

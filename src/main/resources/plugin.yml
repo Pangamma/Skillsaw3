@@ -1,6 +1,6 @@
 name: Skillsaw3
-version: '1.0R'
-api-version: 1.13
+version: '1.15.0'
+api-version: 1.14
 author: Pangamma
 #website: CustomPlugin
 main: com.lumengaming.skillsaw.SpigotMain
@@ -11,6 +11,10 @@ commands:
     aliases: ['pvpm']
   test2:
     description: 'Test'
+  title:
+    description: 'A placeholder so we do not get command suggestions for the vanilla command'
+  tp:
+    description: 'A placeholder so we do not get command suggestions for the vanilla command'
 #  testlock:
 #    description: 'Lock the main thread.'
 #  setskill:

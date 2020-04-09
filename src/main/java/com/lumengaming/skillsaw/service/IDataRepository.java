@@ -62,7 +62,8 @@ public interface IDataRepository {
 	public ArrayList<RepLogEntry> getRepLogEntriesByIssuer(RepType type, UUID issuerUuid, int maxResultsReturned,long minLogDate);
 	
 	public void logPromotion(User suer, User target, SkillType st, int oLevel, int nLevel, XLocation location);
-
+    
+    public void logDonation(String username, String packageName, double cost);
     
 //</editor-fold>
 

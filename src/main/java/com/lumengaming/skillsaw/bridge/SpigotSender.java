@@ -80,7 +80,6 @@ public class SpigotSender implements org.bukkit.plugin.messaging.PluginMessageLi
     }
 
     public void getUser(UUID uuid, AsyncCallback<User> callback){
-        
     }
     
     

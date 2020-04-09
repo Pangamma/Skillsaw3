@@ -7,6 +7,7 @@ package com.lumengaming.skillsaw.wrappers;
 
 import com.lumengaming.skillsaw.utility.CText;
 import java.net.InetSocketAddress;
+import java.util.Locale;
 import java.util.UUID;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
@@ -132,5 +133,13 @@ public class BungeePlayer implements IPlayer {
     @Override
     public Object getRaw() {
         return this.cs;
+    }
+    
+    @Override
+    public String getLocale() {
+        if (!isPlayer()) return null;
+        Locale l = ((ProxiedPlayer)cs).getLocale();
+        if (l == null) return null;
+        return l.getLanguage();
     }
 }

@@ -12,6 +12,8 @@ import com.lumengaming.skillsaw.models.XLocation;
 import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
+import java.util.HashSet;
+import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
@@ -21,111 +23,117 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
  */
 public class TpPosCommand extends BungeeCommand {
 
-    public TpPosCommand(BungeeMain plugin) {
-        super(plugin, "tppos", null, "tploc", "tplocation", "tpposition");
-        super.addSyntax(Permissions.TELEPORT_SELF, true, false, "/tploc <x> <y> <z> [world] [server]", "Teleport to the location.");
-        super.addSyntax(Permissions.TELEPORT_OTHERS, true, false, "/tploc target <x> <y> <z> [world] [server]", "Teleport player to the location");
-        super.addSyntax(Permissions.TELEPORT_SELF, true, false, "/tploc x:<x> y:<y> z:<z> pitch:<pitch> yaw:<yaw> w:world [s:server]", "Teleport to the location");
-        super.addSyntax(Permissions.TELEPORT_OTHERS, true, false, "/tploc target:<username> x:<x> y:<y> z:<z> pitch:<pitch> yaw:<yaw> [w:world] [s:server]", "Teleport player to the location");
+  public TpPosCommand(BungeeMain plugin) {
+    super(plugin, "tppos", null, "tploc", "tplocation", "tpposition");
+    super.addSyntax(Permissions.TELEPORT_SELF, true, false, "/tploc <x> <y> <z> [world] [server]", "Teleport to the location.");
+    super.addSyntax(Permissions.TELEPORT_OTHERS, true, false, "/tploc target <x> <y> <z> [world] [server]", "Teleport player to the location");
+    super.addSyntax(Permissions.TELEPORT_SELF, true, false, "/tploc x:<x> y:<y> z:<z> pitch:<pitch> yaw:<yaw> w:world [s:server]", "Teleport to the location");
+    super.addSyntax(Permissions.TELEPORT_OTHERS, true, false, "/tploc target:<username> x:<x> y:<y> z:<z> pitch:<pitch> yaw:<yaw> [w:world] [s:server]", "Teleport player to the location");
+  }
+
+  @Override
+  public Iterable<String> onTabCompleteBeforeFiltering(CommandSender cs, String[] args) {
+    // Yeah, this is too many syntaxes. I aint supporting this.
+    HashSet<String> set = new HashSet<>();
+    return set;
+  }
+
+  @Override
+  public void execute(BungeePlayer cs, String[] args) {
+    //<editor-fold defaultstate="collapsed" desc="Boiler Plate">
+    if (!Permissions.USER_HAS_PERMISSION(cs, Permissions.TELEPORT_SELF, true)) {
+      return;
     }
 
-    @Override
-    public void execute(BungeePlayer cs, String[] args) {
-        //<editor-fold defaultstate="collapsed" desc="Boiler Plate">
-        if (!Permissions.USER_HAS_PERMISSION(cs, Permissions.TELEPORT_SELF, true)) {
-            return;
+    if (args.length == 0) {
+      printHelp2(cs);
+      return;
+    }
+
+    XLocation _target = new XLocation();
+    User _source = null;
+    ProxiedPlayer p = cs.p();
+
+    boolean isExplicitSyntax = true;
+    boolean wasPlayerSearchPerformed = false;
+
+    //<editor-fold defaultstate="collapsed" desc="Explicit">
+    for (String arg : args) {
+      if (arg.toLowerCase().startsWith("x:")) {
+        _target.X = Double.parseDouble(arg.substring("x:".length()));
+      } else if (arg.toLowerCase().startsWith("y:")) {
+        _target.Y = Double.parseDouble(arg.substring("y:".length()));
+      } else if (arg.toLowerCase().startsWith("z:")) {
+        _target.Z = Double.parseDouble(arg.substring("z:".length()));
+      } else if (arg.toLowerCase().startsWith("pitch:")) {
+        _target.Pitch = Float.parseFloat(arg.substring("pitch:".length()));
+      } else if (arg.toLowerCase().startsWith("yaw:")) {
+        _target.Yaw = Float.parseFloat(arg.substring("yaw:".length()));
+      } else if (arg.toLowerCase().startsWith("w:")) {
+        _target.World = arg.substring("w:".length());
+      } else if (arg.toLowerCase().startsWith("s:")) {
+        _target.Server = arg.substring("s:".length());
+      } else if (arg.toLowerCase().startsWith("target:")) {
+        _source = plugin.getApi().getUserBestOnlineMatch(arg);
+        wasPlayerSearchPerformed = true;
+      } else {
+        isExplicitSyntax = false;
+      }
+    }
+
+    if (isExplicitSyntax) {
+      if (_source == null) {
+        if (wasPlayerSearchPerformed) {
+          cs.sendMessage(C.ERROR_P_NOT_FOUND);
+          return;
         }
 
-        if (args.length == 0) {
-            printHelp2(cs);
-            return;
+        if (!cs.isPlayer()) {
+          cs.sendMessage(C.ERROR_PLAYERS_ONLY);
+          return;
         }
 
-        XLocation _target = new XLocation();
-        User _source = null;
-        ProxiedPlayer p = cs.p();
-
-        boolean isExplicitSyntax = true;
-        boolean wasPlayerSearchPerformed = false;
-        
-        //<editor-fold defaultstate="collapsed" desc="Explicit">
-        for (String arg : args) {
-            if (arg.toLowerCase().startsWith("x:")) {
-                _target.X = Double.parseDouble(arg.substring("x:".length()));
-            } else if (arg.toLowerCase().startsWith("y:")) {
-                _target.Y = Double.parseDouble(arg.substring("y:".length()));
-            } else if (arg.toLowerCase().startsWith("z:")) {
-                _target.Z = Double.parseDouble(arg.substring("z:".length()));
-            } else if (arg.toLowerCase().startsWith("pitch:")) {
-                _target.Pitch = Float.parseFloat(arg.substring("pitch:".length()));
-            } else if (arg.toLowerCase().startsWith("yaw:")) {
-                _target.Yaw = Float.parseFloat(arg.substring("yaw:".length()));
-            } else if (arg.toLowerCase().startsWith("w:")) {
-                _target.World = arg.substring("w:".length());
-            } else if (arg.toLowerCase().startsWith("s:")) {
-                _target.Server = arg.substring("s:".length());
-            } else if (arg.toLowerCase().startsWith("target:")) {
-                _source = plugin.getApi().getUserBestOnlineMatch(arg);
-                wasPlayerSearchPerformed = true;
-            } else {
-                isExplicitSyntax = false;
-            }
+        _source = plugin.getApi().getUser(cs.getUniqueId());
+        if (_source == null) {
+          cs.sendMessage(C.ERROR_P_NOT_FOUND);
+          return;
         }
-
-        if (isExplicitSyntax){
-            if (_source == null){
-                if (wasPlayerSearchPerformed){
-                    cs.sendMessage(C.ERROR_P_NOT_FOUND);
-                    return;
-                }
-                
-                if (!cs.isPlayer()) {
-                    cs.sendMessage(C.ERROR_PLAYERS_ONLY);
-                    return;
-                }
-                
-                _source = plugin.getApi().getUser(cs.getUniqueId());
-                if (_source == null){
-                    cs.sendMessage(C.ERROR_P_NOT_FOUND);
-                    return;
-                }
-            }else{
-                if (!_source.getName().equalsIgnoreCase(cs.getName())){
-                    if (!Permissions.USER_HAS_PERMISSION(cs, Permissions.TELEPORT_OTHERS, true)) {
-                        return;
-                    }
-                }
-            }
-            
-            // Source will never be null based on previous logic.
-            ProxiedPlayer player = ProxyServer.getInstance().getPlayer(_source.getUniqueId());
-            
-            if (_target.Server == null){
-                _target.Server = player.getServer().getInfo().getName();
-            }
-            
-            if (_target.World != null){
-                teleportToLocation(cs, player, _target);
-            }else{
-                XLocation dst = _target;
-                plugin.getSender().getPlayerLocation(p, (xloc) -> {
-                    dst.World = xloc.World;
-                    teleportToLocation(cs, player, dst);
-                });
-            }
-            
+      } else {
+        if (!_source.getName().equalsIgnoreCase(cs.getName())) {
+          if (!Permissions.USER_HAS_PERMISSION(cs, Permissions.TELEPORT_OTHERS, true)) {
             return;
+          }
         }
-        
-        //</editor-fold>
-        
-        // If it aint returned yet, we only have these syntaxes to consider:
-        // /tploc        <x> <y> <z> [world] [server]
-        // /tploc target <x> <y> <z> [world] [server]
-        if (!(args.length >= 3 && args.length <= 6)){
-            printHelp2(cs);
-            return;
-        }
+      }
+
+      // Source will never be null based on previous logic.
+      ProxiedPlayer player = ProxyServer.getInstance().getPlayer(_source.getUniqueId());
+
+      if (_target.Server == null) {
+        _target.Server = player.getServer().getInfo().getName();
+      }
+
+      if (_target.World != null) {
+        teleportToLocation(cs, player, _target);
+      } else {
+        XLocation dst = _target;
+        plugin.getSender().getPlayerLocation(p, (xloc) -> {
+          dst.World = xloc.World;
+          teleportToLocation(cs, player, dst);
+        });
+      }
+
+      return;
+    }
+
+    //</editor-fold>
+    // If it aint returned yet, we only have these syntaxes to consider:
+    // /tploc        <x> <y> <z> [world] [server]
+    // /tploc target <x> <y> <z> [world] [server]
+    if (!(args.length >= 3 && args.length <= 6)) {
+      printHelp2(cs);
+      return;
+    }
 //        
 //        boolean isArg0Numeric = false;
 //        try{
@@ -269,20 +277,20 @@ public class TpPosCommand extends BungeeCommand {
 //            });
 //        });
 
-    }
+  }
 
-    private void teleportToLocation(BungeePlayer cs, ProxiedPlayer player, XLocation dest){
-        plugin.getSender().setLocation(player, dest, (x) ->{
-            if (x){
-                if (cs.getName().equals(player.getName())){
-                    cs.sendMessage("§eteleported to "+dest.toJson());
-                }else{
-                    cs.sendMessage("§e"+player.getName()+" teleported to "+dest.toJson());
-                    player.sendMessage("§e"+cs.getName()+" teleported you to "+dest.toJson());
-                }
-            }else{
-                cs.sendMessage("§cFailed to teleport.");
-            }
-        });
-    }
+  private void teleportToLocation(BungeePlayer cs, ProxiedPlayer player, XLocation dest) {
+    plugin.getSender().setLocation(player, dest, (x) -> {
+      if (x) {
+        if (cs.getName().equals(player.getName())) {
+          cs.sendMessage("§eteleported to " + dest.toJson());
+        } else {
+          cs.sendMessage("§e" + player.getName() + " teleported to " + dest.toJson());
+          player.sendMessage("§e" + cs.getName() + " teleported you to " + dest.toJson());
+        }
+      } else {
+        cs.sendMessage("§cFailed to teleport.");
+      }
+    });
+  }
 }

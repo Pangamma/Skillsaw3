@@ -27,7 +27,6 @@ public class SpigotOptions
     @SerializedName("pvp-mode")
     public PvpModeOption PvpMode = new PvpModeOption();
     //</editor-fold>
-
     
     //<editor-fold defaultstate="collapsed" desc="SubClasses">
   

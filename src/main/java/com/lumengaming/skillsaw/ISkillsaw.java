@@ -1,13 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.lumengaming.skillsaw;
 
 import com.lumengaming.skillsaw.wrappers.IPlayer;
 import java.util.UUID;
-import me.lucko.luckperms.api.LuckPermsApi;
+import net.luckperms.api.LuckPerms;
 
 
 /**
@@ -30,5 +25,5 @@ public interface ISkillsaw {
 
     public IPlayer getPlayer(UUID uuid);
     
-    public LuckPermsApi getLuckPermsAPI();
+    public LuckPerms getLuckPermsAPI();
 }

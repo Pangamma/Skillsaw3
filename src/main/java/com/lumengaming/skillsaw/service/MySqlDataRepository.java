@@ -1119,7 +1119,7 @@ public class MySqlDataRepository implements IDataRepository {
 
     @Override
     public void getActivityScore(UUID uuid, boolean excludeAfk) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
@@ -1235,6 +1235,29 @@ public class MySqlDataRepository implements IDataRepository {
             }
         } else {
             System.out.println("Failed to connect to the DB. Could not update activity scores rep.");
+        }
+    }
+
+    @Override
+    public void logDonation(String username, String packageName, double cost) {
+        if (connect() && !isReadOnly) {
+            try {
+                String q = "INSERT INTO `skillsaw`.`donation_log` (`username`, `cost`,`package_name`, `user_id`,`uuid`) VALUES ("
+                    + "?, ?, ?,"
+                    + "IFNULL((SELECT `user_id` FROM `skillsaw_users` WHERE `username` = ? limit 1),-1),"
+                    + "(SELECT `uuid` FROM `skillsaw_users` WHERE `username` = ? limit 1)"
+                    + ");";
+                PreparedStatement ps = connection.prepareStatement(q);
+                int i = 1;
+                ps.setString(i++, username);
+                ps.setDouble(i++, cost);
+                ps.setString(i++, packageName);
+                ps.setString(i++, username);
+                ps.setString(i++, username);
+                ps.execute();
+            } catch (SQLException ex) {
+                Logger.getLogger(MySqlDataRepository.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 

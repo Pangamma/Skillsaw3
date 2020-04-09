@@ -6,6 +6,8 @@ import com.lumengaming.skillsaw.models.MutedPlayer;
 import com.lumengaming.skillsaw.service.DataService;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
+import java.util.HashSet;
+import net.md_5.bungee.api.CommandSender;
 
 public class UnmuteCommand extends BungeeCommand {
 
@@ -14,6 +16,14 @@ public class UnmuteCommand extends BungeeCommand {
     public UnmuteCommand(BungeeMain plugin) {
         super(plugin, "unmute", null);
     }
+
+  @Override
+  public Iterable<String> onTabCompleteBeforeFiltering(CommandSender arg0, String[] args) {
+    HashSet<String> set = new HashSet<>();
+    set.add("*");
+    set.addAll(this.getOnlinePlayerNames());
+    return set;
+  }
 
     @Override
     public void execute(BungeePlayer cs, String[] args) {

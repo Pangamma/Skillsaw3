@@ -6,6 +6,8 @@ import com.lumengaming.skillsaw.commands.BungeeCommand;
 import com.lumengaming.skillsaw.utility.C;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
+import java.util.HashSet;
+import net.md_5.bungee.api.CommandSender;
 
 /**
  * @author Taylor Love (Pangamma)
@@ -16,6 +18,17 @@ public class SkillSawCommand extends BungeeCommand {
         super(plugin, "skillsaw", null, "ss", "ssaw");
     }
 
+    @Override
+    public Iterable<String> onTabCompleteBeforeFiltering(CommandSender cs, String[] args) {
+      HashSet<String> set = new HashSet<>();
+      if (args.length == 1){
+        set.add("perms");
+        set.add("reload");
+        set.addAll(this.getOnlinePlayerNames());
+      }
+      return set;
+    }
+    
     @Override
     public void execute(BungeePlayer cs, String[] args) {
 

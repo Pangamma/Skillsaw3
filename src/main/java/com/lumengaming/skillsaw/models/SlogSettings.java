@@ -24,7 +24,12 @@ public class SlogSettings {
     @SerializedName("ping-spy")
     public int PingSpy = 0;
     
+    
+    @SerializedName("is-silent")
+    public boolean IsSilent;
+    
     public SlogSettings reset(){
+        this.IsSilent = false;
         this.IsEnabled = false;
         this.IsGlobal = true;
         this.PingSpy = 0;

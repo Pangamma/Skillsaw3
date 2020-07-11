@@ -661,6 +661,7 @@ public class User {
         }
         p.sendMessage(C.C_DIV_LINE);
     }
+    
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Chat">

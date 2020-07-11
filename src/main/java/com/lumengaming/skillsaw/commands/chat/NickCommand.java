@@ -45,6 +45,7 @@ public class NickCommand extends BungeeCommand {
         boolean canNickColors = Permissions.USER_HAS_PERMISSION(cs, Permissions.NICK_STYLE_COLORS, false);
         boolean canNickBlack = Permissions.USER_HAS_PERMISSION(cs, Permissions.NICK_STYLE_COLOR_BLACK, false);
         boolean canNickFormat = Permissions.USER_HAS_PERMISSION(cs, Permissions.NICK_STYLE_FORMATTING, false);
+        boolean canNickMagic = Permissions.USER_HAS_PERMISSION(cs, Permissions.NICK_STYLE_FORMATTING_MAGIC, false);
         boolean canNickSpecialChars = Permissions.USER_HAS_PERMISSION(cs, Permissions.NICK_STYLE_SPECIAL_CHARS, false);
 
         User issuer = dh.getUser(cs.getUniqueId());
@@ -67,7 +68,7 @@ public class NickCommand extends BungeeCommand {
             String nick = "";
             if (args.length == 1) {
                 nick = args[0];
-                part2(issuer, issuer, nick, canNickFormat, canNickColors, canNickBlack, canNickSpecialChars);
+                part2(issuer, issuer, nick, canNickFormat, canNickColors, canNickBlack, canNickSpecialChars, canNickMagic);
             } else if (args.length == 2) {
                 dh.getOfflineUserByNameOrDisplayName(args[0], (target) -> {
                     if (target == null) {
@@ -80,7 +81,7 @@ public class NickCommand extends BungeeCommand {
                         return;
                     }
 
-                    part2(issuer, target, args[1], canNickFormat, canNickColors, canNickBlack, canNickSpecialChars);
+                    part2(issuer, target, args[1], canNickFormat, canNickColors, canNickBlack, canNickSpecialChars, canNickMagic);
                 });
             } else {
                 printHelp(cs);
@@ -92,9 +93,9 @@ public class NickCommand extends BungeeCommand {
         }
     }
 
-    private void part2(User issuer, User target, String nick, boolean canNickFormat, boolean canNickColors, boolean canNickBlack, boolean canNickSpecialChars) {
+    private void part2(User issuer, User target, String nick, boolean canNickFormat, boolean canNickColors, boolean canNickBlack, boolean canNickSpecialChars, boolean canUseMagic) {
         nick = nick.replace("&", "§");
-        nick = SharedUtility.removeColorCodes(nick, canNickFormat, canNickColors, canNickBlack);
+        nick = SharedUtility.removeColorCodes(nick, canNickFormat, canNickColors, canNickBlack, canUseMagic);
         nick = nick.replace("&", "");
         // Remove any weirdo characters.
         if (!canNickSpecialChars) {

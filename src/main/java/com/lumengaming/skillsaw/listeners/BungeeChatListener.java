@@ -71,7 +71,7 @@ public class BungeeChatListener implements Listener {
         boolean hasColorBasic = Permissions.USER_HAS_PERMISSION(cs, Permissions.CHAT_COLOR_BASIC, false);
         boolean hasColorFormatting = Permissions.USER_HAS_PERMISSION(cs, Permissions.CHAT_COLOR_FORMATTNG, false);
         boolean hasColorBlack = Permissions.USER_HAS_PERMISSION(cs, Permissions.CHAT_COLOR_BLACK, false);
-        outMessage.val(SharedUtility.removeColorCodes(outMessage.val(), hasColorFormatting, hasColorBasic, hasColorBlack));
+        outMessage.val(SharedUtility.removeColorCodes(outMessage.val(), hasColorFormatting, hasColorBasic, hasColorBlack, hasColorFormatting));
         
         this.doNamePingIfNamed(outChannel.val(), user.getName(), outMessage.val());
         
@@ -185,7 +185,7 @@ public class BungeeChatListener implements Listener {
         boolean isFormatOkay = u.p() != null && Permissions.USER_HAS_PERMISSION(u.p(), Permissions.CHAT_COLOR_FORMATTNG, false);
         boolean isBlackOkay = u.p() != null && Permissions.USER_HAS_PERMISSION(u.p(), Permissions.CHAT_COLOR_BLACK, false);
         msg = msg.replace('&', '§');
-        msg = SharedUtility.removeColorCodes(msg, isFormatOkay, isColorOkay, isBlackOkay);
+        msg = SharedUtility.removeColorCodes(msg, isFormatOkay, isColorOkay, isBlackOkay, isFormatOkay);
         
         
         BaseComponent[] message = null;

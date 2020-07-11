@@ -128,7 +128,7 @@ public class BungeePlayerActivityListener implements Listener {
           }
 
           if (timeParts[0] > 30) {
-            msg = "§7[§a+§7] §f" + u.getName() + " §dhas returned from their travels. It has been " + timeParts[0] + " days since they last appeared on the server!§d(" + p.getServer().getInfo().getName() + ")";
+            msg = "§7[§a+§7] §f" + u.getName() + " §dhas returned from their travels. It has been " + timeParts[0] + " days since they last appeared on the server!§d(" + hostName + ")";
             plugin.getSender().doTitle(p, "§9Welcome Back!", "§7We missed you.", null);
             ProxyServer.getInstance().broadcast(CText.legacy(msg));
             return;

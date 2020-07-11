@@ -7,8 +7,6 @@
 package com.lumengaming.skillsaw.utility;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.lumengaming.skillsaw.common.AsyncCallback;
 import com.lumengaming.skillsaw.config.Options;
@@ -98,49 +96,30 @@ public class SharedUtility {
      * stuff like checking if user has permissions to use certain color codes.
      * Or maybe not for checking. But certainly for doing actions based on it. *
      */
-    public static String removeColorCodes(String input, boolean canUseFormatCodes, boolean canUseBasicColors, boolean canUseBlack) {
+    public static String removeColorCodes(String input, boolean canUseFormatCodes, boolean canUseBasicColors, boolean canUseBlack, boolean canUseMagic) {
         String output = input;
-        for (ChatColor cc : ChatColor.values()) {
-            switch(cc){
-                case AQUA:
-                case BLUE: 
-                case DARK_AQUA:
-                case DARK_BLUE:
-                case DARK_GRAY:
-                case DARK_GREEN:
-                case DARK_PURPLE:
-                case DARK_RED:
-                case GOLD:
-                case GRAY:
-                case GREEN:
-                case LIGHT_PURPLE:
-                case RED:
-                case WHITE:
-                case YELLOW:
-                    if (!canUseBasicColors){
-                        output = output.replace(cc.toString().toUpperCase(), cc.toString().toLowerCase());
-                        output = output.replace(cc.toString().toLowerCase(), cc.toString().replace('§', '&'));
-                    }
-                    break;
-                case BLACK:
-                    if (!canUseBlack){
-                        output = output.replace("§0", "&0");
-                    }
-                    break;
-                case BOLD:
-                case ITALIC:
-                case UNDERLINE:
-                case STRIKETHROUGH:
-                case MAGIC:
-                case RESET:
-                    if (!canUseFormatCodes){
-                        output = output.replace(cc.toString().toUpperCase(), cc.toString().toLowerCase());
-                        output = output.replace(cc.toString().toLowerCase(), cc.toString().replace('§', '&'));
-                    }
-                    break;
-                default: break;
-            }
+        if (!canUseBasicColors) {
+          for(char cc : "123456789abcdef".toCharArray()){
+            output = output.replace((""+cc).toUpperCase(), (""+cc).toString().toLowerCase());
+            output = output.replace((""+cc).toString().toLowerCase(), (""+cc).toString().replace('§', '&'));
+          }
         }
+        
+        if (!canUseBlack){
+            output = output.replace("§0", "&0");
+        }
+                   
+        if (!canUseMagic){
+            output = output.replace("§k", "&k");
+        }
+
+        if (!canUseFormatCodes){
+          for(char cc : "olmnr".toCharArray()){
+            output = output.replace((""+cc).toUpperCase(), (""+cc).toString().toLowerCase());
+            output = output.replace((""+cc).toString().toLowerCase(), (""+cc).toString().replace('§', '&'));
+          }
+        }
+        
         return output;
     }
     

@@ -87,6 +87,10 @@ public enum Permissions {
      * Formatting codes.
      */
     NICK_STYLE_FORMATTING("Skillsaw.nick.style.formatting"),
+    /**
+     * Magic formatting code. &K
+     */
+    NICK_STYLE_FORMATTING_MAGIC("Skillsaw.nick.style.format-magic"),
     STAFF_LIST("Skillsaw.staff.list"),
     /**
      * For adding/removing from staff list

@@ -64,7 +64,7 @@ public class ChatColorCommand extends BungeeCommand {
       if (!ChatColor.stripColor(prefix).replace("§", "").isEmpty()) {
         cs.sendMessage("§cColor codes only. Thanks.");
       }
-      prefix = SharedUtility.removeColorCodes(prefix, hasColorFormatting, hasColorBasic, hasColorBlack);
+      prefix = SharedUtility.removeColorCodes(prefix, hasColorFormatting, hasColorBasic, hasColorBlack, hasColorFormatting);
       prefix = prefix.replace("&", "");
       user.setChatColor(prefix);
       cs.sendMessage("§aChanged your chat color.");

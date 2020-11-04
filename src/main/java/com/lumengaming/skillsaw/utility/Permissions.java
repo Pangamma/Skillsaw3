@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.lumengaming.skillsaw.utility;
 
 import com.lumengaming.skillsaw.wrappers.IPlayer;
@@ -62,6 +57,7 @@ public enum Permissions {
     MUTE("Skillsaw.mute"),
     IGNORE("Skillsaw.ignore"),
     IGNORE_INF("Skillsaw.ignore.infinite"),
+    LOCKOUT("Skillsaw.lockdown"),
     /**
      * Basic nickname ability. Does not grant colors or anything special.
      */
@@ -104,6 +100,7 @@ public enum Permissions {
     TITLE_SET_OTHERS("Skillsaw.title.set.others"),
     TITLE_EDIT_ANY("SkillSaw.title.edit.*"),
     CUSTOM_TITLES("Skillsaw.customtitles"),
+    VIEWLOGS_ALL_REP("SkillSaw.viewlogs.allrep"),
     VIEWLOGS_STAFF_REP("SkillSaw.viewlogs.staffrep"),
     VIEWLOGS_NATURAL_REP("SkillSaw.viewlogs.naturalrep"),
     VIEWLOGS_NOTE("SkillSaw.viewlogs.note"),

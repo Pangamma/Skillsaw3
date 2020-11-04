@@ -8,15 +8,15 @@ import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 
-public class XRepLogCommand extends AbstractViewLogCommand{
+public class ViewLogCommand extends AbstractViewLogCommand {
 
-    public XRepLogCommand(BungeeMain plugin) {
-        super(plugin, "xreplog");
-        super.addSyntax(Permissions.VIEWLOGS_REP_FIX, true, false, "/xreplog [target]", "View "+RepType.XRep.name() + "(s) given to a player.");
+    public ViewLogCommand(BungeeMain plugin) {
+        super(plugin, "viewlog");
+        super.addSyntax(Permissions.VIEWLOGS_ALL_REP, false, false, "/viewlog [target]", "View all reputation and notes given to a player.");
     }
 
     @Override
     public void execute(BungeePlayer cs, String[] args) {
-        super.execute(cs, "xreplog", args);
+        super.execute(cs, "replog", args);
     }
 }

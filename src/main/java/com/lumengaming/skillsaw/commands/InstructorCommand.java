@@ -18,6 +18,10 @@ public class InstructorCommand extends BungeeCommand {
 
   public InstructorCommand(BungeeMain plugin) {
     super(plugin, "instructor", null, "instructors", "instr");
+    super.addSyntax(Permissions.INSTRUCTORS_LIST, false, false, "/instr[uctor]", "Show instructor list help menu.");
+    super.addSyntax(Permissions.INSTRUCTORS_MODIFY, false, true, "/instr[uctor] + <username>", "Add player to instructor list.");
+    super.addSyntax(Permissions.INSTRUCTORS_MODIFY, false, true, "/instr[uctor] - <username>", "Remove player from instructor list.");
+    super.addSyntax(Permissions.INSTRUCTORS_LIST, false, true, "/instr[uctor] list [r/o/p/a/t/v]", "List instructors.");
   }
 
   @Override
@@ -53,12 +57,6 @@ public class InstructorCommand extends BungeeCommand {
     }
 
     return set;
-  }
-
-  private void printHelp(IPlayer cs) {
-    cs.sendMessage("§c/instr +/add <username>");
-    cs.sendMessage("§c/instr -/del/remove <username>");
-    cs.sendMessage("§c/instr list [skill]");
   }
 
   @Override
@@ -167,10 +165,10 @@ public class InstructorCommand extends BungeeCommand {
           cs.sendMessage(C.C_DIV_LINE);
         });
       } else {
-        printHelp(cs);
+        printHelp2(cs);
       }
     } catch (ArrayIndexOutOfBoundsException ex) {
-      printHelp(cs);
+      printHelp2(cs);
     }
   }
 

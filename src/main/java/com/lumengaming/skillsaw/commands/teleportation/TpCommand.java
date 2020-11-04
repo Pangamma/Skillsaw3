@@ -23,8 +23,8 @@ public class TpCommand extends BungeeCommand {
 
   public TpCommand(BungeeMain plugin) {
     super(plugin, "tp", null, "teleport");
-    super.addSyntax(Permissions.TELEPORT_SELF, true, false, "/tp <target>", "Teleport to the player.");
-    super.addSyntax(Permissions.TELEPORT_OTHERS, true, false, "/tp <source> <target>", "Teleport to the player.");
+    super.addSyntax(Permissions.TELEPORT_SELF, false, false, "/tp <target>", "Teleport to the player.");
+    super.addSyntax(Permissions.TELEPORT_OTHERS, false, false, "/tp <source> <target>", "Teleport to the player.");
   }
 
   @Override

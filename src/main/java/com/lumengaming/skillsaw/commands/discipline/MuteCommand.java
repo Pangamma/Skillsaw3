@@ -15,6 +15,8 @@ public class MuteCommand extends BungeeCommand {
 
   public MuteCommand(BungeeMain plugin) {
     super(plugin, "mute", null);
+    super.addSyntax(Permissions.MUTE, true, false, "/mute <player>", "Mute for 5 minutes.");
+    super.addSyntax(Permissions.MUTE, true, false, "/mute <player> -1", "Mute until next server restart.\nSomething something\nsomething");
   }
 
   public static void printHelp(IPlayer cs) {

@@ -24,13 +24,13 @@ public class SlogCommand extends BungeeCommand {
 
   public SlogCommand(BungeeMain plugin) {
     super(plugin, "sslog", null, "slog");
-    super.addSyntax(Permissions.SLOG, false, false, "/slog", "Get slog help.");
-    super.addSyntax(Permissions.SLOG, false, true, "/slog off", "Disable slog");
-    super.addSyntax(Permissions.SLOG, false, true, "/slog -g", "Show slog for all servers.");
-    super.addSyntax(Permissions.SLOG, false, true, "/slog -p", "Enable ping spy");
-    super.addSyntax(Permissions.SLOG, false, true, "/slog -p2", "Enable ping spy and include unknown IP addresses.");
-    super.addSyntax(Permissions.SLOG, false, true, "/slog -s", "Only show slog for the curret server.");
-    super.addSyntax(Permissions.SLOG, false, true, "/slog -a<50", "Only show slog users with \nactivity score below \nthe specified amount.");
+    super.addSyntax(Permissions.SLOG, true, false, "/slog", "Server command log viewer. See slog help.");
+    super.addSyntax(Permissions.SLOG, true, true, "/slog off", "Disable slog");
+    super.addSyntax(Permissions.SLOG, true, true, "/slog -g", "Show slog for all servers.");
+    super.addSyntax(Permissions.SLOG, true, true, "/slog -p", "Enable ping spy");
+    super.addSyntax(Permissions.SLOG, true, true, "/slog -p2", "Enable ping spy and include unknown IP addresses.");
+    super.addSyntax(Permissions.SLOG, true, true, "/slog -s", "Only show slog for the curret server.");
+    super.addSyntax(Permissions.SLOG, true, true, "/slog -a<50", "Only show slog users with \nactivity score below \nthe specified amount.");
   }
 
   @Override

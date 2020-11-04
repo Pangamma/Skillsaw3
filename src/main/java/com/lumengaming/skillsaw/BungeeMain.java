@@ -38,6 +38,8 @@ import com.lumengaming.skillsaw.commands.*;
 import com.lumengaming.skillsaw.commands.admin.SlogCommand;
 import com.lumengaming.skillsaw.commands.admin.TrackDonateCommand;
 import com.lumengaming.skillsaw.commands.chat.LanguageTranslateCommand;
+import com.lumengaming.skillsaw.commands.BungeeSkillSawCommand;
+import com.lumengaming.skillsaw.commands.skills.ViewLogCommand;
 import com.lumengaming.skillsaw.listeners.BungeeChatListener;
 import com.lumengaming.skillsaw.listeners.BungeeCommandListener;
 import com.lumengaming.skillsaw.listeners.BungeeSlogListener;
@@ -54,6 +56,7 @@ import com.lumengaming.skillsaw.utility.ExpireMap;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -110,6 +113,7 @@ public class BungeeMain extends Plugin implements ISkillsaw {
         this.getProxy().getPluginManager().registerCommand(this, new SetSkillCommand(this));
 //        this.getProxy().getPluginManager().registerCommand(this, new SkillSawCommand(this));
 
+    this.getProxy().getPluginManager().registerCommand(this, new BungeeSkillSawCommand(this));
         this.getProxy().getPluginManager().registerCommand(this, new SlogCommand(this));
         this.getProxy().getPluginManager().registerListener(this, new BungeeSlogListener(this));
         this.getProxy().getPluginManager().registerListener(this, new BungeeCommandListener(this));
@@ -159,6 +163,7 @@ public class BungeeMain extends Plugin implements ISkillsaw {
             this.getProxy().getPluginManager().registerCommand(this, new StaffRepCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new XRepCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new RepLogCommand(this));
+      this.getProxy().getPluginManager().registerCommand(this, new ViewLogCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new StaffRepLogCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new NoteLogCommand(this));
             this.getProxy().getPluginManager().registerCommand(this, new XRepLogCommand(this));

@@ -17,6 +17,7 @@ public class WhisperCommand extends BungeeCommand {
 
   public WhisperCommand(BungeeMain plug) {
     super(plug, "whisper", null, "msg", "m", "tell", "w", "message");
+    super.addSyntax(null, false, false, "/w <username> <message>", "Whisper a private message to someone.");
   }
 
   @Override

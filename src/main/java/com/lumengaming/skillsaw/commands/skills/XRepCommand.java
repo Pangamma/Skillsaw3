@@ -13,6 +13,7 @@ public class XRepCommand extends IRepCommand{
 
 	public XRepCommand(BungeeMain plugin){
 		super(plugin, "xrep", "fixrep", "repfix");
+        super.addSyntax(Permissions.REP_FIX, true, false, "/xrep <name> <amount> <reason>", "+/- a huge amount of rep\n to a player. Only to be \nused to fix mistakes or glitches.");
 	}
 
 	@Override

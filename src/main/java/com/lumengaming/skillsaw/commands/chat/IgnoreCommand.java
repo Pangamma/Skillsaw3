@@ -25,6 +25,11 @@ public class IgnoreCommand extends BungeeCommand {
   public IgnoreCommand(BungeeMain plugin) {
     super(plugin, "ignore", null);
     this.maxIgnore = Options.Get().ChatSystem.MaxIgnoreListSize;
+    super.addSyntax(Permissions.IGNORE, false, false, "/ignore + <player>", "Add player name to\nyour ignore list.");
+    super.addSyntax(Permissions.IGNORE, false, false, "/ignore - <player>", "Remove player name from\nyour ignore list.");
+    super.addSyntax(Permissions.IGNORE, false, false, "/ignore *", "Ignore everyone.");
+    super.addSyntax(Permissions.IGNORE, false, false, "/ignore !*", "Clear your ignore list.\n(Ignore no one)");
+    super.addSyntax(Permissions.IGNORE, false, false, "/ignore ?", "Show the people in\nyour ignore list.");
   }
 
   @Override
@@ -41,8 +46,7 @@ public class IgnoreCommand extends BungeeCommand {
       case 2:
         if (args[0].equals("+")) {
           set.addAll(this.getOnlinePlayerNames());
-        }
-        else if (args[0].equals("-")) {
+        } else if (args[0].equals("-")) {
           if (cs instanceof ProxiedPlayer) {
             ProxiedPlayer p = (ProxiedPlayer) cs;
             User u = this.plugin.getApi().getUser(p.getUniqueId());

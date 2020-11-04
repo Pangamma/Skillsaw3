@@ -25,10 +25,10 @@ public class TpPosCommand extends BungeeCommand {
 
   public TpPosCommand(BungeeMain plugin) {
     super(plugin, "tppos", null, "tploc", "tplocation", "tpposition");
-    super.addSyntax(Permissions.TELEPORT_SELF, true, false, "/tploc <x> <y> <z> [world] [server]", "Teleport to the location.");
-    super.addSyntax(Permissions.TELEPORT_OTHERS, true, false, "/tploc target <x> <y> <z> [world] [server]", "Teleport player to the location");
-    super.addSyntax(Permissions.TELEPORT_SELF, true, false, "/tploc x:<x> y:<y> z:<z> pitch:<pitch> yaw:<yaw> w:world [s:server]", "Teleport to the location");
-    super.addSyntax(Permissions.TELEPORT_OTHERS, true, false, "/tploc target:<username> x:<x> y:<y> z:<z> pitch:<pitch> yaw:<yaw> [w:world] [s:server]", "Teleport player to the location");
+    super.addSyntax(Permissions.TELEPORT_SELF, false, false, "/tploc <x> <y> <z> [world] [server]", "Teleport to the location.");
+    super.addSyntax(Permissions.TELEPORT_OTHERS, false, false, "/tploc target <x> <y> <z> [world] [server]", "Teleport player to the location");
+    super.addSyntax(Permissions.TELEPORT_SELF, false, false, "/tploc x:<x> y:<y> z:<z> pitch:<pitch> yaw:<yaw> w:world [s:server]", "Teleport to the location");
+    super.addSyntax(Permissions.TELEPORT_OTHERS, false, false, "/tploc target:<username> x:<x> y:<y> z:<z> pitch:<pitch> yaw:<yaw> [w:world] [s:server]", "Teleport player to the location");
   }
 
   @Override

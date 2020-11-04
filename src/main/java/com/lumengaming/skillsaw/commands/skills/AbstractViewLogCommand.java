@@ -134,7 +134,7 @@ public abstract class AbstractViewLogCommand extends BungeeCommand implements Ta
     }
     
   
-    private void printHelp(IPlayer cs) {
+    public static void printHelp(IPlayer cs) {
         BaseComponent[] txt = CText.hoverText("§c/replog [target]", "§cView " + RepType.NaturalRep.name() + "(s) given to a player.");
         CText.applyEvent(txt, new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/replog "));
         cs.sendMessage(txt);

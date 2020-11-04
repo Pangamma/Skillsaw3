@@ -30,6 +30,11 @@ public class TitleCommand extends BungeeCommand {
 
   public TitleCommand(BungeeMain aThis) {
     super(aThis, "title", null, "settitle");
+    super.addSyntax(Permissions.CUSTOM_TITLES, false, false, "/title [user] + <short title> <long title>", "Add a custom title.");
+    super.addSyntax(Permissions.CUSTOM_TITLES, false, false, "/title [user] - <short/long title>", "Remove title.");
+    super.addSyntax(Permissions.TITLE_SET_SELF, false, false, "/title [username] <short/long title>", "Set a user's title.");
+    super.addSyntax(null, false, false, "/title [username] list", "List titles for a user.");
+    
     this.ds = plugin.getDataService();
   }
 

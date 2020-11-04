@@ -18,6 +18,7 @@ public class ReplyCommand extends BungeeCommand {
 
   public ReplyCommand(BungeeMain plug) {
     super(plug, "reply", null, "r");
+    super.addSyntax(null, false, false, "/r <message>", "Reply to a private whisper.");
   }
 
   @Override

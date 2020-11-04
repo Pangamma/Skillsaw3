@@ -29,7 +29,7 @@ public class TpaCommand extends BungeeCommand {
 
   public TpaCommand(BungeeMain aThis) {
     super(aThis, "tpaccept", null, "tpa");
-    super.addSyntax(Permissions.TPA_TO, true, false, "/tpa <target>", "Request to teleport\nto the specified\nplayer.");
+    super.addSyntax(Permissions.TPA_TO, false, false, "/tpa <target>", "Request to teleport\nto the specified\nplayer.");
   }
 
   @Override

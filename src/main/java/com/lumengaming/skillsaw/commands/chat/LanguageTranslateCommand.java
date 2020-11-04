@@ -26,6 +26,11 @@ public class LanguageTranslateCommand extends BungeeCommand {
 
   public LanguageTranslateCommand(BungeeMain plugin) {
     super(plugin, "languagetranslate", null, "lang", "translatelanguage", "translang", "autotranslate", "locale");
+    super.addSyntax(Permissions.TRANSLATE_SELF, false, false, "/lang [user] <off/en/es/nl/pl/ru/de/cs/ja/ko>", "Sets your preferred language.");
+    super.addSyntax(Permissions.TRANSLATE_SELF, false, true, "/lang [user] 0/off ", "Disables the locale converter");
+    super.addSyntax(Permissions.TRANSLATE_SELF, false, true, "/lang [user] auto ", "Automatically detects locales based on client settings.");
+    super.addSyntax(Permissions.TRANSLATE_SELF, false, true, "/lang list", "List available locales.");
+    super.addSyntax(Permissions.TRANSLATE_SELF, false, true, "/lang stats", "See which locales are most popular.");
   }
 
   private HashMap<String, String> _supportedLocales = null;

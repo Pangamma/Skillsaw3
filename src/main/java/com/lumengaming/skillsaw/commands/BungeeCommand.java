@@ -12,10 +12,10 @@ import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
 import com.lumengaming.skillsaw.wrappers.IPlayer;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
-import static java.util.stream.Collectors.toSet;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -73,7 +73,7 @@ public abstract class BungeeCommand extends Command implements TabExecutor {
         set.add(r);
       }
     });
-    
+
     return set;
   }
 
@@ -81,7 +81,8 @@ public abstract class BungeeCommand extends Command implements TabExecutor {
    *
    * @param requiredPermission
    * @param hideIfNoPermission
-   * @param isSubCommand
+   * @param isSubCommand A subcommand is only shown if they mess up the main command. It's error
+   * handling helper text.
    * @param syntax
    * @param hoverText
    */
@@ -112,6 +113,14 @@ public abstract class BungeeCommand extends Command implements TabExecutor {
     } else {
       output.addAll(syntaxList);
     }
+
+    output.sort(new Comparator<CommandSyntax>() {
+      @Override
+      public int compare(CommandSyntax o1, CommandSyntax o2) {
+        return o1.getRawText().compareToIgnoreCase(o2.getRawText());
+      }
+    });
+
     return output;
   }
 

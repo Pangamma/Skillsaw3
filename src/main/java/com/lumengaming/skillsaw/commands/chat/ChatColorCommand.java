@@ -17,6 +17,7 @@ public class ChatColorCommand extends BungeeCommand {
 
   public ChatColorCommand(BungeeMain plugin) {
     super(plugin, "chatcolor", null, "cc");
+    super.addSyntax(Permissions.CHAT_COLOR_BASIC, false, false, "/chatcolor <color>", "Set your chat color prefix.");
   }
 
   private void printHelp(IPlayer cs) {

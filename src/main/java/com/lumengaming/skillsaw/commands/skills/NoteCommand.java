@@ -15,6 +15,7 @@ public class NoteCommand extends BungeeCommand {
 
   public NoteCommand(BungeeMain plugin) {
     super(plugin, "note", null);
+    super.addSyntax(Permissions.REP_NOTE, false, false, "/note <name> <reason>", "Add a note about a player.");
   }
 
   private void printHelp(IPlayer cs) {

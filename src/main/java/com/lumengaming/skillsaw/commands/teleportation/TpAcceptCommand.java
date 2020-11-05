@@ -25,7 +25,7 @@ public class TpAcceptCommand extends BungeeCommand {
 
   public TpAcceptCommand(BungeeMain plugin) {
     super(plugin, "tpaccept", null, "tpaaccept");
-    super.addSyntax(null, true, true, "/tpaccept", "Accept a teleport");
+    super.addSyntax(null, false, true, "/tpaccept", "Accept a teleport");
   }
 
   @Override

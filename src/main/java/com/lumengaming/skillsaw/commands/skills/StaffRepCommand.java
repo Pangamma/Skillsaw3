@@ -17,6 +17,7 @@ public class StaffRepCommand extends IRepCommand{
 
 	public StaffRepCommand(BungeeMain plugin){
 		super(plugin, "srep","staffrep");
+        super.addSyntax(Permissions.REP_STAFF, false, false, "/srep <name> <amount> <reason>", "+/- staff rep to a player.\nThe scale is linear.");
 	}
 
 	@Override

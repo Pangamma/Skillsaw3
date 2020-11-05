@@ -16,12 +16,10 @@ public class StaffCommand extends BungeeCommand {
 
   public StaffCommand(BungeeMain plugin) {
     super(plugin, "staff", null, "stafflist");
-  }
-
-  private void printHelp(IPlayer cs) {
-    cs.sendMessage("§c/staff +/add <username>");
-    cs.sendMessage("§c/staff -/del/remove <username>");
-    cs.sendMessage("§c/staff list");
+    super.addSyntax(null, false, false, "/staff", "Show staff list help menu.");
+    super.addSyntax(Permissions.STAFF_MODIFY, false, true, "/staff + <username>", "Add player to staff list.");
+    super.addSyntax(Permissions.STAFF_MODIFY, false, true, "/staff - <username>", "Remove player from staff list.");
+    super.addSyntax(Permissions.STAFF_LIST, false, true, "/staff list", "List staff members.");
   }
 
   @Override
@@ -97,7 +95,7 @@ public class StaffCommand extends BungeeCommand {
             cs.sendMessage(C.ERROR_P_NOT_FOUND);
           }
         });
-      } else if (args[0].equalsIgnoreCase("l") || args[0].equalsIgnoreCase("list")) {
+      } else if (args[0].equalsIgnoreCase("l") || args[0].equalsIgnoreCase("list") || args[0].equalsIgnoreCase("?")) {
         if (!Permissions.USER_HAS_PERMISSION(cs, Permissions.STAFF_LIST)) {
           return;
         }
@@ -124,10 +122,10 @@ public class StaffCommand extends BungeeCommand {
           cs.sendMessage(C.C_DIV_LINE);
         });
       } else {
-        printHelp(cs);
+        super.printHelp2(cs);
       }
     } catch (ArrayIndexOutOfBoundsException ex) {
-      printHelp(cs);
+      super.printHelp2(cs);
     }
   }
 

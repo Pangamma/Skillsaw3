@@ -24,8 +24,8 @@ public class TpHereCommand extends BungeeCommand {
 
   public TpHereCommand(BungeeMain plugin) {
     super(plugin, "tphere", null, "teleporthere");
-    super.addSyntax(Permissions.TELEPORT_OTHERS, true, false, "/tphere <target>", "Teleport player to you.");
-    super.addSyntax(Permissions.TELEPORT_OTHERS, true, true, "/tphere *", "Teleport all players to you.");
+    super.addSyntax(Permissions.TELEPORT_OTHERS, false, false, "/tphere <target>", "Teleport player to you.");
+    super.addSyntax(Permissions.TELEPORT_OTHERS, false, true, "/tphere *", "Teleport all players to you.");
   }
 
   @Override

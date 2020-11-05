@@ -25,6 +25,7 @@ public class NickCommand extends BungeeCommand {
 
     public NickCommand(BungeeMain p_plugin) {
         super(p_plugin, "nickname", null, "nick");
+        super.addSyntax(Permissions.NICK_SELF, false, false, "/nick [target name] <nickname>",  "You can give yourself a nickname. Example:\n My name is Pangamma but I want \nit to be §6RockLobster§f. I would type\n \"§e/nick &6RockLobster§f\"");
         this.dh = plugin.getDataService();
     }
     

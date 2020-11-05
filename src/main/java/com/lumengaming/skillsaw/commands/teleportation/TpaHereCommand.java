@@ -28,8 +28,8 @@ public class TpaHereCommand extends BungeeCommand {
 
   public TpaHereCommand(BungeeMain plugin) {
     super(plugin, "tpahere", null, "teleporthere");
-    super.addSyntax(Permissions.TPA_HERE, true, false, "/tpahere <target>", "Request another to teleport to you.");
-    super.addSyntax(Permissions.TPA_HERE, true, true, "/tpahere *", "Request all players teleport to you.");
+    super.addSyntax(Permissions.TPA_HERE, false, false, "/tpahere <target>", "Request another to teleport to you.");
+    super.addSyntax(Permissions.TPA_HERE, false, true, "/tpahere *", "Request all players teleport to you.");
   }
 
   @Override

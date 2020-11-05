@@ -23,7 +23,7 @@ public class TpDenyCommand extends BungeeCommand {
 
   public TpDenyCommand(BungeeMain plugin) {
     super(plugin, "tpdeny", null, "tpadeny");
-    super.addSyntax(null, true, true, "/tpdeny", "Deny a teleport");
+    super.addSyntax(null, false, true, "/tpdeny", "Deny a teleport");
   }
 
   @Override

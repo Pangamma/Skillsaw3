@@ -16,6 +16,7 @@ public class MeeCommand extends BungeeCommand {
 
     public MeeCommand(BungeeMain plugin) {
         super(plugin, "mee", null, "me");
+        super.addSyntax(Permissions.MEE, false, false, "/mee <action>", "For roleplaying purposes.");
     }
 
     @Override

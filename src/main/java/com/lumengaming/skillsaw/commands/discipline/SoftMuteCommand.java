@@ -13,6 +13,8 @@ public class SoftMuteCommand extends BungeeCommand {
 
   public SoftMuteCommand(BungeeMain plugin) {
     super(plugin, "softmute", null, "smute");
+    super.addSyntax(Permissions.MUTE, true, false, "/softmute <player> [# seconds]", "Soft mute.\nThe player will be the only\none seeing their messages.");
+    super.addSyntax(Permissions.MUTE, true, false, "/smute <player> [# seconds]", "Soft mute.\nThe player will be the only\none seeing their messages.");
   }
 
   @Override

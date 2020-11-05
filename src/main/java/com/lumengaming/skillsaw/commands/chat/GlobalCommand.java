@@ -13,6 +13,7 @@ public class GlobalCommand extends BungeeCommand {
 
   public GlobalCommand(BungeeMain plugin) {
     super(plugin, "global", null, "g");
+    super.addSyntax(Permissions.CHANNEL_GLOBAL, false, false, "/g <message>", "Show global message.");
   }
 
   @Override

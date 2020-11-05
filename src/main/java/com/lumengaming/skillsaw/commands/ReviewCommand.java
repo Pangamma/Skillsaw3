@@ -32,6 +32,14 @@ public class ReviewCommand extends BungeeCommand {
 
   public ReviewCommand(BungeeMain plugin) {
     super(plugin, "review", null, "rev", "reviewlist");
+    super.addSyntax(null, false, false, "/review", "Show review help menu.");
+    super.addSyntax(Permissions.REVIEW_THIS, false, true, "/review this", "Add current location to\nreview list.");
+    super.addSyntax(Permissions.REVIEW_LIST, false, true, "/review list", "View review list items.");
+    super.addSyntax(Permissions.REVIEW_LIST, false, true, "/review tp", "Teleport to next unseen review spot.");
+    super.addSyntax(Permissions.REVIEW_LIST, false, true, "/review tp <username>", "Teleport to specific review spot.");
+    super.addSyntax(Permissions.REVIEW_REMOVE_OTHERS, false, true, "/review remove <username>", "Remove specific review spot.");
+    super.addSyntax(Permissions.REVIEW_REMOVE_OTHERS, false, true, "/review clear", "Clear reviews list.");
+    super.addSyntax(Permissions.REVIEW_REMOVE_SELF, false, true, "/review remove", "Remove your review spot.");
   }
 
   @Override

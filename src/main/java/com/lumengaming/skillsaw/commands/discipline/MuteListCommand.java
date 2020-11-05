@@ -17,6 +17,7 @@ public class MuteListCommand extends BungeeCommand {
 
   public MuteListCommand(BungeeMain plugin) {
     super(plugin, "mutelist", null, "muted");
+    super.addSyntax(Permissions.MUTE, true, false, "/mutelist", "List muted players\n/muted is an alias");
   }
 
   @Override

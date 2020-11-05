@@ -23,6 +23,7 @@ public class DiscordCommand extends BungeeCommand {
 
   public DiscordCommand(BungeeMain plugin) {
     super(plugin, "discord", null);
+    super.addSyntax(null, false, false, "/discord", "Show the discord server link.");
   }
 
   @Override

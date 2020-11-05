@@ -15,6 +15,8 @@ public class UnmuteCommand extends BungeeCommand {
 
     public UnmuteCommand(BungeeMain plugin) {
         super(plugin, "unmute", null);
+    super.addSyntax(Permissions.MUTE, true, false, "/unmute <player>", "Unmute the player.");
+    super.addSyntax(Permissions.MUTE, true, false, "/unmute *", "Unmute all players.");
     }
 
   @Override

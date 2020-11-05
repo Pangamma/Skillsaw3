@@ -22,17 +22,14 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 public class SetSkillCommand extends BungeeCommand {
 
   public SetSkillCommand(BungeeMain plug) {
-    super(plug, "setskill", null, "skillsaw", "ssaw", "ss", "skillset");
-    super.addSyntax(Permissions.INSTRUCT, true, false, "/skillset <user> <r/o/p/a/t/v> <1-10>", "Set someone's skill\nlevel from 1 to 10.\nthe letters match with\nthe different skill tiers.");
+    super(plug, "setskill", null, "sset", "sks", "skillset");
+    super.addSyntax(Permissions.INSTRUCT, false, false, "/skillset <user> <r/o/p/a/t/v> <1-10>", "Set someone's skill\nlevel from 1 to 10.\nthe letters match with\nthe different skill tiers.");
   }
 
   @Override
   public Iterable<String> onTabCompleteBeforeFiltering(CommandSender cs, String[] args) {
     HashSet<String> set = new HashSet<>();
     if (args.length == 1) {
-      set.add("perms");
-      set.add("reload");
-      set.add("help");
       set.addAll(this.getOnlinePlayerNames());
     } else if (args.length == 2) {
       set.add("r");
@@ -52,34 +49,16 @@ public class SetSkillCommand extends BungeeCommand {
     if (args.length == 0) {
       plugin.printHelp(cs);
     } else if (args.length == 1) {
-
-      if ((args[0].equalsIgnoreCase("reload") || args[0].equalsIgnoreCase("rl")) && Permissions.USER_HAS_PERMISSION(cs, Permissions.ALL)) {
-        plugin.onDisable();
-        plugin.onEnable();
-        cs.sendMessage("loading configs.");
-        return;
-      } else if (args[0].equalsIgnoreCase("perms")) {
-        cs.sendMessage(C.C_DIV_LINE);
-        cs.sendMessage(C.C_DIV_TITLE_PREFIX + "Permissions");
-        cs.sendMessage(C.C_DIV_LINE);
-        for (Permissions s : Permissions.values()) {
-          cs.sendMessage(CText.hoverTextSuggest(C.C_MENU_CONTENT + s.node, "Click to copy", s.node));
+      //<editor-fold defaultstate="collapsed" desc="show data about...">
+      cs.sendMessage(C.MSG_PROCESSING);
+      plugin.getDataService().getOfflineUserByNameOrDisplayName(args[0], (User u) -> {
+        if (u != null) {
+          u.showStatisticsTo(cs);
+        } else {
+          cs.sendMessage(C.ERROR_P_NOT_FOUND);
         }
-        cs.sendMessage(C.C_DIV_LINE);
-      } else if (args[0].equalsIgnoreCase("help")) {
-        HelpModule.printHelp(cs, args);
-      } else {
-        //<editor-fold defaultstate="collapsed" desc="show data about...">
-        cs.sendMessage(C.MSG_PROCESSING);
-        plugin.getDataService().getOfflineUserByNameOrDisplayName(args[0], (User u) -> {
-          if (u != null) {
-            u.showStatisticsTo(cs);
-          } else {
-            cs.sendMessage(C.ERROR_P_NOT_FOUND);
-          }
-        });
-        //</editor-fold>
-      }
+      });
+      //</editor-fold> FG 
 
     } else {
       if (!Permissions.USER_HAS_PERMISSION(cs, Permissions.INSTRUCT)) {

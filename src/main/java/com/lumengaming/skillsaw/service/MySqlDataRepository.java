@@ -473,12 +473,12 @@ public class MySqlDataRepository implements IDataRepository {
         String q = "INSERT INTO `skillsaw_users` "
                 + "(`uuid`, `username`,`display_name`, `ipv4`, `current_title`, `custom_titles`,"
                 + "	`chat_color`,`rep_level`,`natural_rep`,`staff_rep`,`last_played`,"
-                + "	`first_played`,`speaking_channel`,`sticky_channels`,`ignored_players`,`activity_score`,"
+                + "	`first_played`,`speaking_channel`,`sticky_channels`,`ignored_players`,`activity_score`,`total_minutes_played`,"
                 + "	`last_ping_time`, `last_ping_host`";
         for (SkillType st : Options.Get().getSkillTypes()) {
           q += ",`s_" + st.getKey() + "`";
         }
-        q += ") VALUES (?,?,?,?,?,?   ,?,?,?,?,?    ,?,?,?,?,?    ,?,?";
+        q += ") VALUES (?,?,?,?,?,?   ,?,?,?,?,?    ,?,?,?,?,?,?    ,?,?";
         for (SkillType st : Options.Get().getSkillTypes()) {
           q += ",?";
         }
@@ -506,6 +506,7 @@ public class MySqlDataRepository implements IDataRepository {
         ps.setString(i++, String.join("\n", user.getStickyChannels()));
         ps.setString(i++, String.join("\n", user.getIgnored()));
         ps.setInt(i++, 0); // activityScore
+        ps.setInt(i++, 0); // activityMinutesTotal
         ps.setLong(i++, 0); // lastPingTime
         ps.setString(i++, null); // lastPingHost
 
@@ -527,7 +528,7 @@ public class MySqlDataRepository implements IDataRepository {
             + "`custom_titles` = ?,`chat_color` = ?, `rep_level` = ?,"
             + "`natural_rep` = ?, `staff_rep`= ?,`last_played` = ?,"
             + "`first_played` = ?,`speaking_channel` = ?, `sticky_channels` = ?,"
-            + "`ignored_players` = ?, is_staff = ?, is_instructor = ?, `activity_score` = ?,"
+            + "`ignored_players` = ?, is_staff = ?, is_instructor = ?, `activity_score` = ?, `total_minutes_played` = ?,"
             + "`tpalock` = ?, `slog_settings` = ?, `last_ping_host` = ?, `last_ping_time` = ?";
 
     for (SkillType st : Options.Get().getSkillTypes()) {
@@ -561,6 +562,7 @@ public class MySqlDataRepository implements IDataRepository {
         ps.setInt(i++, u.isStaff() ? 1 : 0);
         ps.setInt(i++, u.isInstructor() ? 1 : 0);
         ps.setInt(i++, u.getActivityScore());
+        ps.setInt(i++, u.getTotalMinutesPlayed());
         ps.setString(i++, u.getTpaLockState().getShortLabel());
         ps.setString(i++, new Gson().toJson(u.getSlogSettings()));
         ps.setString(i++, u.getLastPingHost());
@@ -689,6 +691,7 @@ public class MySqlDataRepository implements IDataRepository {
       double rsNRep = rs.getDouble("natural_rep");
       double rsSRep = rs.getDouble("staff_rep");
       int rsActivityScore = rs.getInt("activity_score");
+      int rsTotalMinutesPlayed = rs.getInt("total_minutes_played");
       Title rsCurTitle = Title.fromString(STATIC.makeUnsafe(rs.getString("current_title")).replace('&', '§'));
       String rsChatcolor = rs.getString("chat_color").replace('&', '§');
       String rsIpv4 = rs.getString("ipv4");
@@ -708,9 +711,9 @@ public class MySqlDataRepository implements IDataRepository {
       }
 
       u = new User(this.plugin, rsUuid, rsUsername, rsDispName, rsLPlayed, rsPlayed, rsNRep, rsSRep,
-              skills, customTitles, rsCurTitle, rsChatcolor, rsIpv4, rsSpeakingChannel,
-              rsStickie, rsIgnored, rsIsStaff, rsIsInstructor, rsActivityScore, rsTpaLock, rsSlogSettings,
-              rsLastPingTime, rsLastPingHost);
+              skills, customTitles, rsCurTitle, rsChatcolor, rsIpv4, rsSpeakingChannel, rsStickie, 
+              rsTotalMinutesPlayed, rsIgnored, rsIsStaff, rsIsInstructor, rsActivityScore, rsTpaLock, 
+              rsSlogSettings, rsLastPingTime, rsLastPingHost);
 
       u._dbKey = rs.getInt("user_id");
 
@@ -1128,13 +1131,23 @@ public class MySqlDataRepository implements IDataRepository {
   public void logActivity(UUID uuid, String serverName, boolean isAfk) {
     if (connect() && !isReadOnly) {
       try {
-        String q = "INSERT INTO `skillsaw`.`activity_log` (`user_id`, `uuid`, `server`,`is_afk`) VALUES (IFNULL((SELECT `user_id` FROM `skillsaw_users` WHERE `uuid` = ?),-1),?, ?,?);";
+        String q = "INSERT INTO `skillsaw`.`activity_log` (`user_id`, `uuid`, `server`,`is_afk`,`minutes`) VALUES (IFNULL((SELECT `user_id` FROM `skillsaw_users` WHERE `uuid` = ?),-1),?, ?,?, 12);";
         PreparedStatement ps = connection.prepareStatement(q);
         int i = 1;
         ps.setString(i++, uuid.toString());
         ps.setString(i++, uuid.toString());
         ps.setString(i++, serverName);
         ps.setInt(i++, isAfk ? 1 : 0);
+        ps.execute();
+      } catch (SQLException ex) {
+        Logger.getLogger(MySqlDataRepository.class.getName()).log(Level.SEVERE, null, ex);
+      }
+      
+      try {
+        String q = "UPDATE `skillsaw`.`skillsaw_users` SET `total_minutes_played` = `total_minutes_played` + 12 WHERE `uuid` = ?";
+        PreparedStatement ps = connection.prepareStatement(q);
+        int i = 1;
+        ps.setString(i++, uuid.toString());
         ps.execute();
       } catch (SQLException ex) {
         Logger.getLogger(MySqlDataRepository.class.getName()).log(Level.SEVERE, null, ex);

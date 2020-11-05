@@ -145,10 +145,8 @@ public abstract class BungeeCommand extends Command implements TabExecutor {
     ArrayList<CommandSyntax> syntaxes = getSyntaxList(this.getName(), true);
     for (int i = 0; i < syntaxes.size(); i++) {
       CommandSyntax syntax = syntaxes.get(i);
-      BaseComponent[] txt = syntax.getErrorSyntax(p);
-      if (txt != null) {
-        p.sendMessage(txt);
-      }
+      BaseComponent[] txt = syntax.canUse(p) ? syntax.getSyntax(p) : syntax.getErrorSyntax(p);
+      if (txt != null) p.sendMessage(txt);
     }
   }
 }

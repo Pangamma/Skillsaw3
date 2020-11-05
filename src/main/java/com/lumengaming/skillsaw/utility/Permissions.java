@@ -58,6 +58,7 @@ public enum Permissions {
     IGNORE("Skillsaw.ignore"),
     IGNORE_INF("Skillsaw.ignore.infinite"),
     LOCKOUT("Skillsaw.lockdown"),
+    LOCKOUT_EDIT("Skillsaw.lockdown.edit"),
     /**
      * Basic nickname ability. Does not grant colors or anything special.
      */

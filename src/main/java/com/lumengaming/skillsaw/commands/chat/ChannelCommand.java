@@ -25,11 +25,20 @@ public class ChannelCommand extends BungeeCommand {
 
   public ChannelCommand(BungeeMain plugin) {
     super(plugin, "channel", null, "ch");
+    super.addSyntax(Permissions.CHANNEL_LIST, false, false, "/ch", "Make changes to your chat channel");
+    super.addSyntax(Permissions.CHANNEL_LIST, false, true, "/ch <channel>", "Switch to a different channel.");
+    super.addSyntax(Permissions.CHANNEL_LIST, false, true, "/ch:<channel> <message>", "Send message to specific channel.");
+    super.addSyntax(Permissions.CHANNEL_LIST, false, true, "/ch list", "List public channels people are using.");
+    super.addSyntax(Permissions.CHANNEL_STICKIES, false, true, "/ch + <channel>", "Add sticky channel");
+    super.addSyntax(Permissions.CHANNEL_STICKIES, false, true, "/ch - <channel>", "Remove sticky channel");
+    super.addSyntax(Permissions.CHANNEL_STICKIES_INFINITE, false, true, "/ch *", "Listen to all channels");
+    super.addSyntax(Permissions.CHANNEL_STICKIES_INFINITE, false, true, "/ch !*", "Stop listening to all channels");
+    super.addSyntax(Permissions.CHANNEL_INFO, false, true, "/ch info [channel]", "Get info about channel");
+    super.addSyntax(Permissions.CHANNEL_INFO, false, true, "/ch p [player]", "Get info about player's channels");
   }
 
   /**
-   * Just as it sounds. Returns array with one fewer argument. Missing the first
-   * arg. *
+   * Just as it sounds. Returns array with one fewer argument. Missing the first arg. *
    */
   private String[] stripArg(String[] origArray) {
     String[] nArray = new String[origArray.length - 1];
@@ -61,7 +70,7 @@ public class ChannelCommand extends BungeeCommand {
         set.addAll(this.getOnlinePlayerNames());
       }
     }
-    
+
     return set;
   }
 
@@ -296,8 +305,8 @@ public class ChannelCommand extends BungeeCommand {
   }
 
   /**
-   * Channel name must only contain chars between decimal value 32 and 127. (non
-   * inclusive). Channel name must also have at least one char.
+   * Channel name must only contain chars between decimal value 32 and 127. (non inclusive).
+   * Channel name must also have at least one char.
    *
    * @param chName
    * @return

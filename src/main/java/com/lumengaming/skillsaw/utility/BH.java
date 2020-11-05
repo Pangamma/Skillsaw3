@@ -1,6 +1,5 @@
 package com.lumengaming.skillsaw.utility;
 
-import com.lumengaming.skillsaw.BungeeMain;
 import com.lumengaming.skillsaw.models.User;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -9,7 +8,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
  *
  * @author prota
  */
-public class BH extends AbstractHelper{
+public class BH extends AbstractHelper {
     
     /* Returns null if not found. */
     public static ProxiedPlayer getPlayer(User u){

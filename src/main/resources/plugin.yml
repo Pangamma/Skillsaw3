@@ -1,0 +1,17 @@
+name: Skillsaw3
+version: '1.16.4'
+api-version: 1.16
+author: Pangamma
+#website: CustomPlugin
+main: com.lumengaming.skillsaw.SpigotMain
+description: Custom build skill rank system.
+commands:
+  pvpmode:
+    description: 'Enable or disable PVP mode.'
+    aliases: ['pvpm']
+  test2:
+    description: 'Test'
+  title:
+    description: 'A placeholder so we do not get command suggestions for the vanilla command'
+  tp:
+    description: 'A placeholder so we do not get command suggestions for the vanilla command'

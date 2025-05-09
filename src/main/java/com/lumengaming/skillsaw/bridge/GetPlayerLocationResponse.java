@@ -1,0 +1,48 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.lumengaming.skillsaw.bridge;
+
+import com.google.common.io.ByteArrayDataOutput;
+import com.lumengaming.skillsaw.utility.C;
+import com.lumengaming.skillsaw.models.XLocation;
+import java.io.DataInputStream;
+import java.io.IOException;
+
+/**
+ *
+ * @author prota
+ */
+public class GetPlayerLocationResponse extends IBridgePayload<GetPlayerLocationResponse>{
+    public XLocation Loc;
+
+    public GetPlayerLocationResponse(Long key, XLocation loc) {
+        this.Key = key;
+        this.SubChannel = C.CH_GetPlayerLocation;
+        this.Loc = loc;
+    }
+
+    public GetPlayerLocationResponse() {
+    }
+
+    @Override
+    protected byte[] ToBytes(ByteArrayDataOutput out) throws IOException {
+        out.writeUTF(this.SubChannel);
+        out.writeLong(this.Key);
+        String json = gson.toJson(this.Loc, XLocation.class);
+        out.writeUTF(json);
+        return out.toByteArray();
+    }
+
+    @Override
+    public GetPlayerLocationResponse FromBytes(DataInputStream in) throws IOException {
+        this.SubChannel = in.readUTF();
+        this.Key = in.readLong();
+        String locJson = in.readUTF();
+        this.Loc = gson.fromJson(locJson, XLocation.class);
+        return this;
+    }
+    
+}

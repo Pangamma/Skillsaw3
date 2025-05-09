@@ -15,6 +15,11 @@
   </properties>
   <repositories>
     <repository>
+      <!-- NuVotifier -->
+      <id>jitpack</id>
+      <url>https://jitpack.io</url>
+    </repository>
+    <repository>
       <id>spigot-repo</id>
       <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
     </repository>
@@ -22,18 +27,7 @@
       <id>bungeecord-repo</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
     </repository>
-    <!--        <repository>
-        <id>parallelblock-public</id>
-        <name>ParallelBlock Public Repository</name>
-        <url>https://repo.parallelblock.com/repository/maven-public/</url>
-    </repository>-->
     <repository>
-      <!-- NuVotifier -->
-      <id>bintray-repo</id>
-      <url>https://dl.bintray.com/ichbinjoe/public/</url>
-    </repository>
-    <repository>
-      <!-- NuVotifier -->
       <id>google-translate</id>
       <url>https://repo1.maven.org/maven2/</url>
     </repository>
@@ -46,38 +40,39 @@
     </dependency>
     <!-- https://hub.spigotmc.org/versions/ -->
     <dependency>
+      <!-- https://www.spigotmc.org/wiki/bungeecord-maven/ -->
       <!-- https://oss.sonatype.org/content/repositories/snapshots/net/md-5/bungeecord-api/maven-metadata.xml -->
       <groupId>net.md-5</groupId>
       <artifactId>bungeecord-api</artifactId>
-      <version>1.16-R0.4-SNAPSHOT</version>
+      <version>1.18-R0.1-SNAPSHOT</version>
       <type>jar</type>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>net.md-5</groupId>
       <artifactId>bungeecord-api</artifactId>
-      <version>1.16-R0.4-SNAPSHOT</version>
+      <version>1.18-R0.1-SNAPSHOT</version>
       <type>javadoc</type>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.spigotmc</groupId>
       <artifactId>spigot-api</artifactId>
-      <version>1.16.3-R0.1-SNAPSHOT</version>
+      <version>1.18-R0.1-SNAPSHOT</version>
       <type>jar</type>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.spigotmc</groupId>
       <artifactId>spigot-api</artifactId>
-      <version>1.16.3-R0.1-SNAPSHOT</version>
+      <version>1.18-R0.1-SNAPSHOT</version>
       <type>javadoc</type>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.vexsoftware</groupId>
-      <artifactId>nuvotifier-universal</artifactId>
-      <version>2.6.0</version>
+      <groupId>com.github.NuVotifier</groupId>
+      <artifactId>NuVotifier</artifactId>
+      <version>2.7.2</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

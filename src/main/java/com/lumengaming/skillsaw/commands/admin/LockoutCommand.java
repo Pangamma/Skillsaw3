@@ -14,6 +14,7 @@ import com.lumengaming.skillsaw.utility.CText;
 import com.lumengaming.skillsaw.utility.LruCache;
 import com.lumengaming.skillsaw.utility.Permissions;
 import com.lumengaming.skillsaw.wrappers.BungeePlayer;
+import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -21,15 +22,16 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.ServerPing;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.connection.PendingConnection;
 import net.md_5.bungee.api.event.LoginEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
+import net.md_5.bungee.api.event.ProxyPingEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
-import net.md_5.bungee.api.scheduler.ScheduledTask;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.event.EventPriority;
 
@@ -42,17 +44,20 @@ public class LockoutCommand extends BungeeCommand implements Listener {
 
     public String Username;
     public Boolean IsAllowed = null;
+    public String ipv4 = null;
     public String DenyReason = null;
 
-    public CachedLockoutResult(String username, Boolean isAllowed) {
+    public CachedLockoutResult(String username, String ipv4, Boolean isAllowed) {
       this.Username = username;
       this.IsAllowed = isAllowed;
+      this.ipv4 = ipv4;
     }
 
-    public CachedLockoutResult(String username, Boolean isAllowed, String denyReason) {
+    public CachedLockoutResult(String username, String ipv4, Boolean isAllowed, String denyReason) {
       this.Username = username;
       this.IsAllowed = isAllowed;
       this.DenyReason = denyReason;
+      this.ipv4 = ipv4;
     }
   }
 
@@ -72,9 +77,12 @@ public class LockoutCommand extends BungeeCommand implements Listener {
     super.addSyntax(Permissions.LOCKOUT, true, true, "/ss lockout deny=<user>", "Stop allowing a user to bypass the lockdown.");
 
     super.addSyntax(Permissions.LOCKOUT, true, true, "/ss lockout 0/off", "Disable lockout");
-    super.addSyntax(Permissions.LOCKOUT, true, true, "/ss lockout 1/on", "Enable lockout");
+    super.addSyntax(Permissions.LOCKOUT, true, true, "/ss lockout -mode=1", "Enable lockout mode 1.\nBasically any returning user can join.");
+    super.addSyntax(Permissions.LOCKOUT, true, true, "/ss lockout -mode=2", "Enable lockout mode 2.\nMust have some reputation.");
+    super.addSyntax(Permissions.LOCKOUT, true, true, "/ss lockout -mode=3", "Enable lockout mode 3.\nStaff and instructors only.");
+//    super.addSyntax(Permissions.LOCKOUT, true, true, "/ss lockout 1/on", "Enable lockout");
 
-    super.addSyntax(Permissions.LOCKOUT, true, true, "/ss lockout -v", "Verbose. Show 'Tried to connect' messages.");
+    super.addSyntax(Permissions.LOCKOUT, true, true, "/ss lockout -s", "Silent. Hide 'Tried to connect' messages.");
 //    super.addSyntax(Permissions.LOCKOUT, true, true, "/ss lockout -ip", "Deny new IP addresses.");
 //    super.addSyntax(Permissions.LOCKOUT, true, true, "/ss lockout -username", "Deny new users.");
     super.addSyntax(Permissions.LOCKOUT, true, true, "/ss lockout -a<40", "Deny users with activity \nscores of less than 40.");
@@ -122,12 +130,17 @@ public class LockoutCommand extends BungeeCommand implements Listener {
       return;
     }
 
+    LockoutSettings slog = new LockoutSettings();
+    slog.IsEnabled = true;
+
     String larg0 = args[0].toLowerCase();
     if (larg0.equals("?")) {
       String json = ConfigHelper.getGson().toJson(this.lockoutSettings);
       BaseComponent[] legacy = CText.legacy(json);
       CText.applyEvent(legacy, new HoverEvent(HoverEvent.Action.SHOW_TEXT, CText.legacy("Click to copy command.")));
       CText.applyEvent(legacy, new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, this.lockoutSettings.toString()));
+      cs.sendMessage(legacy);
+      return;
     } else if (larg0.startsWith("-allow=")) {
       String name = larg0.split("=")[1];
       Optional<LruCache.LinkedListNode<UUID, CachedLockoutResult>> found = this.cache.values().stream()
@@ -151,36 +164,52 @@ public class LockoutCommand extends BungeeCommand implements Listener {
         cs.sendMessage("§cThat user will be denied until they are cleared from the cache.");
       }
       return;
-    }
-
-    LockoutSettings slog = new LockoutSettings();
-    slog.IsEnabled = true;
-
-    for (int i = 0; i < args.length; i++) {
-      String larg = args[i].toLowerCase();
-      if (args[i].equalsIgnoreCase("-v")) {
-        slog.IsVerbose = true;
-      } else if (larg.startsWith("-a<")) {
-        slog.DenyLessActiveThan = Integer.parseInt(larg.split("<")[1]);
-      } else if (larg.startsWith("-minutes<")) {
-        slog.DenyNewerThanXMinutes = Integer.parseInt(larg.split("<")[1]);
-      } else if (larg.startsWith("-replevel<")) {
-        slog.MinimumRepLevelToAllow = Integer.parseInt(larg.split("<")[1]);
-      } else if (larg.equals("0") || larg.equals("off") || larg.equals("false")) {
-        slog.IsEnabled = false;
-      } else if (larg.equals("1") || larg.equals("on") || larg.equals("true")) {
-        slog.IsEnabled = false;
-      } else if (larg.equals("-allowstaff")) {
-        slog.AllowStaff = true;
-      } else if (larg.equals("-allowinstructors")) {
-        slog.AllowInstructors = true;
+    } else if (larg0.startsWith("-mode=1")) {
+      slog.AllowInstructors = true;
+      slog.AllowStaff = true;
+      slog.IsEnabled = true;
+      slog.IsVerbose = true;
+      slog.DenyNewerThanXMinutes = 60;
+    } else if (larg0.startsWith("-mode=2")) {
+      slog.AllowInstructors = true;
+      slog.AllowStaff = true;
+      slog.IsEnabled = true;
+      slog.IsVerbose = true;
+      slog.DenyNewerThanXMinutes = 60;
+      slog.DenyLessActiveThan = 5;
+      slog.MinimumRepLevelToAllow = 1;
+    } else if (larg0.startsWith("-mode=3")) {
+      slog.AllowInstructors = true;
+      slog.AllowStaff = true;
+      slog.IsEnabled = true;
+      slog.IsVerbose = true;
+    } else {
+      for (int i = 0; i < args.length; i++) {
+        String larg = args[i].toLowerCase();
+        if (args[i].equalsIgnoreCase("-s")) {
+          slog.IsVerbose = false;
+        } else if (larg.startsWith("-a<")) {
+          slog.DenyLessActiveThan = Integer.parseInt(larg.split("<")[1]);
+        } else if (larg.startsWith("-minutes<")) {
+          slog.DenyNewerThanXMinutes = Integer.parseInt(larg.split("<")[1]);
+        } else if (larg.startsWith("-replevel<")) {
+          slog.MinimumRepLevelToAllow = Integer.parseInt(larg.split("<")[1]);
+        } else if (larg.equals("0") || larg.equals("off") || larg.equals("false")) {
+          slog.IsEnabled = false;
+        } else if (larg.equals("1") || larg.equals("on") || larg.equals("true")) {
+          slog.IsEnabled = false;
+        } else if (larg.equals("-allowstaff")) {
+          slog.AllowStaff = true;
+        } else if (larg.equals("-allowinstructors")) {
+          slog.AllowInstructors = true;
+        }
       }
     }
 
     this.lockoutSettings = slog;
     this.cache.clear();
 
-    if (this.lockoutSettings.IsEnabled){
+    if (this.lockoutSettings.IsEnabled) {
       ProxyServer.getInstance().broadcast(CText.hoverText("§f[§6Lockdown§f]§7 Lockdown has been §aactivated§7!", this.lockoutSettings.toString()));
     } else {
       ProxyServer.getInstance().broadcast(CText.hoverText("§f[§6Lockdown§f]§7 Lockdown has been §cdeactivated§7!", this.lockoutSettings.toString()));
@@ -192,7 +221,7 @@ public class LockoutCommand extends BungeeCommand implements Listener {
     HashSet<String> set = new HashSet<>();
 
     set.add("off");
-    set.add("-v");
+    set.add("-s");
     set.add("-a<");
     set.add("-minutes<");
     set.add("-replevel<");
@@ -200,6 +229,9 @@ public class LockoutCommand extends BungeeCommand implements Listener {
     set.add("-deny=");
     set.add("-allowInstructors");
     set.add("-allowStaff");
+    set.add("-mode=1");
+    set.add("-mode=2");
+    set.add("-mode=3");
 
     return set;
   }
@@ -257,11 +289,52 @@ public class LockoutCommand extends BungeeCommand implements Listener {
 
   @EventHandler
   public void onLogin(final PostLoginEvent e) {
-    if (this.lockoutSettings != null && this.lockoutSettings.IsEnabled){
+    if (this.lockoutSettings != null && this.lockoutSettings.IsEnabled) {
       e.getPlayer().sendMessage(CText.hoverText("§f[§6Lockdown§f]§7 Lockdown is active right now!", this.lockoutSettings.toString()));
     }
   }
-  
+
+  @EventHandler(priority = EventPriority.HIGHEST)
+  public void onProxyPingMOTD(final ProxyPingEvent e) {
+    if (this.lockoutSettings == null) return;
+    if (!this.lockoutSettings.IsEnabled) return;
+    PendingConnection conn = e.getConnection();
+    if (conn == null) return;
+    final String ipPlayer;
+    final String hostServer;
+    InetSocketAddress vHost = conn.getVirtualHost();
+    if (vHost != null) {
+      hostServer = vHost.getHostString();
+    } else {
+      return;
+    }
+
+    InetSocketAddress addr = conn.getAddress();
+    if (addr != null) {
+      ipPlayer = addr.getHostString();
+    } else {
+      return;
+    }
+
+    Optional<LruCache.LinkedListNode<UUID, CachedLockoutResult>> found = this.cache.values().stream().filter(x -> ipPlayer.equals(x.val.ipv4)).findFirst();
+
+    if (found.isPresent() == false) {
+      ServerPing ping = e.getResponse();
+      ping.setDescription("§f[§6Lockdown Active§f]\n§eTry connecting to see if you are white listed.");
+      e.setResponse(ping);
+      return;
+    } else {
+      ServerPing ping = e.getResponse();
+      if (found.get().val.IsAllowed) {
+        ping.setDescription("§f[§6Lockdown Active§f]\n§eYour entry is §aauthorized§e!");
+      } else if (found.get().val.IsAllowed == false) {
+        ping.setDescription("§f[§6Lockdown Active§f] §eYour entry is §cdenied§e.\n §eTry again soon. A staff member might whitelist you.");
+      }
+
+      e.setResponse(ping);
+    }
+  }
+
   @EventHandler(priority = EventPriority.LOWEST)
   public void onLogin(final LoginEvent e) {
 
@@ -300,7 +373,7 @@ public class LockoutCommand extends BungeeCommand implements Listener {
         String reason = getRejectionReason(u, ls);
         if (reason == null) {
           cache.put(uuid, new CachedLockoutResult(u == null
-                  ? "NewPlayer" : u.getName(), true, reason));
+                  ? "NewPlayer" : u.getName(), ipv4, true, reason));
           e.setCancelled(false);
           return;
         }
@@ -313,7 +386,7 @@ public class LockoutCommand extends BungeeCommand implements Listener {
 
         e.setCancelReason(CText.legacy(reason));
         e.setCancelled(true);
-        cache.put(uuid, new CachedLockoutResult(u == null ? "NewPlayer" : u.getName(), false, reason));
+        cache.put(uuid, new CachedLockoutResult(u == null ? "NewPlayer" : u.getName(), ipv4, false, reason));
 
         if (u != null) {
           if (this.lockoutSettings.IsVerbose) {

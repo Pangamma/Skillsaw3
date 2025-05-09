@@ -68,7 +68,7 @@ public class BungeeSlogListener implements Listener {
         }
     }
     
-	@EventHandler(priority = EventPriority.HIGHEST)
+	@EventHandler(priority = EventPriority.HIGH)
 	public void onProxyPingMOTD(final ProxyPingEvent e){
         PendingConnection conn = e.getConnection();
         if (conn == null) return;

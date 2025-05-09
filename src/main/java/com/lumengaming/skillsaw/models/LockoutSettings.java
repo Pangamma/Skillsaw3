@@ -12,13 +12,8 @@ public class LockoutSettings {
   public boolean IsEnabled = false;
 
   @SerializedName("is-verbose")
-  public boolean IsVerbose = false;
-//
-//  @SerializedName("deny-new-ips")
-//  public boolean AreNewIpsDenied = false;
-//
-//  @SerializedName("deny-new-users")
-//  public boolean AreNewUsersDenied = false;
+  public boolean IsVerbose = true;
+
 
   /**
    * Anyone with a playtime of LESS than the supplied value will be rejected. The default value is:
@@ -46,7 +41,7 @@ public class LockoutSettings {
     this.AllowStaff = false;
     this.AllowInstructors = false;
     this.IsEnabled = false;
-    this.IsVerbose = false;
+    this.IsVerbose = true;
     this.DenyNewerThanXMinutes = -1;
     this.MinimumRepLevelToAllow = -1;
     this.DenyLessActiveThan = -1;
@@ -57,7 +52,7 @@ public class LockoutSettings {
   public String toString() {
     String cmd = "/lockout";
     
-    if (this.IsVerbose) cmd += " -v";
+    if (!this.IsVerbose) cmd += " -s";
     if (this.AllowInstructors) cmd += " -allowInstructors";
     if (this.AllowStaff) cmd += " -allowStaff";
     if (this.MinimumRepLevelToAllow != -1) cmd += (" -replevel<"+this.MinimumRepLevelToAllow);

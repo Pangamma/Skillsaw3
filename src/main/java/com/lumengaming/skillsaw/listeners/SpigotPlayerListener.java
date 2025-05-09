@@ -4,6 +4,7 @@ import com.lumengaming.skillsaw.SpigotMain;
 import com.lumengaming.skillsaw.config.SpigotOptions;
 import com.lumengaming.skillsaw.models.PvpModeSaveState;
 import com.lumengaming.skillsaw.utility.C;
+import org.bukkit.EntityEffect;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -39,6 +40,7 @@ public class SpigotPlayerListener implements Listener{
     public void onFrostWalker(EntityBlockFormEvent e){
         if (e.getEntity() instanceof Player){
             Player p = (Player)e.getEntity();
+            
             if (p.getGameMode() == GameMode.CREATIVE){
                 e.setCancelled(true);
             }
